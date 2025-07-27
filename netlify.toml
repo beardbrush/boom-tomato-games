@@ -12,3 +12,13 @@
   from = "/index.html"
   to = "/"
   status = 301
+
+[[headers]]
+  for = "/webdemo/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+
+[[headers]]
+  for = "/webdemo/*.pck"
+  [headers.values]
+    Content-Type = "application/octet-stream"
