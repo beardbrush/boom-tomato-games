@@ -23,24 +23,24 @@
 
     <!-- JSON-LD Schema Markup -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "VideoGame",
-      "name": "Detective's Notebook",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Android",
-      "author": {
-        "@type": "Organization",
-        "name": "Boom Tomato Games"
-      },
-      "url": "https://boomtomatogames.com",
-      "screenshot": "https://boomtomatogames.com/website_image.png",
-      "sameAs": [
-        "https://play.google.com/store/apps/details?id=com.detectivenotebook",
-        "https://www.deviantart.com/sabezady",
-        "https://play.google.com/store/apps/details?id=the.Lone.Trader"
-      ]
-    }
+        {
+          "@context": "https://schema.org",
+          "@type": "VideoGame",
+          "name": "Detective's Notebook",
+          "applicationCategory": "GameApplication",
+          "operatingSystem": "Android",
+          "author": {
+            "@type": "Organization",
+            "name": "Boom Tomato Games"
+          },
+          "url": "https://boomtomatogames.com",
+          "screenshot": "https://boomtomatogames.com/website_image.png",
+          "sameAs": [
+            "https://play.google.com/store/apps/details?id=com.detectivenotebook",
+            "https://www.deviantart.com/sabezady",
+            "https://play.google.com/store/apps/details?id=the.Lone.Trader"
+          ]
+        }
     </script>
 
     <style>
@@ -70,15 +70,31 @@
             text-decoration: none;
         }
 
+        .button {
+            background-color: #58c0e8;
+            color: #0c1b2a;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s ease-in-out;
+        }
+
+            .button:hover {
+                background-color: #7ed3f1;
+            }
+
         .merch-section {
             background-color: #132c42;
             padding: 2em 1em;
             margin-top: 2em;
         }
 
-        .merch-section h2 {
-            margin-bottom: 0.5em;
-        }
+            .merch-section h2 {
+                margin-bottom: 0.5em;
+            }
 
         .video-section {
             padding: 2em 1em;
@@ -106,16 +122,25 @@
     <img src="website_image.png" alt="Detective's Notebook">
     <h2>Detective's Notebook</h2>
     <p>A mystery game of clues, lies, and consequences. Put on your trench coat and dig into suspicion.</p>
-    <p><a href="https://play.google.com/store/apps/details?id=com.detectivenotebook">Download on Google Play</a></p>
+
+    <!-- 🎮 DEMO BUTTON -->
+    <p>
+        <a href="/webdemo/" class="button">▶️ Play Case 1 – Free Web Demo</a>
+    </p>
+
+    <!-- 📲 DOWNLOAD BUTTON -->
+    <p>
+        <a href="https://play.google.com/store/apps/details?id=com.detectivenotebook" class="button">🔓 Download Full Game on Google Play</a>
+    </p>
 
     <section class="video-section">
         <h2>🎬 Watch the Trailer</h2>
         <iframe width="300" height="534"
-            src="https://www.youtube.com/embed/H1iVFkhdENA"
-            title="Detective's Notebook Trailer"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
+                src="https://www.youtube.com/embed/H1iVFkhdENA"
+                title="Detective's Notebook Trailer"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
         </iframe>
     </section>
 
