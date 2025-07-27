@@ -1,4 +1,9 @@
 [[redirects]]
+  from = "/"
+  to = "/webdemo/index.html"
+  status = 200
+
+[[redirects]]
   from = "/terms.html"
   to = "/terms"
   status = 301
@@ -6,11 +11,6 @@
 [[redirects]]
   from = "/privacy.html"
   to = "/privacy"
-  status = 301
-
-[[redirects]]
-  from = "/index.html"
-  to = "/"
   status = 301
 
 [[headers]]
