@@ -45,156 +45,319 @@
     </script>
 
     <style>
+        :root {
+            --bt-teal: #03504E;
+            --bt-teal-soft: #0b6d6a;
+            --bt-bg: #ffffff;
+            --bt-panel: #f8f8f6;
+            --bt-border: #e6e6e6;
+            --bt-text: #1e1e1e;
+            --bt-muted: #777777;
+            --bt-radius: 14px;
+            --bt-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #0c1b2a;
-            color: white;
             margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-
-        header {
-            background-color: #132c42;
-            padding: 1em 0;
-        }
-
-        img {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-            border: 4px solid white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bt-bg);
+            color: var(--bt-text);
         }
 
         a {
-            color: #58c0e8;
+            color: var(--bt-teal);
             text-decoration: none;
         }
 
-        .button {
-            background-color: #58c0e8;
-            color: #0c1b2a;
-            padding: 12px 24px;
-            margin: 10px;
-            border-radius: 6px;
-            font-size: 1.1em;
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Layout */
+
+        .site-header {
+            padding: 1.8rem 1rem 1.4rem;
+            border-bottom: 1px solid var(--bt-border);
+            text-align: center;
+            background: #ffffff;
+        }
+
+        .site-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--bt-teal);
+        }
+
+        .site-header p {
+            margin: 0.4rem 0 0;
+            color: var(--bt-muted);
+            font-size: 0.95rem;
+        }
+
+        .site-main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 2.5rem;
+        }
+
+        .card {
+            background: var(--bt-panel);
+            border-radius: var(--bt-radius);
+            padding: 1.5rem 1.5rem 1.75rem;
+            margin: 1rem 0;
+            box-shadow: var(--bt-shadow);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 0.4rem;
+            font-size: 1.4rem;
+        }
+
+        .card p {
+            margin-top: 0.4rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.95rem;
+            color: var(--bt-text);
+        }
+
+        .hero-image {
+            width: 100%;
+            max-width: 520px;
+            border-radius: 12px;
+            display: block;
+            margin: 0 auto 1rem;
+            border: 1px solid var(--bt-border);
+        }
+
+        /* Buttons */
+
+        .button,
+        .btn-primary {
+            background-color: var(--bt-teal);
+            color: #ffffff;
+            padding: 0.8rem 1.6rem;
+            border-radius: 999px;
+            font-size: 0.95rem;
             text-decoration: none;
             display: inline-block;
-            transition: background 0.2s ease-in-out;
+            margin: 0.35rem 0.35rem 0;
+            transition: background 0.2s ease-in-out, transform 0.05s ease;
         }
 
-        .button:hover {
-            background-color: #7ed3f1;
+        .button:hover,
+        .btn-primary:hover {
+            background-color: var(--bt-teal-soft);
+            text-decoration: none;
+            transform: translateY(-1px);
         }
 
-        .merch-section {
-            background-color: #132c42;
-            padding: 2em 1em;
-            margin-top: 2em;
+        .btn-ghost {
+            background: transparent;
+            color: var(--bt-teal);
+            border: 1px solid var(--bt-border);
         }
 
-        .merch-section h2 {
-            margin-bottom: 0.5em;
+        .btn-ghost:hover {
+            border-color: var(--bt-teal);
         }
 
-        .video-section {
-            padding: 2em 1em;
-            margin-top: 2em;
+        /* Download badges */
+
+        .store-badges {
+            margin-top: 0.8rem;
         }
 
-        .voice-callout {
-            background-color: #0f2438;
-            padding: 2em 1em;
-            margin-top: 2em;
+        .store-badges img {
+            height: 60px;
+            margin: 0.3rem;
+            border: none;
         }
+
+        /* Sections */
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .video-wrapper {
+            margin-top: 0.8rem;
+        }
+
+        iframe {
+            border-radius: 12px;
+            border: 1px solid var(--bt-border);
+        }
+
+        .subtext {
+            font-size: 0.9rem;
+            color: var(--bt-muted);
+        }
+
+        /* Merch / Redbubble */
+
+        .merch-section p {
+            margin-bottom: 0.8rem;
+        }
+
+        /* Voice callout */
+
+        .voice-card {
+            background: #ffffff;
+            border-radius: var(--bt-radius);
+            padding: 1.5rem;
+            margin-top: 1.2rem;
+            border: 1px solid var(--bt-border);
+            text-align: center;
+        }
+
+        .voice-card p {
+            margin: 0.4rem 0;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
 
         footer {
-            margin-top: 2em;
-            font-size: 0.9em;
+            border-top: 1px solid var(--bt-border);
+            padding: 1.5rem 1rem 1.8rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--bt-muted);
+        }
+
+        footer a {
+            color: var(--bt-teal);
+        }
+
+        footer p {
+            margin: 0.2rem 0;
+        }
+
+        /* Responsive */
+
+        @media (min-width: 720px) {
+            .site-main {
+                padding: 2rem 1rem 3rem;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
+    <header class="site-header">
         <h1>Boom Tomato Games</h1>
-        <p>Creating mystery games inspired by classic radio crime shows.</p>
+        <p>Indie mystery games with classic radio crime drama vibes.</p>
     </header>
 
-    <img src="website_image.png" alt="Detective's Notebook">
-    <h2>Detective's Notebook</h2>
-    <p>A mystery game of clues, lies, and consequences. Put on your trench coat and dig into suspicion.</p>
+    <main class="site-main">
 
-    <!-- 📲 DOWNLOAD BADGES -->
-    <div style="text-align: center; margin: 30px 0;">
-      <h2>Get Detective's Notebook</h2>
-      <p>Available now on iOS and Android!</p>
+        <!-- Detective's Notebook Hero -->
+        <section class="card">
+            <img src="website_image.png" alt="Detective's Notebook" class="hero-image">
+            <h2>Detective's Notebook</h2>
+            <p>A mystery game of clues, lies, and consequences. Put on your trench coat and dig into suspicion.</p>
 
-      <!-- App Store -->
-      <a href="https://apps.apple.com/us/app/detectives-notebook/id6752763993" target="_blank">
-        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
-             alt="Download on the App Store"
-             style="height:60px; margin: 10px;">
-      </a>
+            <div>
+                <span class="subtext">Available now on iOS and Android.</span>
+            </div>
 
-      <!-- Google Play -->
-      <a href="https://play.google.com/store/apps/details?id=com.detectivenotebook&pcampaignid=web_share" target="_blank">
-        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
-             alt="Get it on Google Play"
-             style="height:60px; margin: 10px;">
-      </a>
-    </div>
+            <div class="store-badges">
+                <!-- App Store -->
+                <a href="https://apps.apple.com/us/app/detectives-notebook/id6752763993" target="_blank" rel="noopener">
+                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                         alt="Download on the App Store">
+                </a>
 
-    <!-- 🎮 DEMO BUTTON -->
-    <p>
-        <a href="/webdemo/" class="button">▶️ Play Case 1 – Free Web Demo</a>
-    </p>
+                <!-- Google Play -->
+                <a href="https://play.google.com/store/apps/details?id=com.detectivenotebook&pcampaignid=web_share" target="_blank" rel="noopener">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                         alt="Get it on Google Play">
+                </a>
+            </div>
 
-    <section class="video-section">
-        <h2>🎬 Watch the Trailer</h2>
-        <iframe width="300" height="534"
-                src="https://www.youtube.com/embed/0viU0u7AaZ0"
-                title="Detective's Notebook Trailer"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-        </iframe>
-    </section>
+            <p style="margin-top:1rem;">
+                <a href="/webdemo/" class="button">▶️ Play Case 1 – Free Web Demo</a>
+            </p>
+        </section>
 
-    <section class="game-section">
-        <h2>The Lone Trader</h2>
-        <img src="TheLoneTrader.png" alt="The Lone Trader pixel art sign">
-        <p>A quiet life on the plains? Not quite. Explore, trade, and survive in this free pixel-western experience.</p>
-        <p><a href="https://play.google.com/store/apps/details?id=the.Lone.Trader">Download Free on Google Play</a></p>
-    </section>
+        <!-- Notan Maker Card -->
+        <section class="card">
+            <h2>Notan Maker</h2>
+            <p>Learn to see light–dark shapes like an artist. Turn your photos into bold black–white Notan studies and practise composition.</p>
+            <p class="subtext">A free browser tool — works great on mobile and tablet.</p>
+            <p>
+                <a href="/notan-maker/" class="button">🌗 Try Notan Maker</a>
+            </p>
+        </section>
 
-    <section class="merch-section">
-        <h2>🧃 Boom Tomato Merch</h2>
-        <p>Get mugs, posters, and more featuring our detective game art:</p>
-        <div id="redbubble-embed" style="margin-top: 2em;">
-            <script type="text/javascript" src="https://www.redbubble.com/assets/external_portfolio.js"></script>
-            <script type="text/javascript">
-                new RBExternalPortfolio('www.redbubble.com', 'people/boomtomatogames', 2, 2).renderIframe();
-            </script>
-        </div>
+        <!-- Trailer -->
+        <section class="card">
+            <h2>🎬 Watch the Detective's Notebook Trailer</h2>
+            <p class="subtext">Get a feel for the atmosphere, pacing, and pixel noir visuals.</p>
+            <div class="video-wrapper">
+                <iframe width="300" height="534"
+                        src="https://www.youtube.com/embed/0viU0u7AaZ0"
+                        title="Detective's Notebook Trailer"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </section>
 
-        <p style="margin-top: 1em;">
-            <a href="https://www.redbubble.com/people/boomtomatogames/shop" target="_blank">👉 View full merch shop on Redbubble</a>
-        </p>
-    </section>
+        <!-- The Lone Trader -->
+        <section class="card">
+            <h2>The Lone Trader</h2>
+            <img src="TheLoneTrader.png" alt="The Lone Trader pixel art sign" class="hero-image" style="max-width:480px;">
+            <p>A quiet life on the plains? Not quite. Explore, trade, and survive in this free pixel-western experience.</p>
+            <p>
+                <a href="https://play.google.com/store/apps/details?id=the.Lone.Trader" target="_blank" rel="noopener" class="button">
+                    Download Free on Google Play
+                </a>
+            </p>
+        </section>
 
-    <section class="voice-callout">
-        <h2>🎙️ Want to Voice a Character?</h2>
-        <p>We’re always looking for passionate voices to bring our characters to life in <strong>Detective's Notebook</strong>!</p>
-        <p>This is a volunteer opportunity — but if selected, your name will appear proudly on our <a href="voice-actors.html">Meet the Cast</a> page.</p>
-        <p>Email us at <a href="mailto:boomtomatogames@gmail.com">boomtomatogames@gmail.com</a> and let us know you're interested.</p>
-        <p>Whether you're a budding voice actor or just want to join the mystery, we’d love to hear from you!</p>
-    </section>
+        <!-- Merch / Redbubble -->
+        <section class="card merch-section">
+            <h2>🧃 Boom Tomato Merch</h2>
+            <p>Get mugs, posters, and more featuring art from Detective's Notebook and our other projects.</p>
+
+            <div id="redbubble-embed" style="margin-top: 1.5rem;">
+                <script type="text/javascript" src="https://www.redbubble.com/assets/external_portfolio.js"></script>
+                <script type="text/javascript">
+                    new RBExternalPortfolio('www.redbubble.com', 'people/boomtomatogames', 2, 2).renderIframe();
+                </script>
+            </div>
+
+            <p style="margin-top: 1rem;">
+                <a href="https://www.redbubble.com/people/boomtomatogames/shop" target="_blank" rel="noopener">
+                    👉 View full merch shop on Redbubble
+                </a>
+            </p>
+        </section>
+
+        <!-- Voice Actors Callout -->
+        <section class="voice-card">
+            <h2>🎙️ Want to Voice a Character?</h2>
+            <p>We’re always looking for passionate voices to bring our characters to life in <strong>Detective's Notebook</strong>.</p>
+            <p>This is a volunteer opportunity — but if selected, your name will appear proudly on our <a href="voice-actors.html">Meet the Cast</a> page.</p>
+            <p>Email us at <a href="mailto:boomtomatogames@gmail.com">boomtomatogames@gmail.com</a> and let us know you're interested.</p>
+            <p>Whether you're a budding voice actor or just want to join the mystery, we’d love to hear from you.</p>
+        </section>
+
+    </main>
 
     <footer>
         <p>
-            <a href="voice-actors.html">Meet the Cast</a> | 
-            <a href="privacy.html">Privacy Policy</a> | 
-            <a href="support.html">Support</a> | 
+            <a href="voice-actors.html">Meet the Cast</a> ·
+            <a href="privacy.html">Privacy Policy</a> ·
+            <a href="support.html">Support</a> ·
             <a href="terms.html">Terms and Conditions</a>
         </p>
         <p>Contact: <a href="mailto:boomtomatogames@gmail.com">boomtomatogames@gmail.com</a></p>
