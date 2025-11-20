@@ -18,7 +18,7 @@
     <div class="bt-header-inner">
       <div class="bt-logo">Boom Tomato Games</div>
       <h1>Notan Maker</h1>
-      <p class="bt-tagline">Learn light & shadow using bold black–white shapes.</p>
+      <p class="bt-tagline">Learn light & shadow using bold Japanese ink–paper tones.</p>
     </div>
   </header>
 
@@ -29,9 +29,8 @@
       <h2>What is Notan?</h2>
       <p class="bt-notan-info">
         <strong>Notan</strong> (濃淡) means “light–dark.” It focuses on the balance
-        of black and white shapes within a composition. Notan is one of the fastest
-        ways to improve your composition skills, simplify scenes, and think in clear
-        silhouette shapes.
+        of black and white shapes within a composition. This version uses a
+        traditional <strong>Sumi-e ink palette</strong> inspired by rice-paper artwork.
       </p>
     </section>
 
@@ -39,7 +38,7 @@
     <section class="bt-panel">
       <h2>1. Load an image</h2>
       <p class="bt-help">
-        Choose a photo or use your camera. We’ll convert it into a crisp black–white Notan image.
+        Choose a photo or use your camera. We’ll convert it into a classic 2-tone or 3-tone Notan.
       </p>
 
       <label class="bt-file-label">
@@ -52,10 +51,22 @@
       </button>
     </section>
 
-    <!-- Controls -->
+    <!-- Tone selection -->
     <section class="bt-panel">
-      <h2>2. Adjust your Notan</h2>
+      <h2>2. Choose Notan Style</h2>
 
+      <div class="bt-actions-row" style="margin-top:0.5rem;">
+        <button id="two-tone-btn" class="bt-button bt-button-secondary">2-Tone</button>
+        <button id="three-tone-btn" class="bt-button bt-button-secondary">3-Tone</button>
+      </div>
+
+      <p class="bt-help" style="margin-top:0.6rem;">
+        2-Tone = traditional ink-on-paper Notan.
+        <br>
+        3-Tone = adds a sumi-wash mid-tone.
+      </p>
+
+      <!-- Threshold -->
       <div class="bt-controls-row">
         <label for="threshold-range">
           Threshold
@@ -64,6 +75,7 @@
         <input id="threshold-range" type="range" min="10" max="90" value="50" />
       </div>
 
+      <!-- Invert -->
       <div class="bt-controls-row">
         <label class="bt-toggle-label">
           <input id="invert-toggle" type="checkbox" />
@@ -86,38 +98,31 @@
       <h2>3. Notan preview</h2>
       <div class="bt-canvas-wrapper">
         <canvas id="notan-canvas"></canvas>
-
-        <!-- Hidden downloadable image -->
-        <img id="notan-download-img" style="display:none;" />
-
         <div id="canvas-placeholder" class="bt-placeholder">
           <p>Upload an image to see your Notan here.</p>
         </div>
       </div>
+
+      <!-- hidden downloadable image -->
+      <img id="notan-download-img" style="display:none;" alt="Notan Export">
     </section>
 
-    <!-- Practice -->
+    <!-- Practice Exercises -->
     <section class="bt-panel">
       <h2>3b. Notan Practice Exercises</h2>
-      <p class="bt-help">Quick exercises to improve your black–white composition skills.</p>
+      <p class="bt-help">Quick exercises to sharpen your black–white design awareness.</p>
 
       <ol style="font-size:0.9rem; color:#444; line-height:1.5;">
-        <li><strong>Trace the major shapes</strong><br>
-            Lightly sketch only the largest black and white shapes from your Notan.
-        </li>
-        <li style="margin-top:0.6rem;"><strong>Simplify further</strong><br>
-            Redraw your Notan using fewer shapes — aim for 5–8 total.
-        </li>
-        <li style="margin-top:0.6rem;"><strong>Design a new Notan</strong><br>
-            Rearrange the shapes to create a balanced composition.
-        </li>
+        <li><strong>Trace main shapes</strong> — simplify everything into bold chunks.</li>
+        <li style="margin-top:0.6rem;"><strong>Reduce further</strong> — aim for fewer total shapes.</li>
+        <li style="margin-top:0.6rem;"><strong>Design a new Notan</strong> using the same shapes.</li>
       </ol>
     </section>
 
     <!-- Daily Challenge -->
     <section class="bt-panel">
       <h2>Daily Notan Challenge</h2>
-      <p class="bt-help">Use today’s challenge to practise seeing light–dark shapes.</p>
+      <p class="bt-help">Use today's prompt to practise seeing light–dark shapes.</p>
 
       <div id="daily-challenge" style="font-size:1rem; font-weight:600; margin:0.6rem 0;"></div>
 
@@ -145,21 +150,18 @@
     <section class="bt-panel">
       <h2>Learn More About Notan</h2>
       <p class="bt-help">
-        Notan is used by ink painters, illustrators, concept artists,
-        and designers to create powerful compositions.
+        Notan is used by traditional ink painters, illustrators, film designers and concept artists.
       </p>
 
       <p style="font-size:0.9rem; color:#444;">
-        Notan forces you to see only shape, rhythm and contrast.
-      </p>
-      <p style="font-size:0.9rem; color:#444;">
-        Try practising daily — you’ll see improvements in silhouette,
-        lighting decisions, and scene design.
+        The goal is <strong>clarity and balance</strong>.
+        By stripping detail, Notan reveals shape, rhythm and contrast—the foundations of strong visual art.
       </p>
     </section>
 
   </main>
 
+  <!-- Footer -->
   <footer class="bt-footer">
     <p>© <span id="year"></span> Boom Tomato Games · Created on the Isle of Man</p>
     <p style="margin-top:0.2rem;">Notan Maker (beta)</p>
@@ -170,32 +172,33 @@
   <script src="draw-guide.js"></script>
   <script src="script.js"></script>
 
-  <!-- Daily Challenge Script -->
+  <!-- DAILY CHALLENGE SCRIPT -->
   <script>
     const challenges = [
       "Create a Notan of a tree with dramatic branching.",
       "Photograph a room corner and simplify it into 6 shapes.",
       "Design a Notan using only kitchen objects.",
       "Make a Notan based on your silhouette in a mirror.",
-      "Create a city Notan with only rectangles and triangles.",
-      "Use a cup, a lamp, and a bottle — simplify into bold shapes.",
+      "Create a city Notan using rectangles and triangles.",
+      "Use a cup, lamp, and bottle — simplify to bold shapes.",
       "Capture strong sunlight and shadow from a window scene."
     ];
 
     function pickChallenge() {
-      const box = document.getElementById("daily-challenge");
-      box.textContent = challenges[Math.floor(Math.random() * challenges.length)];
+      document.getElementById("daily-challenge").textContent =
+        challenges[Math.floor(Math.random() * challenges.length)];
     }
+
     document.getElementById("new-challenge-btn").addEventListener("click", pickChallenge);
     pickChallenge();
   </script>
 
-  <!-- Service Worker -->
+  <!-- Service worker -->
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js").catch(err =>
-        console.log("SW Error:", err)
-      );
+      navigator.serviceWorker.register("service-worker.js").catch(err => {
+        console.log("SW Error:", err);
+      });
     }
   </script>
 
