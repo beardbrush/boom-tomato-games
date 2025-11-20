@@ -52,7 +52,7 @@
       </button>
     </section>
 
-    <!-- Classic 2-tone controls -->
+    <!-- Controls -->
     <section class="bt-panel">
       <h2>2. Adjust your Notan</h2>
 
@@ -86,13 +86,17 @@
       <h2>3. Notan preview</h2>
       <div class="bt-canvas-wrapper">
         <canvas id="notan-canvas"></canvas>
+
+        <!-- Hidden downloadable image -->
+        <img id="notan-download-img" style="display:none;" />
+
         <div id="canvas-placeholder" class="bt-placeholder">
           <p>Upload an image to see your Notan here.</p>
         </div>
       </div>
     </section>
 
-    <!-- 3B – Notan Practice Exercises -->
+    <!-- Practice -->
     <section class="bt-panel">
       <h2>3b. Notan Practice Exercises</h2>
       <p class="bt-help">Quick exercises to improve your black–white composition skills.</p>
@@ -102,19 +106,15 @@
             Lightly sketch only the largest black and white shapes from your Notan.
         </li>
         <li style="margin-top:0.6rem;"><strong>Simplify further</strong><br>
-            Redraw your Notan using even fewer shapes — aim for 5–8 total.
+            Redraw your Notan using fewer shapes — aim for 5–8 total.
         </li>
         <li style="margin-top:0.6rem;"><strong>Design a new Notan</strong><br>
-            Rearrange the shapes to create a new composition focusing on balance and contrast.
+            Rearrange the shapes to create a balanced composition.
         </li>
       </ol>
-
-      <p style="font-size:0.85rem; color:#555; margin-top:0.6rem;">
-        These are excellent warm-ups for drawing, painting, and digital art.
-      </p>
     </section>
 
-    <!-- Daily Notan Challenge -->
+    <!-- Daily Challenge -->
     <section class="bt-panel">
       <h2>Daily Notan Challenge</h2>
       <p class="bt-help">Use today’s challenge to practise seeing light–dark shapes.</p>
@@ -126,7 +126,7 @@
       </button>
     </section>
 
-    <!-- Draw Guide -->
+    <!-- Guide -->
     <section id="guide-section" class="bt-panel bt-guide-panel bt-guide-panel-hidden">
       <div class="bt-guide-header">
         <h2>4. Step-by-step Notan drawing</h2>
@@ -141,29 +141,25 @@
       </div>
     </section>
 
-    <!-- Learn More About Notan -->
+    <!-- Learn More -->
     <section class="bt-panel">
       <h2>Learn More About Notan</h2>
       <p class="bt-help">
-        Notan is used by traditional Japanese ink painters, modern illustrators, film concept artists,
-        and designers to create powerful compositions. 
+        Notan is used by ink painters, illustrators, concept artists,
+        and designers to create powerful compositions.
       </p>
 
       <p style="font-size:0.9rem; color:#444;">
-        The goal is not accuracy — it’s<strong> clarity and balance.</strong>
-        By removing detail, Notan forces your brain to see only shape, direction, rhythm,
-        and contrast — the fundamentals of strong visual art.
+        Notan forces you to see only shape, rhythm and contrast.
       </p>
-
       <p style="font-size:0.9rem; color:#444;">
-        Try practising Notan daily for a week — you will notice improvements in silhouette,
-        lighting decisions, and even in how you photograph scenes.
+        Try practising daily — you’ll see improvements in silhouette,
+        lighting decisions, and scene design.
       </p>
     </section>
 
   </main>
 
-  <!-- Footer -->
   <footer class="bt-footer">
     <p>© <span id="year"></span> Boom Tomato Games · Created on the Isle of Man</p>
     <p style="margin-top:0.2rem;">Notan Maker (beta)</p>
@@ -174,7 +170,7 @@
   <script src="draw-guide.js"></script>
   <script src="script.js"></script>
 
-  <!-- DAILY CHALLENGE SCRIPT -->
+  <!-- Daily Challenge Script -->
   <script>
     const challenges = [
       "Create a Notan of a tree with dramatic branching.",
@@ -190,18 +186,16 @@
       const box = document.getElementById("daily-challenge");
       box.textContent = challenges[Math.floor(Math.random() * challenges.length)];
     }
-
     document.getElementById("new-challenge-btn").addEventListener("click", pickChallenge);
-
     pickChallenge();
   </script>
 
-  <!-- Service worker -->
+  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js").catch(err => {
-        console.log("SW Error:", err);
-      });
+      navigator.serviceWorker.register("service-worker.js").catch(err =>
+        console.log("SW Error:", err)
+      );
     }
   </script>
 
