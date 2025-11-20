@@ -1,106 +1,119 @@
-// script.js
-// Classic 2-tone Notan UI wiring
+// script.js — handles UI, buttons, and Notan generation
 
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
+
   const canvas = document.getElementById("notan-canvas");
-  const fileInput = document.getElementById("image-input");
+  const placeholder = document.getElementById("canvas-placeholder");
+  const downloadImg = document.getElementById("notan-download-img");
+
+  const inputImage = document.getElementById("image-input");
   const resetBtn = document.getElementById("reset-btn");
+  const downloadBtn = document.getElementById("download-btn");
+  const learnBtn = document.getElementById("learn-btn");
+
   const thresholdRange = document.getElementById("threshold-range");
   const thresholdValue = document.getElementById("threshold-value");
   const invertToggle = document.getElementById("invert-toggle");
-  const downloadBtn = document.getElementById("download-btn");
-  const learnBtn = document.getElementById("learn-btn");
-  const placeholder = document.getElementById("canvas-placeholder");
+
+  const twoToneBtn = document.getElementById("two-tone-btn");
+  const threeToneBtn = document.getElementById("three-tone-btn");
 
   const guideSection = document.getElementById("guide-section");
-  const guideText = document.getElementById("guide-text");
-  const guideStep = document.getElementById("guide-step");
-  const prevStepBtn = document.getElementById("prev-step-btn");
-  const nextStepBtn = document.getElementById("next-step-btn");
 
-  const yearSpan = document.getElementById("year");
-  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+  NotanProcessor.init(canvas);
 
-  // Init processors
-  window.NotanProcessor.init(canvas);
-  window.DrawGuide.init(guideSection, guideText, guideStep);
-
-  let currentThreshold = parseInt(thresholdRange.value, 10) || 50;
-  let currentInvert = false;
+  let currentMode = 2;
 
   function updateNotan() {
-    if (!window.NotanProcessor.hasImage) return;
-    // Classic Notan: always 2 tones, black & white
-    window.NotanProcessor.apply(2, currentThreshold, currentInvert);
+    if (!NotanProcessor.hasImage) return;
+
+    const threshold = Number(thresholdRange.value);
+    const invert = invertToggle.checked;
+
+    NotanProcessor.setMode(currentMode);
+    NotanProcessor.apply(threshold, invert);
+
+    // Update downloadable image
+    NotanProcessor.exportImage((dataURL) => {
+      downloadImg.src = dataURL;
+    });
+
+    downloadBtn.disabled = false;
+    learnBtn.disabled = false;
   }
 
-  function setHasImage(has) {
-    placeholder.style.display = has ? "none" : "flex";
-    resetBtn.disabled = !has;
-    downloadBtn.disabled = !has;
-    learnBtn.disabled = !has;
-    if (!has) {
-      window.DrawGuide.close();
-    }
+  function setModeButtons() {
+    twoToneBtn.classList.toggle("bt-button", false);
+    twoToneBtn.classList.toggle("bt-button-secondary", currentMode !== 2);
+    twoToneBtn.classList.toggle("bt-button", currentMode === 2);
+
+    threeToneBtn.classList.toggle("bt-button", false);
+    threeToneBtn.classList.toggle("bt-button-secondary", currentMode !== 3);
+    threeToneBtn.classList.toggle("bt-button", currentMode === 3);
   }
 
-  // File input
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files && fileInput.files[0];
+  // IMAGE LOADING
+  inputImage.addEventListener("change", (e) => {
+    const file = e.target.files[0];
     if (!file) return;
 
-    window.NotanProcessor.loadImageFile(
+    NotanProcessor.loadImageFile(
       file,
       () => {
-        setHasImage(true);
+        placeholder.style.display = "none";
         updateNotan();
+        resetBtn.disabled = false;
       },
-      (errMsg) => {
-        alert(errMsg || "Something went wrong loading the image.");
-        setHasImage(false);
-      }
+      (err) => alert(err)
     );
   });
 
-  // Reset
+  // RESET
   resetBtn.addEventListener("click", () => {
-    fileInput.value = "";
-    window.NotanProcessor.clear();
-    setHasImage(false);
+    NotanProcessor.clear();
+    placeholder.style.display = "flex";
+    resetBtn.disabled = true;
+    downloadBtn.disabled = true;
+    learnBtn.disabled = true;
   });
 
-  // Threshold slider
-  thresholdRange.addEventListener("input", (e) => {
-    currentThreshold = parseInt(e.target.value, 10) || 50;
-    thresholdValue.textContent = currentThreshold;
+  // THRESHOLD
+  thresholdRange.addEventListener("input", () => {
+    thresholdValue.textContent = thresholdRange.value;
     updateNotan();
   });
 
-  // Invert toggle
-  invertToggle.addEventListener("change", (e) => {
-    currentInvert = e.target.checked;
+  // INVERT
+  invertToggle.addEventListener("change", updateNotan);
+
+  // MODE TOGGLE
+  twoToneBtn.addEventListener("click", () => {
+    currentMode = 2;
+    setModeButtons();
     updateNotan();
   });
 
-  // Download
+  threeToneBtn.addEventListener("click", () => {
+    currentMode = 3;
+    setModeButtons();
+    updateNotan();
+  });
+
+  setModeButtons();
+
+  // DOWNLOAD
   downloadBtn.addEventListener("click", () => {
-    window.NotanProcessor.download("notan.png");
+    NotanProcessor.exportImage((dataURL) => {
+      const a = document.createElement("a");
+      a.href = dataURL;
+      a.download = "notan.png";
+      a.click();
+    });
   });
 
-  // Learn to draw
+  // LEARN GUIDE
   learnBtn.addEventListener("click", () => {
-    if (!window.NotanProcessor.hasImage) return;
-    window.DrawGuide.reset();
-    window.DrawGuide.open();
-    guideSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    guideSection.classList.remove("bt-guide-panel-hidden");
   });
 
-  // Guide navigation
-  prevStepBtn.addEventListener("click", () => {
-    window.DrawGuide.prev();
-  });
-
-  nextStepBtn.addEventListener("click", () => {
-    window.DrawGuide.next();
-  });
 });
