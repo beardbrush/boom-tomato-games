@@ -6,18 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0B1C3D" />
 
+  <!-- Manifest -->
   <link rel="manifest" href="manifest.json" />
+
+  <!-- Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <!-- HEADER -->
   <header class="bt-header">
     <div class="bt-header-inner">
       <div class="bt-logo">
@@ -31,20 +37,24 @@
     </div>
   </header>
 
+  <!-- OFFLINE BANNER -->
   <div id="offlineBanner" class="bt-offline-banner hidden">
     You’re currently offline. Changes will sync when you reconnect.
   </div>
 
+  <!-- UPDATE TOAST -->
   <div id="updateToast" class="bt-toast hidden">
     <span>New version available.</span>
     <button id="btnReload">Reload</button>
   </div>
 
+  <!-- MAIN -->
   <main class="bt-main">
 
     <!-- HOME VIEW -->
     <section class="view view-active" data-view="home">
       <div class="bt-panel bt-panel-main">
+
         <h2 class="panel-title">Plan the Seating</h2>
         <p class="panel-text">
           Drag guests onto seats, follow the clues, and discover the perfect seating plan.
@@ -52,16 +62,22 @@
 
         <div class="bt-button-grid">
           <button id="btnPlayDemo" class="bt-btn primary">Play Demo</button>
-          <button id="btnPlayFull" class="bt-btn secondary">Unlock Full Version</button>
+          <button id="btnPlayFull" class="bt-btn secondary">Play Full Version</button>
 
-          <button id="install-app-btn" class="bt-btn outline" style="display:none;">Install App</button>
+          <!-- Install Button (hidden until beforeinstallprompt fires) -->
+          <button id="install-app-btn" class="bt-btn outline" style="display:none;">
+            Install App
+          </button>
 
-          <button id="btnDownloadApk" class="bt-btn outline">Download Android APK</button>
+          <!-- (Optional) APK Download -->
+          <button id="btnDownloadApk" class="bt-btn outline">
+            Download Android APK
+          </button>
         </div>
 
         <div class="bt-subpanel">
           <h3>Progress</h3>
-          <p id="progressText">Loading progress…</p>
+          <p id="progressText"></p>
         </div>
       </div>
     </section>
@@ -70,6 +86,7 @@
     <section class="view" data-view="game">
       <div class="bt-panel bt-panel-game">
 
+        <!-- Game Header -->
         <div class="game-header">
           <button class="bt-btn ghost" id="btnBackHome">&larr; Back</button>
 
@@ -84,14 +101,22 @@
           </div>
         </div>
 
+        <!-- Game Body -->
         <div class="game-layout">
+
+          <!-- Clue Panel -->
           <aside class="clue-panel">
             <h3>Clues</h3>
             <ul id="clueList" class="clue-list"></ul>
-            <button id="btnShowHint" class="bt-btn small secondary">Show Random Hint</button>
+
+            <button id="btnShowHint" class="bt-btn small secondary">
+              Show Random Hint
+            </button>
+
             <p id="hintText" class="hint-text"></p>
           </aside>
 
+          <!-- Seating Board + Guests -->
           <section class="board-area">
             <div class="seating-board" id="seatingBoard"></div>
 
@@ -103,12 +128,15 @@
           </section>
         </div>
 
+        <!-- Bottom Buttons -->
         <div class="bottom-bar">
           <button id="btnReset" class="bt-btn ghost small">Reset</button>
           <button id="btnCheck" class="bt-btn primary small">Check Seating</button>
 
-          <!-- ⭐ NEW NEXT PUZZLE BUTTON -->
-          <button id="btnNext" class="bt-btn primary small hidden">Next Puzzle →</button>
+          <!-- Next Puzzle -->
+          <button id="btnNext" class="bt-btn primary small hidden">
+            Next Puzzle →
+          </button>
 
           <div class="bottom-status">
             <span id="gameMessage"></span>
@@ -117,12 +145,15 @@
 
       </div>
     </section>
+
   </main>
 
+  <!-- FOOTER -->
   <footer class="bt-footer">
     <p>&copy; <span id="yearSpan"></span> Boom Tomato Games · Wedding Seating Puzzle</p>
   </footer>
 
+  <!-- JS -->
   <script src="app.js" defer></script>
 </body>
 </html>
