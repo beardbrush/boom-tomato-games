@@ -43,20 +43,7 @@ document.getElementById("install-app-btn")?.addEventListener("click", async () =
    OFFLINE + UPDATE INDICATORS
 -------------------------------------------------- */
 
-function showOffline() {
-  document.getElementById("offlineBanner")?.classList.remove("hidden");
-}
 
-function hideOffline() {
-  document.getElementById("offlineBanner")?.classList.add("hidden");
-}
-
-function showUpdateToast() {
-  document.getElementById("updateToast")?.classList.remove("hidden");
-}
-
-window.addEventListener("online", hideOffline);
-window.addEventListener("offline", showOffline);
 
 document.getElementById("btnReload")?.addEventListener("click", () => {
   window.location.reload();
