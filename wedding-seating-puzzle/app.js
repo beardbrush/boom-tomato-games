@@ -10,12 +10,12 @@ let CURRENT_INDEX = 0;       // index within the pack
 // Puzzle packs (order matters)
 const PACKS = {
   demo: [
-    "/content/demo/tutorial_01.json"
+    "/wedding-seating-puzzle/content/demo/tutorial_01.json"
   ],
   full: [
-    "/content/full/puzzle_01.json",
-    "/content/full/puzzle_02.json",
-    "/content/full/puzzle_03.json"
+    "/wedding-seating-puzzle/content/full/puzzle_01.json",
+    "/wedding-seating-puzzle/content/full/puzzle_02.json",
+    "/wedding-seating-puzzle/content/full/puzzle_03.json"
   ]
 };
 
@@ -61,7 +61,7 @@ document.getElementById("btnReload")?.addEventListener("click", () => {
    SERVICE WORKER
 ----------------------------------------- */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js").then((reg) => {
+  navigator.serviceWorker.register("/wedding-seating-puzzle/service-worker.js").then((reg) => {
     console.log("SW registered", reg);
 
     reg.onupdatefound = () => {
@@ -89,7 +89,7 @@ function showView(name) {
    START PACK HELPERS
 ----------------------------------------- */
 function startPack(mode) {
-  CURRENT_MODE = mode;           // "demo" | "full"
+  CURRENT_MODE = mode;
   CURRENT_INDEX = 0;
   loadPuzzleFromPack();
 }
@@ -121,7 +121,7 @@ document.getElementById("btnBackHome")?.addEventListener("click", () => {
    LOAD PUZZLE
 ----------------------------------------- */
 async function loadPuzzle(path, mode) {
-  // Remember current mode just in case
+
   CURRENT_MODE = mode;
 
   showView("game");
@@ -165,7 +165,7 @@ function buildGameUI(data, mode) {
     clueList.appendChild(li);
   });
 
-  /* ---- Seating Board (Multi-table) ---- */
+  /* ---- Seating Board ---- */
   const board = document.getElementById("seatingBoard");
   board.innerHTML = "";
 
@@ -191,7 +191,6 @@ function buildGameUI(data, mode) {
         <div class="seat-label">${seat.label}</div>
         <div class="seat-name">Empty</div>
       `;
-
       grid.appendChild(seatCard);
     });
 
@@ -216,7 +215,6 @@ function buildGameUI(data, mode) {
     });
 
     chip.addEventListener("dragend", () => chip.classList.remove("dragging"));
-
     guests.appendChild(chip);
   });
 
@@ -247,7 +245,7 @@ function buildGameUI(data, mode) {
     });
   });
 
-  /* ---- Random Hint ---- (reset handler each time) */
+  /* ---- Reset Hint Button ---- */
   const oldHintBtn = document.getElementById("btnShowHint");
   if (oldHintBtn) {
     const newHintBtn = oldHintBtn.cloneNode(true);
@@ -297,17 +295,14 @@ document.getElementById("btnNext")?.addEventListener("click", () => {
   const paths = PACKS[CURRENT_MODE];
   if (!paths) return;
 
-  // Hide next button and clear labels immediately
   document.getElementById("btnNext").classList.add("hidden");
   document.getElementById("gameMessage").textContent = "";
   document.getElementById("hintText").textContent = "";
 
   if (CURRENT_INDEX < paths.length - 1) {
-    // Move to next puzzle in the same pack
     CURRENT_INDEX++;
     loadPuzzleFromPack();
   } else {
-    // No more puzzles in this pack – back to home
     showView("home");
     document.getElementById("progressText").textContent =
       "Great job! More puzzles coming soon 🎉";
@@ -315,7 +310,7 @@ document.getElementById("btnNext")?.addEventListener("click", () => {
 });
 
 /* -----------------------------------------
-   RESET (NOW WORKS 100%)
+   RESET BUTTON
 ----------------------------------------- */
 document.getElementById("btnReset")?.addEventListener("click", () => {
   if (!CURRENT_PUZZLE) return;
@@ -333,4 +328,3 @@ document.getElementById("btnReset")?.addEventListener("click", () => {
 ----------------------------------------- */
 const yearSpan = document.getElementById("yearSpan");
 if (yearSpan) yearSpan.textContent = String(new Date().getFullYear());
-
