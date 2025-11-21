@@ -1,27 +1,29 @@
 /* --------------------------------------------------
-   Wedding Seating Puzzle – Final Working Engine
+   Wedding Seating Puzzle – Clean Final Engine
 -------------------------------------------------- */
 
 let deferredPrompt = null;
 let CURRENT_PUZZLE = null;
 let CURRENT_MODE = null;     // "demo" | "full"
-let CURRENT_INDEX = 0;       // index within the pack
+let CURRENT_INDEX = 0;
 
-// Puzzle packs (order matters)
+/* --------------------------------------------------
+   Correct Paths (NO leading slash)
+-------------------------------------------------- */
 const PACKS = {
   demo: [
-    "/wedding-seating-puzzle/content/demo/tutorial_01.json"
+    "content/demo/tutorial_01.json"
   ],
   full: [
-    "/wedding-seating-puzzle/content/full/puzzle_01.json",
-    "/wedding-seating-puzzle/content/full/puzzle_02.json",
-    "/wedding-seating-puzzle/content/full/puzzle_03.json"
+    "content/full/puzzle_01.json",
+    "content/full/puzzle_02.json",
+    "content/full/puzzle_03.json"
   ]
 };
 
-/* -----------------------------------------
+/* --------------------------------------------------
    PWA INSTALL BUTTON
------------------------------------------ */
+-------------------------------------------------- */
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
@@ -37,15 +39,18 @@ document.getElementById("install-app-btn")?.addEventListener("click", async () =
   document.getElementById("install-app-btn").style.display = "none";
 });
 
-/* -----------------------------------------
-   OFFLINE + UPDATE BANNERS
------------------------------------------ */
+/* --------------------------------------------------
+   OFFLINE + UPDATE INDICATORS
+-------------------------------------------------- */
+
 function showOffline() {
   document.getElementById("offlineBanner")?.classList.remove("hidden");
 }
+
 function hideOffline() {
   document.getElementById("offlineBanner")?.classList.add("hidden");
 }
+
 function showUpdateToast() {
   document.getElementById("updateToast")?.classList.remove("hidden");
 }
@@ -57,59 +62,42 @@ document.getElementById("btnReload")?.addEventListener("click", () => {
   window.location.reload();
 });
 
-/* -----------------------------------------
-   SERVICE WORKER
------------------------------------------ */
+/* --------------------------------------------------
+   SERVICE WORKER (RELATIVE PATH FIX)
+-------------------------------------------------- */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("/wedding-seating-puzzle/service-worker.js")
-    .then((reg) => {
-      console.log("SW registered", reg);
+  navigator.serviceWorker.register("service-worker.js").then((reg) => {
+    console.log("SW registered:", reg);
 
-      reg.onupdatefound = () => {
-        const newWorker = reg.installing;
-        newWorker.onstatechange = () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            showUpdateToast();
-          }
-        };
+    reg.onupdatefound = () => {
+      const nw = reg.installing;
+      nw.onstatechange = () => {
+        if (nw.state === "installed" && navigator.serviceWorker.controller) {
+          showUpdateToast();
+        }
       };
-    });
+    };
+  });
 }
 
-/* -----------------------------------------
-   INITIAL UI POLISH
------------------------------------------ */
-document.addEventListener("DOMContentLoaded", () => {
-  // Set initial offline banner correctly
-  if (navigator.onLine) {
-    hideOffline();
-  } else {
-    showOffline();
-  }
-
-  // Nicer default progress message on home
-  const prog = document.getElementById("progressText");
-  if (prog) {
-    prog.textContent = "Ready to play – choose a mode.";
-  }
-});
-
-/* -----------------------------------------
-   VIEW HANDLING
------------------------------------------ */
+/* --------------------------------------------------
+   VIEW SWITCHING
+-------------------------------------------------- */
 function showView(name) {
-  document.querySelectorAll(".view").forEach((v) =>
-    v.classList.remove("view-active")
-  );
-  document
-    .querySelector(`.view[data-view="${name}"]`)
-    ?.classList.add("view-active");
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("view-active"));
+  document.querySelector(`.view[data-view="${name}"]`)?.classList.add("view-active");
+
+  // Clean UI when switching to game view
+  if (name === "game") {
+    hideOffline();
+    document.getElementById("updateToast")?.classList.add("hidden");
+    document.getElementById("progressText").textContent = "";
+  }
 }
 
-/* -----------------------------------------
-   START PACK HELPERS
------------------------------------------ */
+/* --------------------------------------------------
+   START PACK
+-------------------------------------------------- */
 function startPack(mode) {
   CURRENT_MODE = mode;
   CURRENT_INDEX = 0;
@@ -118,15 +106,15 @@ function startPack(mode) {
 
 function loadPuzzleFromPack() {
   const paths = PACKS[CURRENT_MODE];
-  if (!paths || paths.length === 0) return;
+  if (!paths || !paths.length) return;
 
   const path = paths[CURRENT_INDEX];
   loadPuzzle(path, CURRENT_MODE);
 }
 
-/* -----------------------------------------
+/* --------------------------------------------------
    BUTTON HOOKUP
------------------------------------------ */
+-------------------------------------------------- */
 document.getElementById("btnPlayDemo")?.addEventListener("click", () => {
   startPack("demo");
 });
@@ -137,25 +125,18 @@ document.getElementById("btnPlayFull")?.addEventListener("click", () => {
 
 document.getElementById("btnBackHome")?.addEventListener("click", () => {
   showView("home");
+  document.getElementById("progressText").textContent = "";
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    LOAD PUZZLE
------------------------------------------ */
+-------------------------------------------------- */
 async function loadPuzzle(path, mode) {
-  // Remember current mode
+
   CURRENT_MODE = mode;
 
-  // Switch to game view
   showView("game");
-
-  // Hide banners while playing (keeps top of screen clean)
-  hideOffline();
-  document.getElementById("updateToast")?.classList.add("hidden");
-
-  const progress = document.getElementById("progressText");
-  if (progress) progress.textContent = "Loading puzzle…";
-
+  document.getElementById("progressText").textContent = "Loading…";
   document.getElementById("gameMessage").textContent = "";
   document.getElementById("hintText").textContent = "";
   document.getElementById("mistakeCounter").textContent = "Mistakes: 0";
@@ -163,47 +144,43 @@ async function loadPuzzle(path, mode) {
 
   try {
     const res = await fetch(path);
-    if (!res.ok) throw new Error("File not found: " + path);
+    if (!res.ok) throw new Error("Missing file: " + path);
 
     const puzzle = await res.json();
     CURRENT_PUZZLE = puzzle;
 
     buildGameUI(puzzle, mode);
 
-    if (progress) {
-      const pack = PACKS[mode] || [];
-      const total = pack.length || 1;
-      const humanIndex = CURRENT_INDEX + 1;
-      progress.textContent = `Playing ${mode === "demo" ? "Demo" : "Full"} Puzzle ${humanIndex} of ${total}.`;
-    }
+    document.getElementById("progressText").textContent = "";
   } catch (err) {
     console.error("Puzzle load error:", err);
-    if (progress) progress.textContent = "Error loading puzzle.";
+    document.getElementById("progressText").textContent = "Error loading puzzle.";
   }
 }
 
-/* -----------------------------------------
+/* --------------------------------------------------
    BUILD UI
------------------------------------------ */
+-------------------------------------------------- */
 function buildGameUI(data, mode) {
+
   document.getElementById("puzzleTitle").textContent = data.title;
   document.getElementById("puzzleSubtitle").textContent = data.description;
   document.getElementById("modeBadge").textContent = mode.toUpperCase();
 
-  /* ---- Clues ---- */
+  /* ----- Clues ----- */
   const clueList = document.getElementById("clueList");
   clueList.innerHTML = "";
-  data.clues.forEach((c) => {
+  data.clues.forEach(c => {
     const li = document.createElement("li");
     li.textContent = c;
     clueList.appendChild(li);
   });
 
-  /* ---- Seating Board ---- */
+  /* ----- Seating Board ----- */
   const board = document.getElementById("seatingBoard");
   board.innerHTML = "";
 
-  data.tables.forEach((table) => {
+  data.tables.forEach(table => {
     const tBox = document.createElement("div");
     tBox.className = "table-box";
 
@@ -214,8 +191,8 @@ function buildGameUI(data, mode) {
     const grid = document.createElement("div");
     grid.className = "table-grid";
 
-    table.seats.forEach((seatId) => {
-      const seat = data.seats.find((s) => s.id === seatId);
+    table.seats.forEach(seatId => {
+      const seat = data.seats.find(s => s.id === seatId);
 
       const seatCard = document.createElement("div");
       seatCard.className = "seat-card seat-empty";
@@ -225,6 +202,7 @@ function buildGameUI(data, mode) {
         <div class="seat-label">${seat.label}</div>
         <div class="seat-name">Empty</div>
       `;
+
       grid.appendChild(seatCard);
     });
 
@@ -232,11 +210,11 @@ function buildGameUI(data, mode) {
     board.appendChild(tBox);
   });
 
-  /* ---- Guests ---- */
+  /* ----- Guest Chips ----- */
   const guests = document.getElementById("guestChips");
   guests.innerHTML = "";
 
-  data.guests.forEach((g) => {
+  data.guests.forEach(g => {
     const chip = document.createElement("div");
     chip.className = "guest-chip";
     chip.textContent = g.name;
@@ -249,12 +227,14 @@ function buildGameUI(data, mode) {
     });
 
     chip.addEventListener("dragend", () => chip.classList.remove("dragging"));
+
     guests.appendChild(chip);
   });
 
-  /* ---- Drag + Drop ---- */
-  document.querySelectorAll(".seat-card").forEach((seat) => {
-    seat.addEventListener("dragover", (e) => {
+  /* ----- Drag + Drop ----- */
+  document.querySelectorAll(".seat-card").forEach(seat => {
+
+    seat.addEventListener("dragover", e => {
       e.preventDefault();
       seat.classList.add("drop-hover");
     });
@@ -263,41 +243,38 @@ function buildGameUI(data, mode) {
       seat.classList.remove("drop-hover");
     });
 
-    seat.addEventListener("drop", (e) => {
+    seat.addEventListener("drop", e => {
       e.preventDefault();
       seat.classList.remove("drop-hover");
 
       const guestId = e.dataTransfer.getData("guestId");
-      const guest = data.guests.find((g) => g.id === guestId);
+      const guest = data.guests.find(g => g.id === guestId);
       if (!guest) return;
 
       seat.classList.remove("seat-empty");
       seat.querySelector(".seat-name").textContent = guest.name;
 
-      const chip = document.querySelector(
-        `.guest-chip[data-guest-id="${guestId}"]`
-      );
+      const chip = document.querySelector(`.guest-chip[data-guest-id="${guestId}"]`);
       if (chip) chip.remove();
     });
   });
 
-  /* ---- Reset Hint Button ---- */
+  /* ----- Reset Hint Button Fix ----- */
   const oldHintBtn = document.getElementById("btnShowHint");
   if (oldHintBtn) {
     const newHintBtn = oldHintBtn.cloneNode(true);
     oldHintBtn.parentNode.replaceChild(newHintBtn, oldHintBtn);
 
     newHintBtn.addEventListener("click", () => {
-      const hint =
-        data.hints[Math.floor(Math.random() * data.hints.length)];
+      const hint = data.hints[Math.floor(Math.random() * data.hints.length)];
       document.getElementById("hintText").textContent = hint;
     });
   }
 }
 
-/* -----------------------------------------
+/* --------------------------------------------------
    CHECK SEATING
------------------------------------------ */
+-------------------------------------------------- */
 document.getElementById("btnCheck")?.addEventListener("click", () => {
   const data = CURRENT_PUZZLE;
   if (!data) return;
@@ -305,21 +282,18 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
   let mistakes = 0;
 
   Object.entries(data.answer_key).forEach(([guestId, correctSeat]) => {
-    const seat = document.querySelector(
-      `.seat-card[data-seat-id="${correctSeat}"]`
-    );
+    const seat = document.querySelector(`.seat-card[data-seat-id="${correctSeat}"]`);
     if (!seat) return;
 
     const placed = seat.querySelector(".seat-name").textContent;
-    const guest = data.guests.find((g) => g.id === guestId);
+    const guest = data.guests.find(g => g.id === guestId);
 
-    if (!placed || placed !== guest.name) mistakes++;
+    if (placed !== guest.name) mistakes++;
   });
 
+  document.getElementById("mistakeCounter").textContent = `Mistakes: ${mistakes}`;
+
   const msg = document.getElementById("gameMessage");
-  document.getElementById(
-    "mistakeCounter"
-  ).textContent = `Mistakes: ${mistakes}`;
 
   if (mistakes === 0) {
     msg.textContent = "Perfect! Everyone is seated correctly 🎉";
@@ -329,10 +303,11 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
   }
 });
 
-/* -----------------------------------------
-   NEXT PUZZLE (uses PACKS + CURRENT_INDEX)
------------------------------------------ */
+/* --------------------------------------------------
+   NEXT PUZZLE
+-------------------------------------------------- */
 document.getElementById("btnNext")?.addEventListener("click", () => {
+
   const paths = PACKS[CURRENT_MODE];
   if (!paths) return;
 
@@ -345,18 +320,16 @@ document.getElementById("btnNext")?.addEventListener("click", () => {
     loadPuzzleFromPack();
   } else {
     showView("home");
-    const progress = document.getElementById("progressText");
-    if (progress) {
-      progress.textContent =
-        "Great job! You’ve finished all available puzzles 🎉";
-    }
+    document.getElementById("progressText").textContent =
+      "Great job! More puzzles coming soon 🎉";
   }
 });
 
-/* -----------------------------------------
-   RESET BUTTON
------------------------------------------ */
+/* --------------------------------------------------
+   RESET PUZZLE
+-------------------------------------------------- */
 document.getElementById("btnReset")?.addEventListener("click", () => {
+
   if (!CURRENT_PUZZLE) return;
 
   document.getElementById("gameMessage").textContent = "";
@@ -367,8 +340,8 @@ document.getElementById("btnReset")?.addEventListener("click", () => {
   buildGameUI(CURRENT_PUZZLE, CURRENT_MODE);
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    FOOTER YEAR
------------------------------------------ */
+-------------------------------------------------- */
 const yearSpan = document.getElementById("yearSpan");
 if (yearSpan) yearSpan.textContent = String(new Date().getFullYear());
