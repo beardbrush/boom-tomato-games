@@ -1,0 +1,41 @@
+{
+  "id": "demo_01",
+  "title": "The Cake Taster Table",
+  "description": "A tiny practice puzzle: four guests, one table, and a very important cake.",
+  "guests": [
+    { "id": "bride", "name": "Emma (Bride)" },
+    { "id": "groom", "name": "Jack (Groom)" },
+    { "id": "baker", "name": "Lily (Cake Baker)" },
+    { "id": "best_man", "name": "Tom (Best Man)" }
+  ],
+  "seats": [
+    { "id": "t1_s1", "label": "Top Table · Seat 1 (Far Left)" },
+    { "id": "t1_s2", "label": "Top Table · Seat 2" },
+    { "id": "t1_s3", "label": "Top Table · Seat 3" },
+    { "id": "t1_s4", "label": "Top Table · Seat 4 (Far Right)" }
+  ],
+  "tables": [
+    {
+      "id": "table_1",
+      "label": "Top Table",
+      "seats": ["t1_s1", "t1_s2", "t1_s3", "t1_s4"]
+    }
+  ],
+  "answer_key": {
+    "bride": "t1_s2",
+    "groom": "t1_s3",
+    "baker": "t1_s1",
+    "best_man": "t1_s4"
+  },
+  "clues": [
+    "Emma and Jack sit together in the middle of the top table.",
+    "The cake baker, Lily, wants to be nearest the kitchen at the far left end.",
+    "Tom the Best Man takes the far right seat so he can see everyone arrive.",
+    "No one else sits at this table."
+  },
+  "hints": [
+    "Start by putting the baker on the far left and the best man on the far right.",
+    "If Emma and Jack must sit together in the middle, there’s only one way to place them.",
+    "You don’t need to leave any seats empty in this puzzle."
+  ]
+}

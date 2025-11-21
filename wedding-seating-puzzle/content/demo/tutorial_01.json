@@ -1,0 +1,40 @@
+{
+  "id": "tutorial_01",
+  "title": "Your First Wedding",
+  "description": "Start with a cosy table and a small guest list. Follow the clues to create a calm, drama-free seating plan.",
+  "guests": [
+    { "id": "alice", "name": "Alice (Bride's sister)" },
+    { "id": "ben", "name": "Ben (Best man)" },
+    { "id": "carol", "name": "Carol (Mum)" },
+    { "id": "dan", "name": "Dan (Dad)" }
+  ],
+  "seats": [
+    { "id": "t1_s1", "label": "Table 1 · Seat 1" },
+    { "id": "t1_s2", "label": "Table 1 · Seat 2" },
+    { "id": "t1_s3", "label": "Table 1 · Seat 3" },
+    { "id": "t1_s4", "label": "Table 1 · Seat 4" }
+  ],
+  "tables": [
+    {
+      "id": "table_1",
+      "label": "Top Table",
+      "seats": ["t1_s1", "t1_s2", "t1_s3", "t1_s4"]
+    }
+  ],
+  "answer_key": {
+    "alice": "t1_s2",
+    "ben": "t1_s3",
+    "carol": "t1_s1",
+    "dan": "t1_s4"
+  },
+  "clues": [
+    "Mum insists on sitting at the very end of the table where she can see the whole room.",
+    "Alice wants to sit next to Ben so they can share jokes during the speeches.",
+    "Dad prefers the other end of the table, opposite Mum.",
+    "Ben doesn’t mind where he sits as long as he’s between two people he knows."
+  ],
+  "hints": [
+    "Try putting Mum at one end of the table and Dad at the opposite end.",
+    "If Alice must sit next to Ben, they should share two seats in the middle."
+  ]
+}

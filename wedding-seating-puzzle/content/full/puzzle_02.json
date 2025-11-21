@@ -1,0 +1,60 @@
+{
+  "id": "full_02",
+  "title": "The Awkward Exes Table",
+  "description": "The bride’s divorced parents are both invited. They will be polite... as long as they’re not sitting next to each other.",
+  "guests": [
+    { "id": "bride", "name": "Hannah (Bride)" },
+    { "id": "partner", "name": "Chris (Partner)" },
+    { "id": "mum", "name": "Julia (Mum)" },
+    { "id": "dad", "name": "Mark (Dad)" },
+    { "id": "stepmum", "name": "Chloe (Stepmum)" },
+    { "id": "brother", "name": "Ethan (Brother)" },
+    { "id": "maid", "name": "Lara (Maid of Honour)" },
+    { "id": "bestman", "name": "Ryan (Best Man)" }
+  ],
+  "seats": [
+    { "id": "t1_s1", "label": "Top Table · Seat 1 (Far Left)" },
+    { "id": "t1_s2", "label": "Top Table · Seat 2" },
+    { "id": "t1_s3", "label": "Top Table · Seat 3" },
+    { "id": "t1_s4", "label": "Top Table · Seat 4" },
+    { "id": "t1_s5", "label": "Top Table · Seat 5" },
+    { "id": "t1_s6", "label": "Top Table · Seat 6 (Far Right)" },
+    { "id": "t2_s1", "label": "Side Table · Seat 1" },
+    { "id": "t2_s2", "label": "Side Table · Seat 2" }
+  ],
+  "tables": [
+    {
+      "id": "table_1",
+      "label": "Top Table",
+      "seats": ["t1_s1", "t1_s2", "t1_s3", "t1_s4", "t1_s5", "t1_s6"]
+    },
+    {
+      "id": "table_2",
+      "label": "Side Table",
+      "seats": ["t2_s1", "t2_s2"]
+    }
+  ],
+  "answer_key": {
+    "bride": "t1_s3",
+    "partner": "t1_s4",
+    "mum": "t1_s2",
+    "dad": "t1_s6",
+    "stepmum": "t1_s5",
+    "brother": "t1_s1",
+    "maid": "t2_s1",
+    "bestman": "t2_s2"
+  },
+  "clues": [
+    "Hannah and Chris sit together at the very centre of the top table.",
+    "Julia refuses to sit directly next to Mark, but she insists on being on Hannah’s side of the table.",
+    "Mark demands the far right end of the top table so he can make a dramatic speech.",
+    "Chloe (the stepmum) sits directly beside Mark at the top table.",
+    "Hannah’s brother Ethan wants to be as far from the speeches as possible at the opposite end of the top table.",
+    "The Maid of Honour and Best Man sit together at the side table, facing the top table."
+  ],
+  "hints": [
+    "Place the bride and partner in the centre first, then put Mum on Hannah’s side.",
+    "If Dad is at the far right end and Stepmum must be next to him, they fill the last two seats.",
+    "Ethan takes the remaining far-left end, and the side table is for the Maid of Honour and Best Man."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "full_01",
+  "title": "The Tricky Family Table",
+  "description": "Two tables, eight guests, and a lifetime of tiny grudges. Can you keep the peace?",
+  "guests": [
+    { "id": "amy", "name": "Amy (Bride)" },
+    { "id": "liam", "name": "Liam (Groom)" },
+    { "id": "nana", "name": "Nana" },
+    { "id": "uncle_joe", "name": "Uncle Joe" },
+    { "id": "cousin_mia", "name": "Cousin Mia" },
+    { "id": "friend_sam", "name": "Sam (Uni friend)" },
+    { "id": "friend_zoe", "name": "Zoe (Uni friend)" },
+    { "id": "dj_max", "name": "Max (DJ)" }
+  ],
+  "seats": [
+    { "id": "t1_s1", "label": "Top Table · Seat 1" },
+    { "id": "t1_s2", "label": "Top Table · Seat 2" },
+    { "id": "t1_s3", "label": "Top Table · Seat 3" },
+    { "id": "t1_s4", "label": "Top Table · Seat 4" },
+    { "id": "t2_s1", "label": "Friends Table · Seat 1" },
+    { "id": "t2_s2", "label": "Friends Table · Seat 2" },
+    { "id": "t2_s3", "label": "Friends Table · Seat 3" },
+    { "id": "t2_s4", "label": "Friends Table · Seat 4" }
+  ],
+  "tables": [
+    {
+      "id": "table_1",
+      "label": "Top Table",
+      "seats": ["t1_s1", "t1_s2", "t1_s3", "t1_s4"]
+    },
+    {
+      "id": "table_2",
+      "label": "Friends Table",
+      "seats": ["t2_s1", "t2_s2", "t2_s3", "t2_s4"]
+    }
+  ],
+  "answer_key": {
+    "amy": "t1_s2",
+    "liam": "t1_s3",
+    "nana": "t1_s1",
+    "uncle_joe": "t1_s4",
+    "cousin_mia": "t2_s1",
+    "friend_sam": "t2_s2",
+    "friend_zoe": "t2_s3",
+    "dj_max": "t2_s4"
+  },
+  "clues": [
+    "Amy and Liam sit together at the top table, but not at the ends.",
+    "Nana refuses to sit anywhere except the very first seat on the top table.",
+    "Uncle Joe must sit opposite Nana at the other end of the top table.",
+    "The DJ needs to sit closest to the dance floor at the Friends Table – that’s the last seat.",
+    "Sam and Zoe want to sit together so they can gossip about the music.",
+    "Cousin Mia is the first to sit down at the Friends Table."
+  ],
+  "hints": [
+    "Seat Nana and Uncle Joe at opposite ends of the top table first.",
+    "If Amy and Liam sit together in the middle, that leaves only two end seats for Nana and Uncle Joe.",
+    "Start the Friends Table by placing Cousin Mia in Seat 1 and the DJ in Seat 4."
+  ]
+}

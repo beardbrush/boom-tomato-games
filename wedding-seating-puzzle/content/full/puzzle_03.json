@@ -1,0 +1,59 @@
+{
+  "id": "full_03",
+  "title": "The Kids’ Corner",
+  "description": "The couple want a peaceful top table and a chaotic kids’ corner. Keep the little ones away from the microphones.",
+  "guests": [
+    { "id": "couple_a", "name": "Nadia (Bride)" },
+    { "id": "couple_b", "name": "Sara (Bride)" },
+    { "id": "mum_nadia", "name": "Aisha (Nadia’s Mum)" },
+    { "id": "mum_sara", "name": "Claire (Sara’s Mum)" },
+    { "id": "kid_1", "name": "Leo (Age 6)" },
+    { "id": "kid_2", "name": "Mia (Age 7)" },
+    { "id": "kid_3", "name": "Oscar (Age 8)" },
+    { "id": "kid_4", "name": "Ella (Age 9)" }
+  ],
+  "seats": [
+    { "id": "t1_s1", "label": "Top Table · Seat 1 (Far Left)" },
+    { "id": "t1_s2", "label": "Top Table · Seat 2" },
+    { "id": "t1_s3", "label": "Top Table · Seat 3" },
+    { "id": "t1_s4", "label": "Top Table · Seat 4 (Far Right)" },
+    { "id": "t2_s1", "label": "Kids’ Table · Seat 1" },
+    { "id": "t2_s2", "label": "Kids’ Table · Seat 2" },
+    { "id": "t2_s3", "label": "Kids’ Table · Seat 3" },
+    { "id": "t2_s4", "label": "Kids’ Table · Seat 4" }
+  ],
+  "tables": [
+    {
+      "id": "table_1",
+      "label": "Top Table",
+      "seats": ["t1_s1", "t1_s2", "t1_s3", "t1_s4"]
+    },
+    {
+      "id": "table_2",
+      "label": "Kids’ Table",
+      "seats": ["t2_s1", "t2_s2", "t2_s3", "t2_s4"]
+    }
+  ],
+  "answer_key": {
+    "couple_a": "t1_s2",
+    "couple_b": "t1_s3",
+    "mum_nadia": "t1_s1",
+    "mum_sara": "t1_s4",
+    "kid_1": "t2_s1",
+    "kid_2": "t2_s2",
+    "kid_3": "t2_s3",
+    "kid_4": "t2_s4"
+  },
+  "clues": [
+    "Nadia and Sara sit together in the middle of the top table.",
+    "Each bride’s mum insists on sitting next to her own daughter.",
+    "No children are allowed at the top table during the speeches.",
+    "The kids’ table is completely filled with Leo, Mia, Oscar, and Ella.",
+    "Leo insists on being first to get cake at the kids’ table, and Ella always drifts to the very end."
+  ],
+  "hints": [
+    "If each mum must sit next to her own daughter and the couple sit together in the middle, the mums must go on the outside.",
+    "The kids simply fill all four seats at the kids’ table in order from Leo to Ella.",
+    "There should be no empty seats in this puzzle."
+  ]
+}
