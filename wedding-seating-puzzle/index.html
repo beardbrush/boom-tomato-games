@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wedding Seating Puzzle – Boom Tomato Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0B1C3D" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">
+        <div class="bt-logo-icon">🍅</div>
+        <div class="bt-logo-text">Boom Tomato Games</div>
+      </div>
+      <div class="bt-header-title">
+        <h1>Wedding Seating Puzzle</h1>
+        <p class="bt-tagline">Arrange the perfect wedding – one seat at a time.</p>
+      </div>
+    </div>
+  </header>
+
+  <div id="offlineBanner" class="bt-offline-banner hidden">
+    You’re currently offline. Changes will sync when you reconnect.
+  </div>
+
+  <div id="updateToast" class="bt-toast hidden">
+    <span>New version available.</span>
+    <button id="btnReload">Reload</button>
+  </div>
+
+  <main class="bt-main">
+
+    <!-- HOME VIEW -->
+    <section class="view view-active" data-view="home">
+      <div class="bt-panel bt-panel-main">
+        <h2 class="panel-title">Plan the Seating</h2>
+        <p class="panel-text">
+          Drag guests onto seats, follow the clues, and discover the perfect seating plan.
+        </p>
+
+        <div class="bt-button-grid">
+          <button id="btnPlayDemo" class="bt-btn primary">Play Demo</button>
+          <button id="btnPlayFull" class="bt-btn secondary">Unlock Full Version</button>
+
+          <button id="install-app-btn" class="bt-btn outline" style="display:none;">Install App</button>
+
+          <button id="btnDownloadApk" class="bt-btn outline">Download Android APK</button>
+        </div>
+
+        <div class="bt-subpanel">
+          <h3>Progress</h3>
+          <p id="progressText">Loading progress…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME VIEW -->
+    <section class="view" data-view="game">
+      <div class="bt-panel bt-panel-game">
+
+        <div class="game-header">
+          <button class="bt-btn ghost" id="btnBackHome">&larr; Back</button>
+
+          <div class="game-title-block">
+            <h2 id="puzzleTitle">Puzzle Title</h2>
+            <p id="puzzleSubtitle" class="panel-text small"></p>
+          </div>
+
+          <div class="game-status">
+            <span id="mistakeCounter">Mistakes: 0</span>
+            <span id="modeBadge" class="badge">DEMO</span>
+          </div>
+        </div>
+
+        <div class="game-layout">
+          <aside class="clue-panel">
+            <h3>Clues</h3>
+            <ul id="clueList" class="clue-list"></ul>
+            <button id="btnShowHint" class="bt-btn small secondary">Show Random Hint</button>
+            <p id="hintText" class="hint-text"></p>
+          </aside>
+
+          <section class="board-area">
+            <div class="seating-board" id="seatingBoard"></div>
+
+            <div class="guest-dock">
+              <h3>Guests</h3>
+              <p class="panel-text small">Drag each guest onto a seat.</p>
+              <div id="guestChips" class="guest-chip-row"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="bottom-bar">
+          <button id="btnReset" class="bt-btn ghost small">Reset</button>
+          <button id="btnCheck" class="bt-btn primary small">Check Seating</button>
+
+          <!-- ⭐ NEW NEXT PUZZLE BUTTON -->
+          <button id="btnNext" class="bt-btn primary small hidden">Next Puzzle →</button>
+
+          <div class="bottom-status">
+            <span id="gameMessage"></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="bt-footer">
+    <p>&copy; <span id="yearSpan"></span> Boom Tomato Games · Wedding Seating Puzzle</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
