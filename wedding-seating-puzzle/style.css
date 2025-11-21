@@ -1,0 +1,383 @@
+/* --------------------------------------------------
+   Wedding Seating Puzzle – Boom Tomato Games
+   Final Wedding Invite Theme (Unified Seat System)
+   -------------------------------------------------- */
+
+/* Optional, if not already in HTML */
+/* @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap"); */
+
+:root {
+  --bt-bg: #fdf6ee;
+  --bt-bg-alt: #f9efe3;
+  --bt-panel-bg: #fffaf3;
+
+  --bt-ink: #243047;
+  --bt-muted: #7a6d5a;
+
+  --bt-gold: #c79a3b;
+  --bt-gold-soft: #e5c88a;
+  --bt-gold-deep: #8b6421;
+
+  --bt-error: #b5413b;
+  --bt-success: #2f7d5b;
+
+  --bt-radius-lg: 20px;
+  --bt-radius-xl: 28px;
+
+  --bt-shadow-soft: 0 18px 40px rgba(80, 60, 20, 0.12);
+  --bt-shadow-inner: inset 0 0 6px rgba(255, 255, 255, 0.6),
+    inset 0 0 12px rgba(219, 195, 125, 0.35);
+
+  --bt-transition-fast: 150ms ease-out;
+  --bt-transition-med: 220ms ease-out;
+}
+
+/* --------------------------------------------------
+   Global
+   -------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: radial-gradient(circle at top, #fffdf7 0%, #f7e6cf 50%, #f1dec7 100%);
+  color: var(--bt-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+/* Candle glow */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 25%,
+    rgba(255, 255, 240, 0.55),
+    rgba(0, 0, 0, 0.14) 62%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+  z-index: -1;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* --------------------------------------------------
+   Layout
+   -------------------------------------------------- */
+
+.bt-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px 56px;
+}
+
+.view {
+  max-width: 1120px;
+  width: 100%;
+  display: none;
+  animation: pagefade 0.45s ease forwards;
+}
+
+.view.view-active {
+  display: block;
+}
+
+@keyframes pagefade {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --------------------------------------------------
+   Header
+   -------------------------------------------------- */
+
+.bt-header {
+  padding: 16px 16px 8px;
+  text-align: center;
+}
+
+.bt-header-inner {
+  max-width: 960px;
+  margin: auto;
+}
+
+.bt-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.bt-logo-text {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--bt-muted);
+}
+
+/* Gold shimmer title */
+.bt-header-title h1 {
+  margin: 4px 0 2px;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  background: linear-gradient(
+    110deg,
+    #a0751c,
+    #e6c478 25%,
+    #f3e2b9 50%,
+    #e6c478 75%,
+    #a0751c
+  );
+  background-size: 240% auto;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: goldwave 4s linear infinite;
+}
+
+@keyframes goldwave {
+  0% { background-position: 0% center; }
+  100% { background-position: -240% center; }
+}
+
+/* --------------------------------------------------
+   Panels
+   -------------------------------------------------- */
+
+.bt-panel {
+  background: radial-gradient(circle at top, #fffdf8 0%, #fff5e8 65%, #f8e8d6 100%);
+  border: 2px solid rgba(200, 155, 60, 0.45);
+  border-radius: var(--bt-radius-xl);
+  box-shadow: var(--bt-shadow-inner), var(--bt-shadow-soft);
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bt-panel::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><g fill='none' stroke='%23d7b591' stroke-width='1.4' opacity='0.35'><path d='M6,32 Q26,8 60,8'/><path d='M134,108 Q114,132 80,132'/></g></svg>")
+      top left / 70px no-repeat,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><g fill='none' stroke='%23d7b591' stroke-width='1.4' opacity='0.35'><path d='M6,108 Q26,132 60,132'/><path d='M134,32 Q114,8 80,8'/></g></svg>")
+      bottom right / 70px no-repeat;
+}
+
+/* --------------------------------------------------
+   Buttons
+   -------------------------------------------------- */
+
+.bt-btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: var(--bt-transition-fast);
+}
+
+.bt-btn.primary {
+  background: linear-gradient(135deg, #f1cf80, #e4b85e);
+  color: #3e2d13;
+  box-shadow: 0 8px 18px rgba(160, 115, 28, 0.35);
+}
+
+.bt-btn.secondary {
+  background: #fdf7ef;
+  border: 1px solid #ddc9ab;
+}
+
+/* --------------------------------------------------
+   Game Layout
+   -------------------------------------------------- */
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 20px;
+}
+
+/* Clue Panel */
+.clue-panel {
+  border: 1px solid rgba(221, 200, 164, 0.9);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.clue-list {
+  font-size: 0.9rem;
+  color: var(--bt-muted);
+  padding-left: 18px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.clue-list li::before {
+  content: "•";
+  position: absolute;
+  left: -14px;
+  color: var(--bt-gold-deep);
+}
+
+/* --------------------------------------------------
+   UNIFIED SEAT SYSTEM
+   -------------------------------------------------- */
+
+/* Seating board */
+.seating-board {
+  border-radius: 22px;
+  padding: 18px 16px;
+  background: radial-gradient(circle at top, #fffdf8 0%, #f8ecdd 70%);
+  border: 2px dashed rgba(199, 154, 59, 0.75);
+  box-shadow: 0 10px 26px rgba(80, 60, 20, 0.15);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+/* Unified Seat Card */
+.seat-card {
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 16px;
+  border: 1px solid rgba(212, 192, 158, 0.9);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--bt-transition-fast);
+  box-shadow: 0 6px 16px rgba(80, 60, 20, 0.1);
+}
+
+.seat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(80, 60, 20, 0.16);
+}
+
+.seat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--bt-muted);
+}
+
+/* Dropzone (inside seat card) */
+.seat-dropzone {
+  flex: 1;
+  border: 2px dashed rgba(199, 154, 59, 0.7);
+  border-radius: 12px;
+  background: rgba(255, 248, 232, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: 150ms ease-out;
+}
+
+.seat-dropzone.drop-hover {
+  background: #fff7dd;
+  border-color: var(--bt-gold);
+  box-shadow: 0 6px 14px rgba(199, 154, 59, 0.25);
+}
+
+/* Guest inside seat */
+.seat-guest {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff7e5;
+  border: 1px solid rgba(212, 191, 154, 0.9);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--bt-ink);
+  box-shadow: 0 3px 10px rgba(80, 60, 20, 0.12);
+}
+
+/* Guest chips */
+.guest-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff, #f9f0e3);
+  border: 1px solid rgba(212, 191, 154, 0.95);
+  font-size: 0.85rem;
+  color: #5a4a3d;
+  cursor: grab;
+  box-shadow: 0 4px 10px rgba(80, 60, 20, 0.12);
+  transition: 150ms;
+}
+
+.guest-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(80, 60, 20, 0.2);
+}
+
+.guest-chip.dragging {
+  opacity: 0.85;
+  transform: scale(1.05);
+  cursor: grabbing;
+}
+
+/* --------------------------------------------------
+   Footer
+   -------------------------------------------------- */
+
+.bt-footer {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--bt-muted);
+}
+
+/* --------------------------------------------------
+   Responsive
+   -------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .game-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
