@@ -56,14 +56,7 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js").then((reg) => {
     console.log("SW registered:", reg);
 
-    reg.onupdatefound = () => {
-      const nw = reg.installing;
-      nw.onstatechange = () => {
-        if (nw.state === "installed" && navigator.serviceWorker.controller) {
-          showUpdateToast();
-        }
-      };
-    };
+  
   });
 }
 
