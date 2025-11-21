@@ -1,347 +1,128 @@
-/* --------------------------------------------------
-   Wedding Seating Puzzle – Clean Final Engine
--------------------------------------------------- */
-
-let deferredPrompt = null;
-let CURRENT_PUZZLE = null;
-let CURRENT_MODE = null;     // "demo" | "full"
-let CURRENT_INDEX = 0;
-
-/* --------------------------------------------------
-   Correct Paths (NO leading slash)
--------------------------------------------------- */
-const PACKS = {
-  demo: [
-    "content/demo/tutorial_01.json"
-  ],
-  full: [
-    "content/full/puzzle_01.json",
-    "content/full/puzzle_02.json",
-    "content/full/puzzle_03.json"
-  ]
-};
-
-/* --------------------------------------------------
-   PWA INSTALL BUTTON
--------------------------------------------------- */
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById("install-app-btn");
-  if (btn) btn.style.display = "inline-block";
-});
-
-document.getElementById("install-app-btn")?.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById("install-app-btn").style.display = "none";
-});
-
-/* --------------------------------------------------
-   OFFLINE + UPDATE INDICATORS
--------------------------------------------------- */
-
-function showOffline() {
-  document.getElementById("offlineBanner")?.classList.remove("hidden");
-}
-
-function hideOffline() {
-  document.getElementById("offlineBanner")?.classList.add("hidden");
-}
-
-function showUpdateToast() {
-  document.getElementById("updateToast")?.classList.remove("hidden");
-}
-
-window.addEventListener("online", hideOffline);
-window.addEventListener("offline", showOffline);
-
-document.getElementById("btnReload")?.addEventListener("click", () => {
-  window.location.reload();
-});
-
-/* --------------------------------------------------
-   SERVICE WORKER (RELATIVE PATH FIX)
--------------------------------------------------- */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js").then((reg) => {
-    console.log("SW registered:", reg);
-
-    reg.onupdatefound = () => {
-      const nw = reg.installing;
-      nw.onstatechange = () => {
-        if (nw.state === "installed" && navigator.serviceWorker.controller) {
-          showUpdateToast();
-        }
-      };
-    };
-  });
-}
-
-/* --------------------------------------------------
-   VIEW SWITCHING
--------------------------------------------------- */
-function showView(name) {
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("view-active"));
-  document.querySelector(`.view[data-view="${name}"]`)?.classList.add("view-active");
-
-  // Clean UI when switching to game view
-  if (name === "game") {
-    hideOffline();
-    document.getElementById("updateToast")?.classList.add("hidden");
-    document.getElementById("progressText").textContent = "";
-  }
-}
-
-/* --------------------------------------------------
-   START PACK
--------------------------------------------------- */
-function startPack(mode) {
-  CURRENT_MODE = mode;
-  CURRENT_INDEX = 0;
-  loadPuzzleFromPack();
-}
-
-function loadPuzzleFromPack() {
-  const paths = PACKS[CURRENT_MODE];
-  if (!paths || !paths.length) return;
-
-  const path = paths[CURRENT_INDEX];
-  loadPuzzle(path, CURRENT_MODE);
-}
-
-/* --------------------------------------------------
-   BUTTON HOOKUP
--------------------------------------------------- */
-document.getElementById("btnPlayDemo")?.addEventListener("click", () => {
-  startPack("demo");
-});
-
-document.getElementById("btnPlayFull")?.addEventListener("click", () => {
-  startPack("full");
-});
-
-document.getElementById("btnBackHome")?.addEventListener("click", () => {
-  showView("home");
-  document.getElementById("progressText").textContent = "";
-});
-
-/* --------------------------------------------------
-   LOAD PUZZLE
--------------------------------------------------- */
-async function loadPuzzle(path, mode) {
-
-  CURRENT_MODE = mode;
-
-  showView("game");
-  document.getElementById("progressText").textContent = "Loading…";
-  document.getElementById("gameMessage").textContent = "";
-  document.getElementById("hintText").textContent = "";
-  document.getElementById("mistakeCounter").textContent = "Mistakes: 0";
-  document.getElementById("btnNext")?.classList.add("hidden");
-
-  try {
-    const res = await fetch(path);
-    if (!res.ok) throw new Error("Missing file: " + path);
-
-    const puzzle = await res.json();
-    CURRENT_PUZZLE = puzzle;
-
-    buildGameUI(puzzle, mode);
-
-    document.getElementById("progressText").textContent = "";
-  } catch (err) {
-    console.error("Puzzle load error:", err);
-    document.getElementById("progressText").textContent = "Error loading puzzle.";
-  }
-}
-
-/* --------------------------------------------------
-   BUILD UI
--------------------------------------------------- */
-function buildGameUI(data, mode) {
-
-  document.getElementById("puzzleTitle").textContent = data.title;
-  document.getElementById("puzzleSubtitle").textContent = data.description;
-  document.getElementById("modeBadge").textContent = mode.toUpperCase();
-
-  /* ----- Clues ----- */
-  const clueList = document.getElementById("clueList");
-  clueList.innerHTML = "";
-  data.clues.forEach(c => {
-    const li = document.createElement("li");
-    li.textContent = c;
-    clueList.appendChild(li);
-  });
-
-  /* ----- Seating Board ----- */
-  const board = document.getElementById("seatingBoard");
-  board.innerHTML = "";
-
-  data.tables.forEach(table => {
-    const tBox = document.createElement("div");
-    tBox.className = "table-box";
-
-    const tTitle = document.createElement("h4");
-    tTitle.textContent = table.label;
-    tBox.appendChild(tTitle);
-
-    const grid = document.createElement("div");
-    grid.className = "table-grid";
-
-    table.seats.forEach(seatId => {
-      const seat = data.seats.find(s => s.id === seatId);
-
-      const seatCard = document.createElement("div");
-      seatCard.className = "seat-card seat-empty";
-      seatCard.dataset.seatId = seatId;
-
-      seatCard.innerHTML = `
-        <div class="seat-label">${seat.label}</div>
-        <div class="seat-name">Empty</div>
-      `;
-
-      grid.appendChild(seatCard);
-    });
-
-    tBox.appendChild(grid);
-    board.appendChild(tBox);
-  });
-
-  /* ----- Guest Chips ----- */
-  const guests = document.getElementById("guestChips");
-  guests.innerHTML = "";
-
-  data.guests.forEach(g => {
-    const chip = document.createElement("div");
-    chip.className = "guest-chip";
-    chip.textContent = g.name;
-    chip.draggable = true;
-    chip.dataset.guestId = g.id;
-
-    chip.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("guestId", g.id);
-      chip.classList.add("dragging");
-    });
-
-    chip.addEventListener("dragend", () => chip.classList.remove("dragging"));
-
-    guests.appendChild(chip);
-  });
-
-  /* ----- Drag + Drop ----- */
-  document.querySelectorAll(".seat-card").forEach(seat => {
-
-    seat.addEventListener("dragover", e => {
-      e.preventDefault();
-      seat.classList.add("drop-hover");
-    });
-
-    seat.addEventListener("dragleave", () => {
-      seat.classList.remove("drop-hover");
-    });
-
-    seat.addEventListener("drop", e => {
-      e.preventDefault();
-      seat.classList.remove("drop-hover");
-
-      const guestId = e.dataTransfer.getData("guestId");
-      const guest = data.guests.find(g => g.id === guestId);
-      if (!guest) return;
-
-      seat.classList.remove("seat-empty");
-      seat.querySelector(".seat-name").textContent = guest.name;
-
-      const chip = document.querySelector(`.guest-chip[data-guest-id="${guestId}"]`);
-      if (chip) chip.remove();
-    });
-  });
-
-  /* ----- Reset Hint Button Fix ----- */
-  const oldHintBtn = document.getElementById("btnShowHint");
-  if (oldHintBtn) {
-    const newHintBtn = oldHintBtn.cloneNode(true);
-    oldHintBtn.parentNode.replaceChild(newHintBtn, oldHintBtn);
-
-    newHintBtn.addEventListener("click", () => {
-      const hint = data.hints[Math.floor(Math.random() * data.hints.length)];
-      document.getElementById("hintText").textContent = hint;
-    });
-  }
-}
-
-/* --------------------------------------------------
-   CHECK SEATING
--------------------------------------------------- */
-document.getElementById("btnCheck")?.addEventListener("click", () => {
-  const data = CURRENT_PUZZLE;
-  if (!data) return;
-
-  let mistakes = 0;
-
-  Object.entries(data.answer_key).forEach(([guestId, correctSeat]) => {
-    const seat = document.querySelector(`.seat-card[data-seat-id="${correctSeat}"]`);
-    if (!seat) return;
-
-    const placed = seat.querySelector(".seat-name").textContent;
-    const guest = data.guests.find(g => g.id === guestId);
-
-    if (placed !== guest.name) mistakes++;
-  });
-
-  document.getElementById("mistakeCounter").textContent = `Mistakes: ${mistakes}`;
-
-  const msg = document.getElementById("gameMessage");
-
-  if (mistakes === 0) {
-    msg.textContent = "Perfect! Everyone is seated correctly 🎉";
-    document.getElementById("btnNext").classList.remove("hidden");
-  } else {
-    msg.textContent = `${mistakes} mistakes found. Keep adjusting!`;
-  }
-});
-
-/* --------------------------------------------------
-   NEXT PUZZLE
--------------------------------------------------- */
-document.getElementById("btnNext")?.addEventListener("click", () => {
-
-  const paths = PACKS[CURRENT_MODE];
-  if (!paths) return;
-
-  document.getElementById("btnNext").classList.add("hidden");
-  document.getElementById("gameMessage").textContent = "";
-  document.getElementById("hintText").textContent = "";
-
-  if (CURRENT_INDEX < paths.length - 1) {
-    CURRENT_INDEX++;
-    loadPuzzleFromPack();
-  } else {
-    showView("home");
-    document.getElementById("progressText").textContent =
-      "Great job! More puzzles coming soon 🎉";
-  }
-});
-
-/* --------------------------------------------------
-   RESET PUZZLE
--------------------------------------------------- */
-document.getElementById("btnReset")?.addEventListener("click", () => {
-
-  if (!CURRENT_PUZZLE) return;
-
-  document.getElementById("gameMessage").textContent = "";
-  document.getElementById("hintText").textContent = "";
-  document.getElementById("mistakeCounter").textContent = "Mistakes: 0";
-  document.getElementById("btnNext")?.classList.add("hidden");
-
-  buildGameUI(CURRENT_PUZZLE, CURRENT_MODE);
-});
-
-/* --------------------------------------------------
-   FOOTER YEAR
--------------------------------------------------- */
-const yearSpan = document.getElementById("yearSpan");
-if (yearSpan) yearSpan.textContent = String(new Date().getFullYear());
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wedding Seating Puzzle – Boom Tomato Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0B1C3D" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">
+        <div class="bt-logo-icon">🍅</div>
+        <div class="bt-logo-text">Boom Tomato Games</div>
+      </div>
+      <div class="bt-header-title">
+        <h1>Wedding Seating Puzzle</h1>
+        <p class="bt-tagline">Arrange the perfect wedding – one seat at a time.</p>
+      </div>
+    </div>
+  </header>
+
+  <div id="offlineBanner" class="bt-offline-banner hidden">
+    You’re currently offline. Changes will sync when you reconnect.
+  </div>
+
+  <div id="updateToast" class="bt-toast hidden">
+    <span>New version available.</span>
+    <button id="btnReload">Reload</button>
+  </div>
+
+  <main class="bt-main">
+
+    <!-- HOME VIEW -->
+    <section class="view view-active" data-view="home">
+      <div class="bt-panel bt-panel-main">
+        <h2 class="panel-title">Plan the Seating</h2>
+        <p class="panel-text">
+          Drag guests onto seats, follow the clues, and discover the perfect seating plan.
+        </p>
+
+        <div class="bt-button-grid">
+          <button id="btnPlayDemo" class="bt-btn primary">Play Demo</button>
+          <button id="btnPlayFull" class="bt-btn secondary">Unlock Full Version</button>
+
+          <button id="install-app-btn" class="bt-btn outline" style="display:none;">Install App</button>
+
+          <button id="btnDownloadApk" class="bt-btn outline">Download Android APK</button>
+        </div>
+
+        <div class="bt-subpanel">
+          <h3>Progress</h3>
+          <p id="progressText">Loading progress…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME VIEW -->
+    <section class="view" data-view="game">
+      <div class="bt-panel bt-panel-game">
+
+        <div class="game-header">
+          <button class="bt-btn ghost" id="btnBackHome">&larr; Back</button>
+
+          <div class="game-title-block">
+            <h2 id="puzzleTitle">Puzzle Title</h2>
+            <p id="puzzleSubtitle" class="panel-text small"></p>
+          </div>
+
+          <div class="game-status">
+            <span id="mistakeCounter">Mistakes: 0</span>
+            <span id="modeBadge" class="badge">DEMO</span>
+          </div>
+        </div>
+
+        <div class="game-layout">
+          <aside class="clue-panel">
+            <h3>Clues</h3>
+            <ul id="clueList" class="clue-list"></ul>
+            <button id="btnShowHint" class="bt-btn small secondary">Show Random Hint</button>
+            <p id="hintText" class="hint-text"></p>
+          </aside>
+
+          <section class="board-area">
+            <div class="seating-board" id="seatingBoard"></div>
+
+            <div class="guest-dock">
+              <h3>Guests</h3>
+              <p class="panel-text small">Drag each guest onto a seat.</p>
+              <div id="guestChips" class="guest-chip-row"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="bottom-bar">
+          <button id="btnReset" class="bt-btn ghost small">Reset</button>
+          <button id="btnCheck" class="bt-btn primary small">Check Seating</button>
+
+          <!-- ⭐ NEW NEXT PUZZLE BUTTON -->
+          <button id="btnNext" class="bt-btn primary small hidden">Next Puzzle →</button>
+
+          <div class="bottom-status">
+            <span id="gameMessage"></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="bt-footer">
+    <p>&copy; <span id="yearSpan"></span> Boom Tomato Games · Wedding Seating Puzzle</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
