@@ -7,7 +7,7 @@ let CURRENT_PUZZLE = null;
 let CURRENT_MODE = null;     // "demo" | "full"
 let CURRENT_INDEX = 0;       // index within the pack
 
-// Puzzle packs (order matters)
+// Puzzle packs with correct folder paths
 const PACKS = {
   demo: [
     "/wedding-seating-puzzle/content/demo/tutorial_01.json"
@@ -20,7 +20,7 @@ const PACKS = {
 };
 
 /* -----------------------------------------
-   PWA INSTALL BUTTON
+   INSTALL BUTTON
 ----------------------------------------- */
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
@@ -38,16 +38,21 @@ document.getElementById("install-app-btn")?.addEventListener("click", async () =
 });
 
 /* -----------------------------------------
-   OFFLINE + UPDATE BANNERS
+   OFFLINE / UPDATE BANNERS
 ----------------------------------------- */
 function showOffline() {
-  document.getElementById("offlineBanner")?.classList.remove("hidden");
+  const el = document.getElementById("offlineBanner");
+  if (el) el.classList.remove("hidden");
 }
+
 function hideOffline() {
-  document.getElementById("offlineBanner")?.classList.add("hidden");
+  const el = document.getElementById("offlineBanner");
+  if (el) el.classList.add("hidden");
 }
+
 function showUpdateToast() {
-  document.getElementById("updateToast")?.classList.remove("hidden");
+  const el = document.getElementById("updateToast");
+  if (el) el.classList.remove("hidden");
 }
 
 window.addEventListener("online", hideOffline);
@@ -61,32 +66,39 @@ document.getElementById("btnReload")?.addEventListener("click", () => {
    SERVICE WORKER
 ----------------------------------------- */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/wedding-seating-puzzle/service-worker.js").then((reg) => {
-    console.log("SW registered", reg);
+  navigator.serviceWorker
+    .register("/wedding-seating-puzzle/service-worker.js")
+    .then((reg) => {
+      console.log("SW registered", reg);
 
-    reg.onupdatefound = () => {
-      const newWorker = reg.installing;
-      newWorker.onstatechange = () => {
-        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-          showUpdateToast();
-        }
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            showUpdateToast();
+          }
+        };
       };
-    };
-  });
+    });
 }
 
 /* -----------------------------------------
    VIEW HANDLING
 ----------------------------------------- */
 function showView(name) {
-  document.querySelectorAll(".view").forEach(v =>
-    v.classList.remove("view-active")
-  );
-  document.querySelector(`.view[data-view="${name}"]`)?.classList.add("view-active");
+  document.querySelectorAll(".view").forEach((v) => {
+    v.classList.remove("view-active");
+  });
+  document
+    .querySelector(`.view[data-view="${name}"]`)
+    ?.classList.add("view-active");
 }
 
 /* -----------------------------------------
-   START PACK HELPERS
+   PACK START + LOADING
 ----------------------------------------- */
 function startPack(mode) {
   CURRENT_MODE = mode;
@@ -97,13 +109,11 @@ function startPack(mode) {
 function loadPuzzleFromPack() {
   const paths = PACKS[CURRENT_MODE];
   if (!paths || paths.length === 0) return;
-
-  const path = paths[CURRENT_INDEX];
-  loadPuzzle(path, CURRENT_MODE);
+  loadPuzzle(paths[CURRENT_INDEX], CURRENT_MODE);
 }
 
 /* -----------------------------------------
-   BUTTON HOOKUP
+   BUTTON ACTIONS
 ----------------------------------------- */
 document.getElementById("btnPlayDemo")?.addEventListener("click", () => {
   startPack("demo");
@@ -121,7 +131,6 @@ document.getElementById("btnBackHome")?.addEventListener("click", () => {
    LOAD PUZZLE
 ----------------------------------------- */
 async function loadPuzzle(path, mode) {
-
   CURRENT_MODE = mode;
 
   showView("game");
@@ -140,10 +149,14 @@ async function loadPuzzle(path, mode) {
 
     buildGameUI(puzzle, mode);
 
-    document.getElementById("progressText").textContent = "Ready!";
+    // Hide "Offline" banner when game loads successfully
+    hideOffline();
+
+    document.getElementById("progressText").textContent = "";
   } catch (err) {
     console.error("Puzzle load error:", err);
-    document.getElementById("progressText").textContent = "Error loading puzzle.";
+    document.getElementById("progressText").textContent =
+      "Error loading puzzle.";
   }
 }
 
@@ -151,7 +164,6 @@ async function loadPuzzle(path, mode) {
    BUILD UI
 ----------------------------------------- */
 function buildGameUI(data, mode) {
-
   document.getElementById("puzzleTitle").textContent = data.title;
   document.getElementById("puzzleSubtitle").textContent = data.description;
   document.getElementById("modeBadge").textContent = mode.toUpperCase();
@@ -159,55 +171,55 @@ function buildGameUI(data, mode) {
   /* ---- Clues ---- */
   const clueList = document.getElementById("clueList");
   clueList.innerHTML = "";
-  data.clues.forEach(c => {
+  data.clues.forEach((c) => {
     const li = document.createElement("li");
     li.textContent = c;
     clueList.appendChild(li);
   });
 
-  /* ---- Seating Board ---- */
+  /* ---- Seating ---- */
   const board = document.getElementById("seatingBoard");
   board.innerHTML = "";
 
-  data.tables.forEach(table => {
-    const tBox = document.createElement("div");
-    tBox.className = "table-box";
+  data.tables.forEach((table) => {
+    const box = document.createElement("div");
+    box.className = "table-box";
 
-    const tTitle = document.createElement("h4");
-    tTitle.textContent = table.label;
-    tBox.appendChild(tTitle);
+    const title = document.createElement("h4");
+    title.textContent = table.label;
+    box.appendChild(title);
 
     const grid = document.createElement("div");
     grid.className = "table-grid";
 
-    table.seats.forEach(seatId => {
-      const seat = data.seats.find(s => s.id === seatId);
+    table.seats.forEach((seatId) => {
+      const seat = data.seats.find((s) => s.id === seatId);
 
-      const seatCard = document.createElement("div");
-      seatCard.className = "seat-card seat-empty";
-      seatCard.dataset.seatId = seatId;
+      const card = document.createElement("div");
+      card.className = "seat-card seat-empty";
+      card.dataset.seatId = seatId;
 
-      seatCard.innerHTML = `
+      card.innerHTML = `
         <div class="seat-label">${seat.label}</div>
         <div class="seat-name">Empty</div>
       `;
-      grid.appendChild(seatCard);
+      grid.appendChild(card);
     });
 
-    tBox.appendChild(grid);
-    board.appendChild(tBox);
+    box.appendChild(grid);
+    board.appendChild(box);
   });
 
   /* ---- Guests ---- */
   const guests = document.getElementById("guestChips");
   guests.innerHTML = "";
 
-  data.guests.forEach(g => {
+  data.guests.forEach((g) => {
     const chip = document.createElement("div");
     chip.className = "guest-chip";
     chip.textContent = g.name;
-    chip.draggable = true;
     chip.dataset.guestId = g.id;
+    chip.draggable = true;
 
     chip.addEventListener("dragstart", (e) => {
       e.dataTransfer.setData("guestId", g.id);
@@ -218,9 +230,9 @@ function buildGameUI(data, mode) {
     guests.appendChild(chip);
   });
 
-  /* ---- Drag + Drop ---- */
-  document.querySelectorAll(".seat-card").forEach(seat => {
-    seat.addEventListener("dragover", e => {
+  /* ---- Drag & Drop ---- */
+  document.querySelectorAll(".seat-card").forEach((seat) => {
+    seat.addEventListener("dragover", (e) => {
       e.preventDefault();
       seat.classList.add("drop-hover");
     });
@@ -229,29 +241,31 @@ function buildGameUI(data, mode) {
       seat.classList.remove("drop-hover");
     });
 
-    seat.addEventListener("drop", e => {
+    seat.addEventListener("drop", (e) => {
       e.preventDefault();
       seat.classList.remove("drop-hover");
 
       const guestId = e.dataTransfer.getData("guestId");
-      const guest = data.guests.find(g => g.id === guestId);
+      const guest = data.guests.find((g) => g.id === guestId);
       if (!guest) return;
 
       seat.classList.remove("seat-empty");
       seat.querySelector(".seat-name").textContent = guest.name;
 
-      const chip = document.querySelector(`.guest-chip[data-guest-id="${guestId}"]`);
+      const chip = document.querySelector(
+        `.guest-chip[data-guest-id="${guestId}"]`
+      );
       if (chip) chip.remove();
     });
   });
 
-  /* ---- Reset Hint Button ---- */
-  const oldHintBtn = document.getElementById("btnShowHint");
-  if (oldHintBtn) {
-    const newHintBtn = oldHintBtn.cloneNode(true);
-    oldHintBtn.parentNode.replaceChild(newHintBtn, oldHintBtn);
+  /* ---- Hint button reset ---- */
+  const oldHint = document.getElementById("btnShowHint");
+  if (oldHint) {
+    const newHint = oldHint.cloneNode(true);
+    oldHint.parentNode.replaceChild(newHint, oldHint);
 
-    newHintBtn.addEventListener("click", () => {
+    newHint.addEventListener("click", () => {
       const hint = data.hints[Math.floor(Math.random() * data.hints.length)];
       document.getElementById("hintText").textContent = hint;
     });
@@ -267,18 +281,22 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
 
   let mistakes = 0;
 
-  Object.entries(data.answer_key).forEach(([guestId, correctSeat]) => {
-    const seat = document.querySelector(`.seat-card[data-seat-id="${correctSeat}"]`);
+  Object.entries(data.answer_key).forEach(([guestId, seatId]) => {
+    const seat = document.querySelector(
+      `.seat-card[data-seat-id="${seatId}"]`
+    );
     if (!seat) return;
 
     const placed = seat.querySelector(".seat-name").textContent;
-    const guest = data.guests.find(g => g.id === guestId);
+    const guest = data.guests.find((g) => g.id === guestId);
 
-    if (!placed || placed !== guest.name) mistakes++;
+    if (placed !== guest.name) mistakes++;
   });
 
+  document.getElementById("mistakeCounter").textContent =
+    `Mistakes: ${mistakes}`;
+
   const msg = document.getElementById("gameMessage");
-  document.getElementById("mistakeCounter").textContent = `Mistakes: ${mistakes}`;
 
   if (mistakes === 0) {
     msg.textContent = "Perfect! Everyone is seated correctly 🎉";
@@ -289,11 +307,10 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
 });
 
 /* -----------------------------------------
-   NEXT PUZZLE (uses PACKS + CURRENT_INDEX)
+   NEXT PUZZLE
 ----------------------------------------- */
 document.getElementById("btnNext")?.addEventListener("click", () => {
   const paths = PACKS[CURRENT_MODE];
-  if (!paths) return;
 
   document.getElementById("btnNext").classList.add("hidden");
   document.getElementById("gameMessage").textContent = "";
@@ -310,7 +327,7 @@ document.getElementById("btnNext")?.addEventListener("click", () => {
 });
 
 /* -----------------------------------------
-   RESET BUTTON
+   RESET
 ----------------------------------------- */
 document.getElementById("btnReset")?.addEventListener("click", () => {
   if (!CURRENT_PUZZLE) return;
@@ -318,7 +335,7 @@ document.getElementById("btnReset")?.addEventListener("click", () => {
   document.getElementById("gameMessage").textContent = "";
   document.getElementById("hintText").textContent = "";
   document.getElementById("mistakeCounter").textContent = "Mistakes: 0";
-  document.getElementById("btnNext")?.classList.add("hidden");
+  document.getElementById("btnNext").classList.add("hidden");
 
   buildGameUI(CURRENT_PUZZLE, CURRENT_MODE);
 });
