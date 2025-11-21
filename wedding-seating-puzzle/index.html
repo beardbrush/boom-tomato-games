@@ -7,9 +7,9 @@ let CURRENT_PUZZLE = null;
 let CURRENT_MODE = null;     // "demo" | "full"
 let CURRENT_INDEX = 0;
 
-/* -----------------------------------------
-   Correct Paths – Relative (NO leading slash)
------------------------------------------ */
+/* --------------------------------------------------
+   Correct Paths (NO leading slash)
+-------------------------------------------------- */
 const PACKS = {
   demo: [
     "content/demo/tutorial_01.json"
@@ -21,36 +21,36 @@ const PACKS = {
   ]
 };
 
-/* -----------------------------------------
-   INSTALL PWA
------------------------------------------ */
+/* --------------------------------------------------
+   PWA INSTALL BUTTON
+-------------------------------------------------- */
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-
   const btn = document.getElementById("install-app-btn");
   if (btn) btn.style.display = "inline-block";
 });
 
 document.getElementById("install-app-btn")?.addEventListener("click", async () => {
   if (!deferredPrompt) return;
-
   deferredPrompt.prompt();
   await deferredPrompt.userChoice;
   deferredPrompt = null;
-
   document.getElementById("install-app-btn").style.display = "none";
 });
 
-/* -----------------------------------------
-   OFFLINE + UPDATE
------------------------------------------ */
+/* --------------------------------------------------
+   OFFLINE + UPDATE INDICATORS
+-------------------------------------------------- */
+
 function showOffline() {
   document.getElementById("offlineBanner")?.classList.remove("hidden");
 }
+
 function hideOffline() {
   document.getElementById("offlineBanner")?.classList.add("hidden");
 }
+
 function showUpdateToast() {
   document.getElementById("updateToast")?.classList.remove("hidden");
 }
@@ -62,9 +62,9 @@ document.getElementById("btnReload")?.addEventListener("click", () => {
   window.location.reload();
 });
 
-/* -----------------------------------------
-   SERVICE WORKER – MUST BE RELATIVE
------------------------------------------ */
+/* --------------------------------------------------
+   SERVICE WORKER (RELATIVE PATH FIX)
+-------------------------------------------------- */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js").then((reg) => {
     console.log("SW registered:", reg);
@@ -80,17 +80,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-/* -----------------------------------------
+/* --------------------------------------------------
    VIEW SWITCHING
------------------------------------------ */
+-------------------------------------------------- */
 function showView(name) {
-  document.querySelectorAll(".view").forEach(v =>
-    v.classList.remove("view-active")
-  );
-  document.querySelector(`.view[data-view="${name}"]`)
-    ?.classList.add("view-active");
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("view-active"));
+  document.querySelector(`.view[data-view="${name}"]`)?.classList.add("view-active");
 
-  // Fix the bad leftover banners when game starts:
+  // Clean UI when switching to game view
   if (name === "game") {
     hideOffline();
     document.getElementById("updateToast")?.classList.add("hidden");
@@ -98,9 +95,9 @@ function showView(name) {
   }
 }
 
-/* -----------------------------------------
+/* --------------------------------------------------
    START PACK
------------------------------------------ */
+-------------------------------------------------- */
 function startPack(mode) {
   CURRENT_MODE = mode;
   CURRENT_INDEX = 0;
@@ -115,9 +112,9 @@ function loadPuzzleFromPack() {
   loadPuzzle(path, CURRENT_MODE);
 }
 
-/* -----------------------------------------
-   BUTTON HOOKS
------------------------------------------ */
+/* --------------------------------------------------
+   BUTTON HOOKUP
+-------------------------------------------------- */
 document.getElementById("btnPlayDemo")?.addEventListener("click", () => {
   startPack("demo");
 });
@@ -131,14 +128,14 @@ document.getElementById("btnBackHome")?.addEventListener("click", () => {
   document.getElementById("progressText").textContent = "";
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    LOAD PUZZLE
------------------------------------------ */
+-------------------------------------------------- */
 async function loadPuzzle(path, mode) {
+
   CURRENT_MODE = mode;
 
   showView("game");
-
   document.getElementById("progressText").textContent = "Loading…";
   document.getElementById("gameMessage").textContent = "";
   document.getElementById("hintText").textContent = "";
@@ -161,15 +158,16 @@ async function loadPuzzle(path, mode) {
   }
 }
 
-/* -----------------------------------------
-   BUILD SEATING UI
------------------------------------------ */
+/* --------------------------------------------------
+   BUILD UI
+-------------------------------------------------- */
 function buildGameUI(data, mode) {
+
   document.getElementById("puzzleTitle").textContent = data.title;
   document.getElementById("puzzleSubtitle").textContent = data.description;
   document.getElementById("modeBadge").textContent = mode.toUpperCase();
 
-  /* Clues */
+  /* ----- Clues ----- */
   const clueList = document.getElementById("clueList");
   clueList.innerHTML = "";
   data.clues.forEach(c => {
@@ -178,7 +176,7 @@ function buildGameUI(data, mode) {
     clueList.appendChild(li);
   });
 
-  /* Seating Board */
+  /* ----- Seating Board ----- */
   const board = document.getElementById("seatingBoard");
   board.innerHTML = "";
 
@@ -204,6 +202,7 @@ function buildGameUI(data, mode) {
         <div class="seat-label">${seat.label}</div>
         <div class="seat-name">Empty</div>
       `;
+
       grid.appendChild(seatCard);
     });
 
@@ -211,7 +210,7 @@ function buildGameUI(data, mode) {
     board.appendChild(tBox);
   });
 
-  /* Guest Chips */
+  /* ----- Guest Chips ----- */
   const guests = document.getElementById("guestChips");
   guests.innerHTML = "";
 
@@ -232,16 +231,17 @@ function buildGameUI(data, mode) {
     guests.appendChild(chip);
   });
 
-  /* Drag and drop */
+  /* ----- Drag + Drop ----- */
   document.querySelectorAll(".seat-card").forEach(seat => {
+
     seat.addEventListener("dragover", e => {
       e.preventDefault();
       seat.classList.add("drop-hover");
     });
 
-    seat.addEventListener("dragleave", () =>
-      seat.classList.remove("drop-hover")
-    );
+    seat.addEventListener("dragleave", () => {
+      seat.classList.remove("drop-hover");
+    });
 
     seat.addEventListener("drop", e => {
       e.preventDefault();
@@ -259,7 +259,7 @@ function buildGameUI(data, mode) {
     });
   });
 
-  /* Reset Hint Button */
+  /* ----- Reset Hint Button Fix ----- */
   const oldHintBtn = document.getElementById("btnShowHint");
   if (oldHintBtn) {
     const newHintBtn = oldHintBtn.cloneNode(true);
@@ -272,9 +272,9 @@ function buildGameUI(data, mode) {
   }
 }
 
-/* -----------------------------------------
-   CHECK ANSWERS
------------------------------------------ */
+/* --------------------------------------------------
+   CHECK SEATING
+-------------------------------------------------- */
 document.getElementById("btnCheck")?.addEventListener("click", () => {
   const data = CURRENT_PUZZLE;
   if (!data) return;
@@ -294,6 +294,7 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
   document.getElementById("mistakeCounter").textContent = `Mistakes: ${mistakes}`;
 
   const msg = document.getElementById("gameMessage");
+
   if (mistakes === 0) {
     msg.textContent = "Perfect! Everyone is seated correctly 🎉";
     document.getElementById("btnNext").classList.remove("hidden");
@@ -302,10 +303,11 @@ document.getElementById("btnCheck")?.addEventListener("click", () => {
   }
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    NEXT PUZZLE
------------------------------------------ */
+-------------------------------------------------- */
 document.getElementById("btnNext")?.addEventListener("click", () => {
+
   const paths = PACKS[CURRENT_MODE];
   if (!paths) return;
 
@@ -323,10 +325,11 @@ document.getElementById("btnNext")?.addEventListener("click", () => {
   }
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    RESET PUZZLE
------------------------------------------ */
+-------------------------------------------------- */
 document.getElementById("btnReset")?.addEventListener("click", () => {
+
   if (!CURRENT_PUZZLE) return;
 
   document.getElementById("gameMessage").textContent = "";
@@ -337,8 +340,8 @@ document.getElementById("btnReset")?.addEventListener("click", () => {
   buildGameUI(CURRENT_PUZZLE, CURRENT_MODE);
 });
 
-/* -----------------------------------------
+/* --------------------------------------------------
    FOOTER YEAR
------------------------------------------ */
+-------------------------------------------------- */
 const yearSpan = document.getElementById("yearSpan");
 if (yearSpan) yearSpan.textContent = String(new Date().getFullYear());
