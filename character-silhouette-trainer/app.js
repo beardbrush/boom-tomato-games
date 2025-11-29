@@ -5,14 +5,6 @@
 /* ---------------- Silhouette list ---------------- */
 
 const SILHOUETTES = [
-  "silhouettes/1e201c31-9b47-41ed-bba9-18fdf379a4ef.png",
-  "silhouettes/4e5749a4-224b-46d6-9bc1-1df049a35de3.png",
-  "silhouettes/5a506628-4182-44fb-8915-4c3626cd185b.png",
-  "silhouettes/5cd397e5-2525-403f-a22d-d22ec40233e4.png",
-  "silhouettes/6dff4d24-bf8c-4f3b-9dac-03f6e1c62f18.png",
-  "silhouettes/008d12e9-e4db-4ba3-ba0c-0fced0ab0546.png",
-  "silhouettes/9f4afdc0-aaef-4781-b874-32cd4ecc9ab2.png",
-  "silhouettes/12f6ad9b-0caf-465e-a314-84ce6c3b025d.png",
   "silhouettes/56f537fc-74d2-4430-bbcd-0d578988447b.png",
   "silhouettes/74bcbf07-a92f-4a1f-935a-83ac82848d02.png",
   "silhouettes/75f7ac6a-2924-4835-a73a-f3beb1ff5ec7.png",
@@ -31,10 +23,8 @@ const SILHOUETTES = [
   "silhouettes/acc22e8b-6ab4-455a-a70f-4ba046223fa1.png",
   "silhouettes/b4b5c195-52fe-447c-9de7-e7ed4f9fa63b.png",
   "silhouettes/b64e4673-ff3f-49c9-a8f6-f42d515f650d.png",
-  "silhouettes/b0538273-629c-4e8c-a0d8-55aea30923fc.png",
   "silhouettes/cd9f60d1-9acb-4812-a8cd-b01ae4695277.png",
   "silhouettes/ChatGPT Image Nov 29, 2025, 04_56_53 AM.png",
-  "silhouettes/ChatGPT Image Nov 29, 2025, 04_57_05 AM.png",
   "silhouettes/d5df44e0-9d63-404f-a5aa-22d36be7e995.png",
   "silhouettes/d22c337d-eb31-4cae-86d2-636ccbf9994b.png",
   "silhouettes/df485fd0-a767-4feb-8309-9bc0433ee79f.png",
@@ -44,9 +34,15 @@ const SILHOUETTES = [
   "silhouettes/ed825bc8-0f7d-48b2-898c-6bd85c869863.png",
   "silhouettes/f3c5378f-9ea5-420f-adc4-a8d2d5c44b80.png",
   "silhouettes/f90ecf77-9246-4505-9617-a4327af0981e.png",
-  "silhouettes/f994b35b-f2a6-4c38-b356-9c2342d1c22c.png",
   "silhouettes/facbc7ab-9c67-466e-8fe8-59afb2df7686.png",
-  "silhouettes/ff3072cf-7ce0-4c20-959f-cef8abef5af0.png"
+  "silhouettes/ff3072cf-7ce0-4c20-959f-cef8abef5af0.png",
+  "silhouettes/1e201c31-9b47-41ed-bba9-18fdf379a4ef.png",
+  "silhouettes/4e5749a4-224b-46d6-9bc1-1df049a35de3.png",
+  "silhouettes/5a506628-4182-44fb-8915-4c3626cd185b.png",
+  "silhouettes/5cd397e5-2525-403f-a22d-d22ec40233e4.png",
+  "silhouettes/6dff4d24-bf8c-4f3b-9dac-03f6e1c62f18.png",
+  "silhouettes/9f4afdc0-aaef-4781-b874-32cd4ecc9ab2.png",
+  "silhouettes/12f6ad9b-0caf-465e-a314-84ce6c3b025d.png"
 ];
 
 /* ---------------- DOM elements ---------------- */
