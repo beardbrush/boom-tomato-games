@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const gridEl = document.getElementById("grid");
   const cluesLabel = document.getElementById("cluesLabel");
-  const guessLabel = document.getElementById("guessLabel"); // BIG chatbox now
+  const guessLabel = document.getElementById("guessLabel");
   const fartBanner = document.getElementById("fartBanner");
   const accuseBtn = document.getElementById("accuseBtn");
   const newRoundBtn = document.getElementById("newRoundBtn");
@@ -17,36 +17,31 @@ document.addEventListener("DOMContentLoaded", () => {
   let cluesLeft = MAX_CLUES;
   let roundOver = false;
 
-  // ------------------------------
-  // 🎨 RANDOM EMOJI VARIANTS
-  // ------------------------------
   const EMOJIS = [
-    "🧑🏻", "🧑🏼", "🧑🏽", "🧑🏾", "🧑🏿",
-    "👩🏻", "👩🏼", "👩🏽", "👩🏾", "👩🏿",
-    "👨🏻", "👨🏼", "👨🏽", "👨🏾", "👨🏿",
-    "👩‍🦰", "👨‍🦰", 
-    "👩‍🦱", "👨‍🦱",
-    "👩‍🦳", "👨‍🦳",
-    "👩‍🦲", "👨‍🦲"
+    "🧑🏻","🧑🏼","🧑🏽","🧑🏾","🧑🏿",
+    "👩🏻","👩🏼","👩🏽","👩🏾","👩🏿",
+    "👨🏻","👨🏼","👨🏽","👨🏾","👨🏿",
+    "👩‍🦰","👨‍🦰",
+    "👩‍🦱","👨‍🦱",
+    "👩‍🦳","👨‍🦳",
+    "👩‍🦲","👨‍🦲"
   ];
 
-  // ------------------------------
-  // 🧾 RANDOM NAMES
-  // ------------------------------
   const NAME_LIST = [
-    "Alex", "Jordan", "Taylor", "Casey", "Riley", "Morgan", "Charlie",
-    "Sam", "Jamie", "Avery", "Harper", "Elliot", "Rowan", "Quinn",
-    "Skyler", "Dakota", "Reese", "Phoenix", "River", "Parker",
-    "Leo", "Oscar", "Ethan", "Mason", "Lucas", "Arlo", "Kai",
-    "Mia", "Sophie", "Ella", "Lily", "Ruby", "Zara", "Nina"
+    "Alex","Jordan","Taylor","Casey","Riley","Morgan","Charlie",
+    "Sam","Jamie","Avery","Harper","Elliot","Rowan","Quinn",
+    "Skyler","Dakota","Reese","Phoenix","River","Parker",
+    "Leo","Oscar","Ethan","Mason","Lucas","Arlo","Kai",
+    "Mia","Sophie","Ella","Lily","Ruby","Zara","Nina"
   ];
 
   const people = [];
 
   function indexToRowCol(index) {
-    const row = Math.floor(index / COLS);
-    const col = index % COLS;
-    return { row, col };
+    return {
+      row: Math.floor(index / COLS),
+      col: index % COLS
+    };
   }
 
   function randomInt(max) {
@@ -57,17 +52,18 @@ document.addEventListener("DOMContentLoaded", () => {
     farterIndex = randomInt(TOTAL);
   }
 
-  // ------------------------------
-  // 🧍 BUILD GRID WITH NAMES & EMOJIS
-  // ------------------------------
+  // ========================================================
+  // CREATE GRID WITH RANDOM NAMES + EMOJIS
+  // ========================================================
   function createGrid() {
     gridEl.innerHTML = "";
     people.length = 0;
 
     for (let i = 0; i < TOTAL; i++) {
-      const person = document.createElement("div");
-      person.className = "person";
-      person.dataset.index = i.toString();
+      const wrapper = document.createElement("div");
+      wrapper.className = "person";
+      wrapper.style.setProperty("--i", i);
+      wrapper.dataset.index = i;
 
       const inner = document.createElement("div");
       inner.className = "person-inner";
@@ -78,19 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const label = document.createElement("div");
       label.className = "person-label";
-
       const name = NAME_LIST[randomInt(NAME_LIST.length)];
       label.textContent = name;
 
       inner.appendChild(emoji);
       inner.appendChild(label);
-      person.appendChild(inner);
-      gridEl.appendChild(person);
+      wrapper.appendChild(inner);
+      gridEl.appendChild(wrapper);
 
-      person.addEventListener("click", () => onPersonClick(i));
+      wrapper.addEventListener("click", () => onPersonClick(i));
 
       people.push({
-        el: person,
+        el: wrapper,
         name: name
       });
     }
@@ -98,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resetClasses() {
     people.forEach(p => {
-      p.el.classList.remove("selected", "correct", "wrong", "bounce");
+      p.el.classList.remove("selected","correct","wrong","bounce","horrified","clicked","wiggle-in","idle");
     });
   }
 
@@ -107,8 +102,8 @@ document.addEventListener("DOMContentLoaded", () => {
     resetClasses();
     if (index !== null && people[index]) {
       const el = people[index].el;
-      el.classList.add("selected", "bounce");
-      setTimeout(() => el.classList.remove("bounce"), 250);
+      el.classList.add("selected","bounce");
+      setTimeout(() => el.classList.remove("bounce"),250);
     }
   }
 
@@ -116,6 +111,34 @@ document.addEventListener("DOMContentLoaded", () => {
     cluesLabel.textContent = `Clues left: ${cluesLeft}`;
   }
 
+  // ========================================================
+  // ROUND START — apply animations
+  // ========================================================
+  function applyStartAnimations() {
+    people.forEach((p, i) => {
+      setTimeout(() => p.el.classList.add("wiggle-in"), i * 40);
+    });
+
+    setTimeout(() => {
+      people.forEach((p,i) => {
+        p.el.classList.remove("wiggle-in");
+        p.el.classList.add("idle");
+      });
+    }, 800);
+
+    setTimeout(() => {
+      people.forEach((p,i) => {
+        if (i !== farterIndex) {
+          p.el.classList.add("horrified");
+          setTimeout(() => p.el.classList.remove("horrified"), 400);
+        }
+      });
+    }, 400);
+  }
+
+  // ========================================================
+  // START ROUND
+  // ========================================================
   function startRound() {
     roundOver = false;
     cluesLeft = MAX_CLUES;
@@ -129,11 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     guessLabel.textContent = "Tap a person for a clue, then pick someone to accuse.";
     accuseBtn.disabled = true;
+
+    applyStartAnimations();
   }
 
-  // ------------------------------
-  // 🔍 CLUE LOGIC
-  // ------------------------------
+  // ========================================================
+  // CLUE LOGIC
+  // ========================================================
   function getClueText(speakerIndex) {
     if (speakerIndex === farterIndex) {
       const liarLines = [
@@ -151,8 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const rowDiff = f.row - s.row;
     const colDiff = f.col - s.col;
 
-    const vertical = rowDiff < 0 ? "above" : (rowDiff > 0 ? "below" : null);
-    const horizontal = colDiff < 0 ? "to my left" : (colDiff > 0 ? "to my right" : null);
+    const vertical = rowDiff < 0 ? "above" : rowDiff > 0 ? "below" : null;
+    const horizontal = colDiff < 0 ? "to my left" : colDiff > 0 ? "to my right" : null;
 
     const distance = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
     const adjacent = distance === 1;
@@ -180,13 +205,16 @@ document.addEventListener("DOMContentLoaded", () => {
     return lines.join(" ");
   }
 
-  // ------------------------------
-  // 🖱 PERSON CLICK
-  // ------------------------------
+  // ========================================================
+  // PERSON CLICK
+  // ========================================================
   function onPersonClick(index) {
     if (roundOver) return;
 
     setSelected(index);
+    people[index].el.classList.add("clicked");
+    setTimeout(() => people[index].el.classList.remove("clicked"), 300);
+
     accuseBtn.disabled = false;
 
     if (cluesLeft > 0) {
@@ -199,9 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ------------------------------
-  // ⚖ ACCUSATION
-  // ------------------------------
+  // ========================================================
+  // ACCUSE
+  // ========================================================
   function doAccuse() {
     if (selectedIndex === null || roundOver) return;
 
@@ -212,18 +240,20 @@ document.addEventListener("DOMContentLoaded", () => {
     resetClasses();
 
     const correct = selectedIndex === farterIndex;
-    const selectedEl = people[selectedIndex].el;
-    const farterEl = people[farterIndex].el;
+    const sel = people[selectedIndex];
+    const farter = people[farterIndex];
 
     if (correct) {
-      selectedEl.classList.add("correct");
+      sel.el.classList.add("correct");
       resultPanel.classList.remove("hidden");
-      resultPanel.textContent = `✅ Correct! ${people[farterIndex].name} was the farter. Justice (and fresh air) is restored.`;
+      resultPanel.textContent =
+        `✅ Correct! ${farter.name} was the farter. Justice (and fresh air) is restored.`;
     } else {
-      selectedEl.classList.add("wrong");
-      farterEl.classList.add("correct");
+      sel.el.classList.add("wrong");
+      farter.el.classList.add("correct");
       resultPanel.classList.remove("hidden");
-      resultPanel.textContent = `❌ Not quite. You accused ${people[selectedIndex].name}, but ${people[farterIndex].name} was the true trouser trumpet.`;
+      resultPanel.textContent =
+        `❌ Not quite. You accused ${sel.name}, but ${farter.name} was the true trouser trumpet.`;
     }
 
     guessLabel.textContent = "Tap New Round to play again.";
@@ -232,9 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
   accuseBtn.addEventListener("click", doAccuse);
   newRoundBtn.addEventListener("click", startRound);
 
-  // ------------------------------
-  // INIT
-  // ------------------------------
   createGrid();
   startRound();
 });
