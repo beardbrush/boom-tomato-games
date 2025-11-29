@@ -1,10 +1,11 @@
 {
-  "name": "Character Silhouette Trainer – Boom Tomato Games",
-  "short_name": "Silhouette Trainer",
-  "start_url": "./index.html",
+  "name": "Speed Drawing Trainer – Boom Tomato Games",
+  "short_name": "SpeedDraw",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#03504E",
+  "background_color": "#ffffff",
   "theme_color": "#03504E",
+
   "icons": [
     {
       "src": "assets/icon-192.png",
