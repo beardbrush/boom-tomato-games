@@ -1,5 +1,5 @@
 /* --------------------------------------------------
-   Character Silhouette Trainer – Boom Tomato Games
+   Speed Drawing Trainer – Boom Tomato Games
 -------------------------------------------------- */
 
 :root {
@@ -22,14 +22,15 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Themes: background & text colour combos */
+/* Themes */
 
 body.theme-0 {
   background: var(--bt-bg-light);
@@ -50,6 +51,8 @@ body.theme-3 {
   background: var(--bt-bg-warm);
   color: #53381e;
 }
+
+/* Header */
 
 .bt-header {
   padding: 0.75rem 1rem;
@@ -81,6 +84,20 @@ body.theme-3 {
   opacity: 0.8;
 }
 
+.bt-home-link {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+
+.home-link {
+  color: var(--bt-teal-soft);
+  text-decoration: none;
+}
+
+.home-link:hover {
+  text-decoration: underline;
+}
+
 .app-shell {
   max-width: 960px;
   margin: 0 auto;
@@ -90,9 +107,7 @@ body.theme-3 {
   gap: 0.75rem;
 }
 
-/* --------------------------------------------------
-   Main silhouette area
--------------------------------------------------- */
+/* Main silhouette area */
 
 .silhouette-area {
   flex: 1;
@@ -118,9 +133,8 @@ body.theme-3 .silhouette-area {
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.45));
+  transition: opacity 0.25s ease-out;
 }
-
-/* Warning message */
 
 .warning {
   position: absolute;
@@ -146,34 +160,7 @@ body.theme-2 .warning {
   display: none;
 }
 
-/* --------------------------------------------------
-   NEW: Time-Up Overlay Message
--------------------------------------------------- */
-
-.time-up {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.35rem;
-  font-weight: 600;
-  text-align: center;
-  padding: 1rem 1.5rem;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  border-radius: 12px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-  z-index: 20;
-}
-
-.time-up.hidden {
-  display: none;
-}
-
-/* --------------------------------------------------
-   Controls
--------------------------------------------------- */
+/* Controls */
 
 .controls {
   border-radius: 18px;
@@ -197,8 +184,8 @@ body.theme-3 .controls {
 
 .timer-display {
   font-variant-numeric: tabular-nums;
-  font-size: 1.5rem;
-  padding: 0.3rem 0.9rem;
+  font-size: 1.6rem;
+  padding: 0.3rem 1rem;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   background: rgba(0, 0, 0, 0.03);
@@ -223,7 +210,10 @@ body.theme-3 .timer-display {
   padding: 0.45rem 0.95rem;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: transform var(--bt-transition-fast), box-shadow var(--bt-transition-fast), background var(--bt-transition-fast);
+  transition:
+    transform var(--bt-transition-fast),
+    box-shadow var(--bt-transition-fast),
+    background var(--bt-transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -271,23 +261,18 @@ body.theme-3 .btn.btn-ghost {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* --------------------------------------------------
-   Footer (UPDATED for readability)
--------------------------------------------------- */
+/* Footer */
 
 .bt-footer {
   max-width: 960px;
   margin: 0.5rem auto 0.75rem;
   padding: 0 0.75rem;
-  font-size: 0.95rem;   /* Was 0.75rem */
+  font-size: 0.85rem;
   opacity: 0.9;
-  line-height: 1.6;
-  text-align: center;
+  line-height: 1.4;
 }
 
-/* --------------------------------------------------
-   Larger screens
--------------------------------------------------- */
+/* Larger screens */
 
 @media (min-width: 768px) {
   .app-shell {
