@@ -12,14 +12,9 @@ const ASSETS = [
   "./manifest.json",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
-  // NOTE:
-  // We do NOT preload silhouettes because 50 PNGs = heavy.
-  // They will be cached on first view (runtime caching).
+  // Silhouettes will be cached as you use them (runtime caching)
 ];
 
-/* --------------------------------------------------
-   INSTALL – Precache Core Files
--------------------------------------------------- */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -35,13 +30,9 @@ self.addEventListener("install", (event) => {
       }
     })
   );
-
   self.skipWaiting();
 });
 
-/* --------------------------------------------------
-   ACTIVATE – Remove Old Caches
--------------------------------------------------- */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -52,33 +43,24 @@ self.addEventListener("activate", (event) => {
       )
     )
   );
-
   self.clients.claim();
 });
 
-/* --------------------------------------------------
-   FETCH – Cache-first for performance
--------------------------------------------------- */
-
 self.addEventListener("fetch", (event) => {
-  const request = event.request;
-
-  // Only handle GET (ignore POST/PUT/etc.)
+  const { request } = event;
   if (request.method !== "GET") return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached; // Serve from cache
+      if (cached) return cached;
 
       return fetch(request)
         .then((response) => {
-          // Cache new silhouette files & others
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, response.clone());
-            return response;
-          });
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
         })
-        .catch(() => cached); // fallback to cache when offline
+        .catch(() => cached);
     })
   );
 });
