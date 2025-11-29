@@ -57,9 +57,7 @@
             --bt-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -68,16 +66,8 @@
             color: var(--bt-text);
         }
 
-        a {
-            color: var(--bt-teal);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Layout */
+        a { color: var(--bt-teal); text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
         .site-header {
             padding: 1.8rem 1rem 1.4rem;
@@ -86,17 +76,8 @@
             background: #ffffff;
         }
 
-        .site-header h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: var(--bt-teal);
-        }
-
-        .site-header p {
-            margin: 0.4rem 0 0;
-            color: var(--bt-muted);
-            font-size: 0.95rem;
-        }
+        .site-header h1 { margin: 0; font-size: 2rem; color: var(--bt-teal); }
+        .site-header p { margin: 0.4rem 0 0; color: var(--bt-muted); font-size: 0.95rem; }
 
         .site-main {
             max-width: 960px;
@@ -113,18 +94,8 @@
             text-align: center;
         }
 
-        .card h2 {
-            margin-top: 0;
-            margin-bottom: 0.4rem;
-            font-size: 1.4rem;
-        }
-
-        .card p {
-            margin-top: 0.4rem;
-            margin-bottom: 0.6rem;
-            font-size: 0.95rem;
-            color: var(--bt-text);
-        }
+        .card h2 { margin-top: 0; margin-bottom: 0.4rem; font-size: 1.4rem; }
+        .card p { margin-top: 0.4rem; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--bt-text); }
 
         .hero-image {
             width: 100%;
@@ -136,42 +107,18 @@
         }
 
         /* Buttons */
-
-        .button,
-        .btn-primary {
+        .button {
             background-color: var(--bt-teal);
             color: #ffffff;
             padding: 0.8rem 1.6rem;
             border-radius: 999px;
             font-size: 0.95rem;
-            text-decoration: none;
             display: inline-block;
-            margin: 0.35rem 0.35rem 0;
+            margin: 0.35rem;
             transition: background 0.2s ease-in-out, transform 0.05s ease;
         }
 
-        .button:hover,
-        .btn-primary:hover {
-            background-color: var(--bt-teal-soft);
-            text-decoration: none;
-            transform: translateY(-1px);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--bt-teal);
-            border: 1px solid var(--bt-border);
-        }
-
-        .btn-ghost:hover {
-            border-color: var(--bt-teal);
-        }
-
-        .store-badges img {
-            height: 60px;
-            margin: 0.3rem;
-            border: none;
-        }
+        .button:hover { background-color: var(--bt-teal-soft); transform: translateY(-1px); }
 
         footer {
             border-top: 1px solid var(--bt-border);
@@ -181,11 +128,10 @@
             color: var(--bt-muted);
         }
 
-        footer a {
-            color: var(--bt-teal);
-        }
+        footer a { color: var(--bt-teal); }
     </style>
 </head>
+
 <body>
     <header class="site-header">
         <h1>Boom Tomato Games</h1>
@@ -201,10 +147,10 @@
             <p>A mystery game of clues, lies, and consequences.</p>
 
             <div class="store-badges">
-                <a href="https://apps.apple.com/us/app/detectives-notebook/id6752763993" target="_blank" rel="noopener">
+                <a href="https://apps.apple.com/us/app/detectives-notebook/id6752763993" target="_blank">
                     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
                 </a>
-                <a href="https://play.google.com/store/apps/details?id=com.detectivenotebook" target="_blank" rel="noopener">
+                <a href="https://play.google.com/store/apps/details?id=com.detectivenotebook" target="_blank">
                     <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png">
                 </a>
             </div>
@@ -226,15 +172,22 @@
             <p><a href="/notan-maker/" class="button">🌗 Try Notan Maker</a></p>
         </section>
 
-
         <!-- Character Silhouette Trainer -->
         <section class="card">
             <h2>Character Silhouette Trainer</h2>
-            <p>Daily gesture training using random silhouettes. Build shape memory, proportion awareness, and fast sketching confidence.</p>
-            <p class="subtext">Free browser tool — mobile friendly and offline-ready (PWA).</p>
+            <p>Daily gesture training using random silhouettes. Build shape memory and fast sketching confidence.</p>
+            <p class="subtext">Free browser tool — mobile friendly and offline-ready.</p>
             <p><a href="/character-silhouette-trainer/" class="button">🕴️ Try the Silhouette Trainer</a></p>
         </section>
 
+        <!-- ⭐ NEW: Fart Detective -->
+        <section class="card">
+            <h2>Fart Detective</h2>
+            <img src="/fart-detective/splash.png" class="hero-image" alt="Fart Detective Game">
+            <p>A funny deduction puzzle — someone farted in the lift. Use logic and clues to find the culprit!</p>
+            <p class="subtext">Free browser game — mobile friendly and installable.</p>
+            <p><a href="/fart-detective/" class="button">💨 Play Fart Detective</a></p>
+        </section>
 
         <!-- Trailer -->
         <section class="card">
@@ -252,7 +205,7 @@
             <h2>The Lone Trader</h2>
             <img src="TheLoneTrader.png" class="hero-image">
             <p>Explore, trade, and survive in this free pixel-western experience.</p>
-            <p><a href="https://play.google.com/store/apps/details?id=the.Lone.Trader" target="_blank" rel="noopener" class="button">Download on Google Play</a></p>
+            <p><a href="https://play.google.com/store/apps/details?id=the.Lone.Trader" target="_blank" class="button">Download on Google Play</a></p>
         </section>
 
     </main>
