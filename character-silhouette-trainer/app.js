@@ -1,8 +1,7 @@
 /* --------------------------------------------------
-   Character Silhouette Trainer – Clean Final App
+   Speed Drawing Trainer – Boom Tomato Games
+   FINAL STABLE VERSION
 -------------------------------------------------- */
-
-/* ---------------- Silhouette list ---------------- */
 
 const SILHOUETTES = [
   "silhouettes/56f537fc-74d2-4430-bbcd-0d578988447b.png",
@@ -24,9 +23,8 @@ const SILHOUETTES = [
   "silhouettes/b4b5c195-52fe-447c-9de7-e7ed4f9fa63b.png",
   "silhouettes/b64e4673-ff3f-49c9-a8f6-f42d515f650d.png",
   "silhouettes/cd9f60d1-9acb-4812-a8cd-b01ae4695277.png",
-  "silhouettes/ChatGPT Image Nov 29, 2025, 04_56_53 AM.png",
-  "silhouettes/d5df44e0-9d63-404f-a5aa-22d36be7e995.png",
   "silhouettes/d22c337d-eb31-4cae-86d2-636ccbf9994b.png",
+  "silhouettes/d5df44e0-9d63-404f-a5aa-22d36be7e995.png",
   "silhouettes/df485fd0-a767-4feb-8309-9bc0433ee79f.png",
   "silhouettes/e9c8e5c4-2a52-41e1-a1d0-401c0d2aed67.png",
   "silhouettes/e93fc591-39e2-409d-a39c-fbcb1a4f4b3b.png",
@@ -45,325 +43,105 @@ const SILHOUETTES = [
   "silhouettes/12f6ad9b-0caf-465e-a314-84ce6c3b025d.png"
 ];
 
-/* ---------------- DOM elements ---------------- */
-
+/* --------------------------------------------------
+   Elements
+-------------------------------------------------- */
 const imgEl = document.getElementById("silhouette-img");
-const warningEl = document.getElementById("no-image-warning");
 const timerDisplayEl = document.getElementById("timer-display");
-const timerButtons = Array.from(document.querySelectorAll(".timer-btn"));
 const newBtn = document.getElementById("new-btn");
+const timerButtons = document.querySelectorAll(".timer-btn");
 const pdfBtn = document.getElementById("pdf-btn");
-const themeBtn = document.getElementById("theme-btn");
-const timerHintEl = document.getElementById("timer-hint"); // small hint under buttons
-const silhouetteAreaEl = document.querySelector(".silhouette-area");
 
-/* ---------------- State ---------------- */
-
-let currentIndex = -1;
-let currentDuration = 0;
+let currentIndex = 0;
 let timerInterval = null;
 let remainingSeconds = 0;
 
-let currentTheme = 0;
-const MAX_THEMES = 4;
+/* --------------------------------------------------
+   Functions
+-------------------------------------------------- */
 
-/* For image preloading */
-const preloadedIndexes = new Set();
-const PRELOAD_AHEAD = 6;
-
-/* ---------------- Helpers ---------------- */
-
-function formatTime(seconds) {
-  const s = Math.max(0, Math.floor(seconds));
-  const mm = String(Math.floor(s / 60)).padStart(2, "0");
-  const ss = String(s % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
-}
-
-function updateTimerDisplay() {
-  timerDisplayEl.textContent = formatTime(remainingSeconds);
-}
-
-function getRandomIndex() {
-  if (SILHOUETTES.length <= 1) return 0;
-  let idx;
-  do {
-    idx = Math.floor(Math.random() * SILHOUETTES.length);
-  } while (idx === currentIndex);
-  return idx;
-}
-
-/* Preload a handful of silhouettes so they appear instantly */
-function preloadSomeSilhouettes(count = PRELOAD_AHEAD) {
-  const needed = [];
-
-  while (needed.length < count && needed.length < SILHOUETTES.length) {
-    const idx = Math.floor(Math.random() * SILHOUETTES.length);
-    if (!preloadedIndexes.has(idx) && idx !== currentIndex) {
-      needed.push(idx);
-      preloadedIndexes.add(idx);
-    }
-  }
-
-  needed.forEach((i) => {
-    const img = new Image();
-    img.src = SILHOUETTES[i];
-  });
-}
-
-/* ---------------- Show silhouette ---------------- */
-
-function showSilhouetteByIndex(idx) {
-  if (!SILHOUETTES.length) {
-    warningEl.classList.remove("hidden");
-    imgEl.style.display = "none";
-    return;
-  }
-
-  warningEl.classList.add("hidden");
+function showSilhouette(index) {
+  currentIndex = index;
+  imgEl.src = SILHOUETTES[index];
   imgEl.style.display = "block";
-
-  currentIndex = idx;
-  imgEl.src = SILHOUETTES[currentIndex];
-  imgEl.alt = "Silhouette " + (currentIndex + 1);
-
-  // Whenever we show a new one, queue up a few more in the background
-  preloadSomeSilhouettes();
 }
 
 function showRandomSilhouette() {
-  const idx = getRandomIndex();
-  showSilhouetteByIndex(idx);
+  const max = SILHOUETTES.length;
+  let newIndex = currentIndex;
+  while (newIndex === currentIndex) {
+    newIndex = Math.floor(Math.random() * max);
+  }
+  showSilhouette(newIndex);
 }
 
-/* ---------------- Timer ---------------- */
-
 function clearTimer() {
-  if (timerInterval !== null) {
+  if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
 }
 
-function startTimer(seconds) {
+function startTimer(sec) {
   clearTimer();
-  currentDuration = seconds;
-  remainingSeconds = seconds;
-  updateTimerDisplay();
-  highlightTimerButton(seconds);
+  remainingSeconds = sec;
+  updateTimer();
 
-  if (timerHintEl) timerHintEl.classList.add("hidden");
-
-  if (seconds === 0) return;
+  if (sec === 0) return;
 
   timerInterval = setInterval(() => {
-    remainingSeconds -= 1;
-    updateTimerDisplay();
+    remainingSeconds--;
+    updateTimer();
 
     if (remainingSeconds <= 0) {
       clearTimer();
-      remainingSeconds = 0;
-      updateTimerDisplay();
-
-      // Hide silhouette and show hint
-      imgEl.src = "";
       imgEl.style.display = "none";
-      if (timerHintEl) timerHintEl.classList.remove("hidden");
     }
   }, 1000);
 }
 
-function highlightTimerButton(seconds) {
-  timerButtons.forEach((btn) => {
-    const s = Number(btn.dataset.seconds || "0");
-    if (s === seconds && seconds > 0) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
-  });
+function updateTimer() {
+  const m = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
+  const s = String(remainingSeconds % 60).padStart(2, "0");
+  timerDisplayEl.textContent = `${m}:${s}`;
 }
 
-/* ---------------- Theme switching ---------------- */
-
-function cycleTheme() {
-  currentTheme = (currentTheme + 1) % MAX_THEMES;
-  document.body.className = `theme-${currentTheme}`;
-}
-
-/* ---------------- Worksheet PDF ---------------- */
-
-function shuffleArray(arr) {
-  const copy = arr.slice();
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
+/* --------------------------------------------------
+   PDF
+-------------------------------------------------- */
 
 function openWorksheetWindow() {
-  if (!SILHOUETTES.length) {
-    alert("No silhouettes found.");
-    return;
-  }
-
-  const toUse = shuffleArray(SILHOUETTES).slice(0, 10);
   const win = window.open("", "_blank");
-  if (!win) return;
+  win.document.write(`
+    <button onclick="window.history.back()" 
+      style="position:fixed; top:10px; left:10px; z-index:1000; padding:10px; background:#03504E; color:white; border:none; border-radius:6px;">
+      ⬅ Back
+    </button>
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<title>Silhouette Worksheet – Boom Tomato</title>
-<style>
-  @page { size: A4; margin: 1.5cm; }
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0;
-    padding: 0.5cm;
-  }
-  h1 {
-    font-size: 16px;
-    text-align: center;
-    margin: 0 0 0.3cm;
-  }
-  p {
-    font-size: 11px;
-    text-align: center;
-    margin: 0 0 0.5cm;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: 4cm;
-    gap: 0.4cm;
-  }
-  .cell {
-    border: 1px solid #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2cm;
-  }
-  .cell img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-</style>
-</head>
-<body>
-  <h1>Boom Tomato – Silhouette Trainer Worksheet</h1>
-  <p>Draw each silhouette quickly, then again with more care. Focus on gesture & proportions.</p>
-  <div class="grid">
-    ${toUse
-      .map(
-        (src) => `
-      <div class="cell">
-        <img src="${src}" alt="Silhouette" />
-      </div>`
-      )
-      .join("")}
-  </div>
-</body>
-</html>`;
-
-  win.document.open();
-  win.document.write(html);
+    <h2 style="text-align:center;">Speed Drawing Trainer – Worksheet</h2>
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;">
+      ${SILHOUETTES.slice(0, 25).map(src => `<div><img src="${src}" style="width:100%;"></div>`).join("")}
+    </div>
+  `);
   win.document.close();
-
-  setTimeout(() => {
-    win.focus();
-    win.print();
-  }, 600);
 }
 
-/* ---------------- Swipe gestures (mobile) ---------------- */
+/* --------------------------------------------------
+   Init
+-------------------------------------------------- */
 
-let touchStartX = 0;
-let touchStartY = 0;
-const SWIPE_THRESHOLD = 40; // pixels
-
-function handleTouchStart(e) {
-  const t = e.touches[0];
-  touchStartX = t.clientX;
-  touchStartY = t.clientY;
-}
-
-function handleTouchEnd(e) {
-  const t = e.changedTouches[0];
-  const dx = t.clientX - touchStartX;
-  const dy = t.clientY - touchStartY;
-
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
-    // Horizontal swipe → treat as "New Silhouette"
-    doNewSilhouette();
-  }
-}
-
-/* ---------------- Actions ---------------- */
-
-function doNewSilhouette() {
+document.addEventListener("DOMContentLoaded", () => {
   showRandomSilhouette();
-  if (timerHintEl) timerHintEl.classList.add("hidden");
-
-  if (currentDuration > 0) {
-    startTimer(currentDuration);
-  }
-}
-
-/* ---------------- PWA: service worker registration ---------------- */
-
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-
-  // Scope will be the /character-silhouette-trainer/ folder
-  navigator.serviceWorker
-    .register("service-worker.js")
-    .catch((err) => console.warn("[SW] registration failed", err));
-}
-
-/* ---------------- Init ---------------- */
-
-function init() {
-  if (!SILHOUETTES.length) {
-    warningEl.classList.remove("hidden");
-  } else {
-    showRandomSilhouette();
-  }
-
   startTimer(0);
-  preloadSomeSilhouettes();
 
-  // Timer buttons
-  timerButtons.forEach((btn) => {
+  newBtn.addEventListener("click", () => showRandomSilhouette());
+
+  timerButtons.forEach(btn => {
     btn.addEventListener("click", () => {
-      const sec = Number(btn.dataset.seconds || "0");
-      doNewSilhouette();
+      const sec = Number(btn.dataset.seconds);
       startTimer(sec);
     });
   });
 
-  // New silhouette button
-  newBtn.addEventListener("click", doNewSilhouette);
-
-  // Worksheet
   pdfBtn.addEventListener("click", openWorksheetWindow);
-
-  // Theme cycle
-  themeBtn.addEventListener("click", cycleTheme);
-
-  // Swipe events (mobile)
-  if (silhouetteAreaEl) {
-    silhouetteAreaEl.addEventListener("touchstart", handleTouchStart, { passive: true });
-    silhouetteAreaEl.addEventListener("touchend", handleTouchEnd, { passive: true });
-  }
-
-  // PWA SW
-  registerServiceWorker();
-}
-
-document.addEventListener("DOMContentLoaded", init);
+});
