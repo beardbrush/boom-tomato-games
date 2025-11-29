@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Fart Detective – Boom Tomato Games</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,48 +19,40 @@
 </head>
 <body>
   <div id="app">
-    
-    <!-- Header -->
     <header class="top-bar">
       <div class="title">Fart Detective</div>
       <div class="subtitle">Who broke wind in the lift?</div>
     </header>
 
-    <!-- Floating clue bubble (moved OUT of the layout) -->
-    <div id="guessLabel">Tap a person for a clue</div>
-
-    <!-- Main Game Layout -->
     <main class="game-area">
-
-      <!-- Status row (only cluesLabel remains inside) -->
-      <div class="status-row">
-        <span id="cluesLabel">Clues left: 6</span>
+      <!-- HUD row: clues + fart banner -->
+      <div class="hud-row">
+        <span id="cluesLabel" class="clues-label">Clues left: 6</span>
+        <span id="fartBanner" class="fart-banner hidden">
+          💨 Someone just farted in the lift!
+        </span>
       </div>
 
-      <!-- Fart banner -->
-      <div id="fartBanner" class="fart-banner hidden">
-        💨 Someone just farted in the lift!
+      <!-- Clue text row (no overlay, just its own band) -->
+      <div id="guessLabel" class="clue-box">
+        Tap a person for a clue, then pick someone to accuse.
       </div>
 
-      <!-- Grid -->
+      <!-- Character grid lives in the middle, flexes with height -->
       <div id="grid" class="grid"></div>
 
-      <!-- Controls -->
+      <!-- Buttons row at the bottom of the game area -->
       <div class="controls">
         <button id="accuseBtn" class="btn primary" disabled>Accuse Selected</button>
         <button id="newRoundBtn" class="btn">New Round</button>
       </div>
 
-      <!-- Result panel -->
+      <!-- Result text below buttons -->
       <div id="resultPanel" class="result-panel hidden"></div>
-
     </main>
   </div>
 
-  <!-- Game Script -->
   <script src="./game.js"></script>
-
-  <!-- Register PWA -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js").catch(console.warn);
@@ -67,3 +60,5 @@
   </script>
 </body>
 </html>
+
+
