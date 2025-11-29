@@ -1,0 +1,306 @@
+/* --------------------------------------------------
+   Character Silhouette Trainer – Boom Tomato Games
+-------------------------------------------------- */
+
+:root {
+  --bt-teal: #03504e;
+  --bt-teal-soft: #07746f;
+  --bt-accent: #ff5b3a;
+  --bt-bg-light: #f4f4f4;
+  --bt-bg-dark: #111111;
+  --bt-bg-warm: #f8f1e6;
+  --bt-bg-cool: #0b1e30;
+  --bt-text-main: #111111;
+  --bt-radius: 12px;
+  --bt-shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.18);
+  --bt-transition-fast: 0.18s ease-out;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Themes: background & text colour combos */
+
+body.theme-0 {
+  background: var(--bt-bg-light);
+  color: var(--bt-text-main);
+}
+
+body.theme-1 {
+  background: #ffffff;
+  color: var(--bt-text-main);
+}
+
+body.theme-2 {
+  background: var(--bt-bg-dark);
+  color: #f4f4f4;
+}
+
+body.theme-3 {
+  background: var(--bt-bg-warm);
+  color: #53381e;
+}
+
+.bt-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.bt-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.bt-logo {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bt-teal-soft);
+  margin-bottom: 0.25rem;
+}
+
+.bt-header h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.bt-tagline {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* --------------------------------------------------
+   Main silhouette area
+-------------------------------------------------- */
+
+.silhouette-area {
+  flex: 1;
+  min-height: 50vh;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--bt-shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+body.theme-2 .silhouette-area,
+body.theme-3 .silhouette-area {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+#silhouette-img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.45));
+}
+
+/* Warning message */
+
+.warning {
+  position: absolute;
+  inset: 1rem;
+  border-radius: var(--bt-radius);
+  border: 1px dashed rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+body.theme-2 .warning {
+  background: rgba(20, 20, 20, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.warning.hidden {
+  display: none;
+}
+
+/* --------------------------------------------------
+   NEW: Time-Up Overlay Message
+-------------------------------------------------- */
+
+.time-up {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+}
+
+.time-up.hidden {
+  display: none;
+}
+
+/* --------------------------------------------------
+   Controls
+-------------------------------------------------- */
+
+.controls {
+  border-radius: 18px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--bt-shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+body.theme-2 .controls,
+body.theme-3 .controls {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.timer-row {
+  display: flex;
+  justify-content: center;
+}
+
+.timer-display {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.theme-2 .timer-display,
+body.theme-3 .timer-display {
+  background: rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform var(--bt-transition-fast), box-shadow var(--bt-transition-fast), background var(--bt-transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn.timer-btn {
+  background: var(--bt-teal);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+.btn.timer-btn.active {
+  background: var(--bt-accent);
+}
+
+.btn.btn-secondary {
+  background: #ffffff;
+  color: var(--bt-text-main);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.theme-2 .btn.btn-secondary,
+body.theme-3 .btn.btn-secondary {
+  background: rgba(20, 20, 20, 0.9);
+  color: #f4f4f4;
+}
+
+.btn.btn-ghost {
+  background: transparent;
+  color: inherit;
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+}
+
+body.theme-2 .btn.btn-ghost,
+body.theme-3 .btn.btn-ghost {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* --------------------------------------------------
+   Footer (UPDATED for readability)
+-------------------------------------------------- */
+
+.bt-footer {
+  max-width: 960px;
+  margin: 0.5rem auto 0.75rem;
+  padding: 0 0.75rem;
+  font-size: 0.95rem;   /* Was 0.75rem */
+  opacity: 0.9;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* --------------------------------------------------
+   Larger screens
+-------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .app-shell {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .silhouette-area {
+    flex: 2;
+    min-height: 60vh;
+  }
+
+  .controls {
+    flex: 1;
+  }
+}

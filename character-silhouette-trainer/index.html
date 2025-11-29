@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Character Silhouette Trainer – Boom Tomato Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#03504E" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="theme-0">
+
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <h1>Character Silhouette Trainer</h1>
+      <p class="bt-tagline">Quick gesture, strong shapes, daily practice.</p>
+    </div>
+  </header>
+
+  <main class="app-shell">
+
+    <!-- LEFT PANEL -->
+    <section class="silhouette-area">
+
+      <img id="silhouette-img" src="" alt="Silhouette to draw" />
+
+      <!-- ⭐ NEW MESSAGE WHEN TIMER ENDS ⭐ -->
+      <div id="time-up-msg" class="time-up hidden">
+        Time’s up — press “New Silhouette” for the next pose.
+      </div>
+
+      <div id="no-image-warning" class="warning hidden">
+        Add PNG silhouettes into the <code>silhouettes/</code> folder to start.
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <section class="controls">
+
+      <div class="timer-row">
+        <div id="timer-display" class="timer-display">00:00</div>
+      </div>
+
+      <div class="button-row timer-buttons">
+        <button class="btn timer-btn" data-seconds="30">30 s</button>
+        <button class="btn timer-btn" data-seconds="60">60 s</button>
+        <button class="btn timer-btn" data-seconds="120">120 s</button>
+      </div>
+
+      <div class="button-row actions">
+        <button id="new-btn" class="btn btn-secondary">New Silhouette</button>
+        <button id="pdf-btn" class="btn btn-secondary">Download Worksheet</button>
+      </div>
+
+      <div class="button-row actions">
+        <button id="theme-btn" class="btn btn-ghost">Change Background</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ⭐ READABLE FOOTER ⭐ -->
+  <footer class="bt-footer footer-note">
+    Draw traditionally. Timer + silhouettes help you focus on gesture, proportion, and shape.
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
