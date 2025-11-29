@@ -1,20 +1,15 @@
 const CACHE_NAME = "fart-detective-v1";
+
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
-  "./manifest.json",
-  "./offline.html",
-  "./game.pck",
   "./game.js",
-  "./game.wasm",
-  "./engine.js",
+  "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png",
-  "./splash.png"
+  "./icon-512.png"
 ];
 
-// Install: cache all assets
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -22,23 +17,29 @@ self.addEventListener("install", event => {
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => 
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      )
     )
   );
   self.clients.claim();
 });
 
-// Fetch: try network, fallback to cache, fallback to offline
 self.addEventListener("fetch", event => {
   event.respondWith(
-    fetch(event.request)
-      .then(res => res)
-      .catch(() =>
-        caches.match(event.request).then(resp => resp || caches.match("./offline.html"))
-      )
+    caches.match(event.request).then(cached => {
+      return (
+        cached ||
+        fetch(event.request).catch(() => {
+          // For now, no offline.html – just fail silently for non-cached
+          return cached;
+        })
+      );
+    })
   );
 });
