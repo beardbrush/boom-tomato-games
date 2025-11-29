@@ -1,0 +1,200 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const ROWS = 5;
+  const COLS = 4;
+  const TOTAL = ROWS * COLS;
+  const MAX_CLUES = 6;
+
+  const gridEl = document.getElementById("grid");
+  const cluesLabel = document.getElementById("cluesLabel");
+  const guessLabel = document.getElementById("guessLabel");
+  const fartBanner = document.getElementById("fartBanner");
+  const accuseBtn = document.getElementById("accuseBtn");
+  const newRoundBtn = document.getElementById("newRoundBtn");
+  const resultPanel = document.getElementById("resultPanel");
+
+  let farterIndex = -1;
+  let selectedIndex = null;
+  let cluesLeft = MAX_CLUES;
+  let roundOver = false;
+
+  const EMOJIS = ["🧑", "👩", "👨", "🧔", "👩‍🦰", "👨‍🦰", "👩‍🦱", "👨‍🦱", "👩‍🦳", "👨‍🦳"];
+  const people = [];
+
+  function indexToRowCol(index) {
+    const row = Math.floor(index / COLS);
+    const col = index % COLS;
+    return { row, col };
+  }
+
+  function randomInt(max) {
+    return Math.floor(Math.random() * max);
+  }
+
+  function pickFarter() {
+    farterIndex = randomInt(TOTAL);
+  }
+
+  function createGrid() {
+    gridEl.innerHTML = "";
+    people.length = 0;
+
+    for (let i = 0; i < TOTAL; i++) {
+      const person = document.createElement("div");
+      person.className = "person";
+      person.dataset.index = i.toString();
+
+      const inner = document.createElement("div");
+      inner.className = "person-inner";
+
+      const emoji = document.createElement("div");
+      emoji.className = "person-emoji";
+      emoji.textContent = EMOJIS[i % EMOJIS.length];
+
+      const label = document.createElement("div");
+      label.className = "person-label";
+      label.textContent = `#${i + 1}`;
+
+      inner.appendChild(emoji);
+      inner.appendChild(label);
+      person.appendChild(inner);
+      gridEl.appendChild(person);
+
+      person.addEventListener("click", () => onPersonClick(i));
+      people.push(person);
+    }
+  }
+
+  function resetClasses() {
+    people.forEach(p => {
+      p.classList.remove("selected", "correct", "wrong", "bounce");
+    });
+  }
+
+  function setSelected(index) {
+    selectedIndex = index;
+    resetClasses();
+    if (index !== null && people[index]) {
+      people[index].classList.add("selected", "bounce");
+      setTimeout(() => {
+        people[index].classList.remove("bounce");
+      }, 250);
+    }
+  }
+
+  function updateClueLabel() {
+    cluesLabel.textContent = `Clues left: ${cluesLeft}`;
+  }
+
+  function startRound() {
+    roundOver = false;
+    cluesLeft = MAX_CLUES;
+    pickFarter();
+    resetClasses();
+    setSelected(null);
+    updateClueLabel();
+    fartBanner.classList.remove("hidden");
+    resultPanel.classList.add("hidden");
+    guessLabel.textContent = "Tap a person for a clue, then pick someone to accuse.";
+    accuseBtn.disabled = true;
+  }
+
+  function getClueText(speakerIndex) {
+    if (speakerIndex === farterIndex) {
+      const liarLines = [
+        "It definitely wasn’t me. I’m offended you’d even ask.",
+        "I’m smelling something from the other side of the lift.",
+        "Whoever it was, they’re nowhere near me.",
+        "You’re barking up the wrong trouser leg, detective."
+      ];
+      return liarLines[randomInt(liarLines.length)];
+    }
+
+    const s = indexToRowCol(speakerIndex);
+    const f = indexToRowCol(farterIndex);
+
+    const rowDiff = f.row - s.row;
+    const colDiff = f.col - s.col;
+
+    const vertical = rowDiff < 0 ? "above" : (rowDiff > 0 ? "below" : null);
+    const horizontal = colDiff < 0 ? "to my left" : (colDiff > 0 ? "to my right" : null);
+
+    const distance = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
+    const adjacent = distance === 1;
+
+    const lines = [];
+
+    if (adjacent) {
+      lines.push("They’re really close to me. I can almost feel the heat…");
+    } else if (distance >= 3) {
+      lines.push("They’re a fair way from me. I’m not in the danger zone.");
+    } else {
+      lines.push("We’re somewhere in the same half of the lift.");
+    }
+
+    if (vertical && horizontal) {
+      lines.push(`I’d say they’re ${vertical} and ${horizontal}.`);
+    } else if (vertical) {
+      lines.push(`I’m pretty sure they’re ${vertical} me.`);
+    } else if (horizontal) {
+      lines.push(`I’m getting whiffs from ${horizontal}.`);
+    } else {
+      lines.push("They’re on the same row as me. The air is… concentrated here.");
+    }
+
+    return lines.join(" ");
+  }
+
+  function onPersonClick(index) {
+    if (roundOver) {
+      return;
+    }
+
+    // Always let you change who you want to accuse
+    setSelected(index);
+    accuseBtn.disabled = false;
+
+    // Use a clue if you still have some left
+    if (cluesLeft > 0) {
+      const clue = getClueText(index);
+      guessLabel.textContent = clue;
+      cluesLeft -= 1;
+      updateClueLabel();
+    } else {
+      guessLabel.textContent = "No clues left. Make your best guess and hit Accuse.";
+    }
+  }
+
+  function doAccuse() {
+    if (selectedIndex === null || roundOver) return;
+
+    roundOver = true;
+    fartBanner.classList.add("hidden");
+    accuseBtn.disabled = true;
+
+    resetClasses();
+
+    const correct = selectedIndex === farterIndex;
+    const selectedEl = people[selectedIndex];
+    const farterEl = people[farterIndex];
+
+    if (correct) {
+      selectedEl.classList.add("correct");
+      resultPanel.classList.remove("hidden");
+      resultPanel.textContent = `✅ Correct! Person #${farterIndex + 1} was the farter. Justice (and fresh air) is restored.`;
+    } else {
+      selectedEl.classList.add("wrong");
+      farterEl.classList.add("correct");
+      resultPanel.classList.remove("hidden");
+      resultPanel.textContent = `❌ Not quite. You accused #${selectedIndex + 1}, but #${farterIndex + 1} was the true trouser trumpet.`;
+    }
+
+    guessLabel.textContent = "Tap New Round to play again.";
+  }
+
+  accuseBtn.addEventListener("click", doAccuse);
+  newRoundBtn.addEventListener("click", startRound);
+
+  // Initial setup
+  createGrid();
+  startRound();
+});
