@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1">
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" sizes="192x192">
+  <link rel="stylesheet" href="./style.css" />
+  <title>Fart Detective</title>
+</head>
+<body>
+  <div id="loading">
+    <h1>Preparing the fart investigation...</h1>
+  </div>
+  <canvas id="game-canvas"></canvas>
+
+  <script>
+    document.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+    }
+
+    let canvas = document.getElementById('game-canvas');
+
+    // Godot loader – update to match your export
+    const engine = new Engine({
+      canvas,
+      focusCanvas: true,
+      onProgress: (current, total) => {
+        document.getElementById('loading').style.display = "flex";
+      },
+      onLoad: () => {
+        document.getElementById('loading').style.display = "none";
+      },
+    });
+
+    engine.startGame({
+      executable: 'game.pck',
+      mainPack: 'game.pck',
+      canvasResizePolicy: 2,
+    });
+
+    let deferredPrompt;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Optionally show a custom install button
+    });
+  </script>
+  <script src="./engine.js"></script>
+</body>
+</html>
