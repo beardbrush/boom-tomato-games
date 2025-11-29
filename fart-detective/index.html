@@ -2,55 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1">
+  <title>Fart Detective – Boom Tomato Games</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icon-192.png" sizes="192x192">
+  <link rel="icon" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" sizes="512x512" href="./icon-512.png" />
+  <link rel="apple-touch-icon" href="./icon-512.png" />
+
   <link rel="stylesheet" href="./style.css" />
-  <title>Fart Detective</title>
 </head>
 <body>
-  <div id="loading">
-    <h1>Preparing the fart investigation...</h1>
+  <div id="app">
+    <header class="top-bar">
+      <div class="title">Fart Detective</div>
+      <div class="subtitle">Who broke wind in the lift?</div>
+    </header>
+
+    <main class="game-area">
+      <div class="status-row">
+        <span id="cluesLabel">Clues left: 6</span>
+        <span id="guessLabel">Tap a person for a clue</span>
+      </div>
+
+      <div id="fartBanner" class="fart-banner hidden">
+        💨 Someone just farted in the lift!
+      </div>
+
+      <div id="grid" class="grid"></div>
+
+      <div class="controls">
+        <button id="accuseBtn" class="btn primary" disabled>Accuse Selected</button>
+        <button id="newRoundBtn" class="btn">New Round</button>
+      </div>
+
+      <div id="resultPanel" class="result-panel hidden"></div>
+    </main>
   </div>
-  <canvas id="game-canvas"></canvas>
 
+  <script src="./game.js"></script>
   <script>
-    document.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+    // PWA service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").catch(console.warn);
     }
-
-    let canvas = document.getElementById('game-canvas');
-
-    // Godot loader – update to match your export
-    const engine = new Engine({
-      canvas,
-      focusCanvas: true,
-      onProgress: (current, total) => {
-        document.getElementById('loading').style.display = "flex";
-      },
-      onLoad: () => {
-        document.getElementById('loading').style.display = "none";
-      },
-    });
-
-    engine.startGame({
-      executable: 'game.pck',
-      mainPack: 'game.pck',
-      canvasResizePolicy: 2,
-    });
-
-    let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      // Optionally show a custom install button
-    });
   </script>
-  <script src="./engine.js"></script>
 </body>
 </html>
