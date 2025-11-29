@@ -1,8 +1,8 @@
 /* --------------------------------------------------
-   Character Silhouette Trainer – Service Worker
+   Speed Drawing Trainer – Service Worker
 -------------------------------------------------- */
 
-const CACHE_NAME = "btg-silhouette-trainer-v1";
+const CACHE_NAME = "btg-speed-drawing-trainer-v1";
 
 const ASSETS = [
   "./",
@@ -12,10 +12,14 @@ const ASSETS = [
   "./manifest.json",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
-  // You can add silhouettes here if you want them precached,
-  // but 50 PNGs might be a bit heavy – optional.
+  // NOTE:
+  // We do NOT preload silhouettes because 50 PNGs = heavy.
+  // They will be cached on first view (runtime caching).
 ];
 
+/* --------------------------------------------------
+   INSTALL – Precache Core Files
+-------------------------------------------------- */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -31,30 +35,50 @@ self.addEventListener("install", (event) => {
       }
     })
   );
+
   self.skipWaiting();
 });
 
+/* --------------------------------------------------
+   ACTIVATE – Remove Old Caches
+-------------------------------------------------- */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME)
-          .map((k) => caches.delete(k))
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
       )
     )
   );
+
   self.clients.claim();
 });
 
+/* --------------------------------------------------
+   FETCH – Cache-first for performance
+-------------------------------------------------- */
+
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
+  const request = event.request;
+
+  // Only handle GET (ignore POST/PUT/etc.)
   if (request.method !== "GET") return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).catch(() => cached);
+      if (cached) return cached; // Serve from cache
+
+      return fetch(request)
+        .then((response) => {
+          // Cache new silhouette files & others
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, response.clone());
+            return response;
+          });
+        })
+        .catch(() => cached); // fallback to cache when offline
     })
   );
 });
