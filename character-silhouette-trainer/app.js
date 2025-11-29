@@ -1,8 +1,8 @@
 /* --------------------------------------------------
-   Speed Drawing Trainer – Boom Tomato Games
-   FINAL STABLE VERSION
+   Speed Drawing Trainer – App Logic (Clean, Stable)
 -------------------------------------------------- */
 
+// Only black silhouettes (no colour ChatGPT images)
 const SILHOUETTES = [
   "silhouettes/56f537fc-74d2-4430-bbcd-0d578988447b.png",
   "silhouettes/74bcbf07-a92f-4a1f-935a-83ac82848d02.png",
@@ -43,105 +43,291 @@ const SILHOUETTES = [
   "silhouettes/12f6ad9b-0caf-465e-a314-84ce6c3b025d.png"
 ];
 
-/* --------------------------------------------------
-   Elements
--------------------------------------------------- */
+// Elements
 const imgEl = document.getElementById("silhouette-img");
+const warningEl = document.getElementById("no-image-warning");
 const timerDisplayEl = document.getElementById("timer-display");
+const timerButtons = Array.from(document.querySelectorAll(".timer-btn"));
 const newBtn = document.getElementById("new-btn");
-const timerButtons = document.querySelectorAll(".timer-btn");
 const pdfBtn = document.getElementById("pdf-btn");
+const themeBtn = document.getElementById("theme-btn");
+const footerTextEl = document.getElementById("footer-text");
 
-let currentIndex = 0;
-let timerInterval = null;
+let currentIndex = -1;
+let timerId = null;
 let remainingSeconds = 0;
+let currentDuration = 0;
+let currentTheme = 0;
+const MAX_THEMES = 4;
 
-/* --------------------------------------------------
-   Functions
--------------------------------------------------- */
+/* ---------------- Helper functions ---------------- */
 
-function showSilhouette(index) {
-  currentIndex = index;
-  imgEl.src = SILHOUETTES[index];
-  imgEl.style.display = "block";
+function formatTime(seconds) {
+  const s = Math.max(0, Math.floor(seconds));
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
 }
 
-function showRandomSilhouette() {
-  const max = SILHOUETTES.length;
-  let newIndex = currentIndex;
-  while (newIndex === currentIndex) {
-    newIndex = Math.floor(Math.random() * max);
-  }
-  showSilhouette(newIndex);
+function updateTimerDisplay() {
+  timerDisplayEl.textContent = formatTime(remainingSeconds);
 }
 
 function clearTimer() {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
+  if (timerId !== null) {
+    clearInterval(timerId);
+    timerId = null;
   }
 }
 
-function startTimer(sec) {
+function getRandomIndex() {
+  if (SILHOUETTES.length <= 1) return 0;
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * SILHOUETTES.length);
+  } while (idx === currentIndex);
+  return idx;
+}
+
+/* ---------------- Silhouette display ---------------- */
+
+function showSilhouette(index) {
+  if (!SILHOUETTES.length) {
+    warningEl.classList.remove("hidden");
+    imgEl.style.display = "none";
+    return;
+  }
+
+  warningEl.classList.add("hidden");
+  imgEl.style.display = "block";
+  imgEl.style.opacity = 1; // ensure visible
+
+  currentIndex = index;
+  imgEl.src = SILHOUETTES[index];
+  imgEl.alt = `Silhouette ${index + 1}`;
+}
+
+function showRandomSilhouette() {
+  const idx = getRandomIndex();
+  showSilhouette(idx);
+}
+
+/* ---------------- Timer logic ---------------- */
+
+function highlightTimerButton(seconds) {
+  timerButtons.forEach((btn) => {
+    const s = Number(btn.dataset.seconds || "0");
+    btn.classList.toggle("active", s === seconds && seconds > 0);
+  });
+}
+
+function startTimer(seconds) {
   clearTimer();
-  remainingSeconds = sec;
-  updateTimer();
 
-  if (sec === 0) return;
+  currentDuration = seconds;
+  remainingSeconds = seconds;
+  updateTimerDisplay();
+  highlightTimerButton(seconds);
 
-  timerInterval = setInterval(() => {
-    remainingSeconds--;
-    updateTimer();
+  // Always show the current silhouette when restarting a timer
+  if (currentIndex !== -1) {
+    imgEl.style.opacity = 1;
+  }
+
+  if (seconds === 0) {
+    footerTextEl.textContent =
+      "Timer stopped. Choose a duration and press a timer button to begin.";
+    return;
+  }
+
+  footerTextEl.textContent =
+    "Draw the silhouette. When the timer ends, it will fade out. Press New Silhouette to continue.";
+
+  timerId = setInterval(() => {
+    remainingSeconds -= 1;
+    updateTimerDisplay();
 
     if (remainingSeconds <= 0) {
       clearTimer();
-      imgEl.style.display = "none";
+      remainingSeconds = 0;
+      updateTimerDisplay();
+
+      // fade out silhouette but keep src + currentIndex
+      imgEl.style.opacity = 0;
+      footerTextEl.textContent =
+        "Time's up. Press New Silhouette for another pose, or pick a new timer and go again.";
     }
   }, 1000);
 }
 
-function updateTimer() {
-  const m = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
-  const s = String(remainingSeconds % 60).padStart(2, "0");
-  timerDisplayEl.textContent = `${m}:${s}`;
+/* ---------------- Theme ---------------- */
+
+function cycleTheme() {
+  currentTheme = (currentTheme + 1) % MAX_THEMES;
+  document.body.className = `theme-${currentTheme}`;
 }
 
-/* --------------------------------------------------
-   PDF
--------------------------------------------------- */
+/* ---------------- Worksheet / PDF ---------------- */
+
+function shuffleArray(arr) {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 function openWorksheetWindow() {
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <button onclick="window.history.back()" 
-      style="position:fixed; top:10px; left:10px; z-index:1000; padding:10px; background:#03504E; color:white; border:none; border-radius:6px;">
-      ⬅ Back
-    </button>
+  if (!SILHOUETTES.length) {
+    alert("Please add silhouettes to the silhouettes/ folder first.");
+    return;
+  }
 
-    <h2 style="text-align:center;">Speed Drawing Trainer – Worksheet</h2>
-    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;">
-      ${SILHOUETTES.slice(0, 25).map(src => `<div><img src="${src}" style="width:100%;"></div>`).join("")}
+  const shuffled = shuffleArray(SILHOUETTES);
+  const toUse = shuffled.slice(0, 10);
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speed Drawing Trainer – Worksheet</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .top-bar {
+      position: fixed;
+      top: 0.5cm;
+      left: 0.5cm;
+      z-index: 1000;
+    }
+    .top-bar button {
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: none;
+      background: #03504e;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .page {
+      padding: 1.2cm 1.5cm 1.5cm;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 0.3cm;
+      text-align: center;
+    }
+    p {
+      font-size: 11px;
+      margin: 0 0 0.5cm;
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-auto-rows: 4cm;
+      gap: 0.4cm;
+    }
+    .cell {
+      border: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2cm;
+    }
+    .cell img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <button onclick="window.close()">Close Worksheet</button>
+  </div>
+  <div class="page">
+    <h1>Speed Drawing Trainer – Worksheet</h1>
+    <p>Use quick timed studies (30–60s), then revisit these poses for slower structural drawings.</p>
+    <div class="grid">
+      ${toUse
+        .map(
+          (src) => `
+        <div class="cell">
+          <img src="${src}" alt="Silhouette" />
+        </div>`
+        )
+        .join("")}
     </div>
-  `);
+  </div>
+</body>
+</html>
+`;
+
+  win.document.open();
+  win.document.write(html);
   win.document.close();
+
+  // Optional: auto-open print dialog
+  setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch (e) {
+      // ignore
+    }
+  }, 600);
 }
 
-/* --------------------------------------------------
-   Init
--------------------------------------------------- */
+/* ---------------- Init ---------------- */
 
-document.addEventListener("DOMContentLoaded", () => {
-  showRandomSilhouette();
-  startTimer(0);
+function init() {
+  if (!SILHOUETTES.length) {
+    warningEl.classList.remove("hidden");
+    imgEl.style.display = "none";
+  } else {
+    showRandomSilhouette();
+  }
 
-  newBtn.addEventListener("click", () => showRandomSilhouette());
+  remainingSeconds = 0;
+  updateTimerDisplay();
 
-  timerButtons.forEach(btn => {
+  timerButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const sec = Number(btn.dataset.seconds);
+      const sec = Number(btn.dataset.seconds || "0");
       startTimer(sec);
     });
   });
 
+  newBtn.addEventListener("click", () => {
+    showRandomSilhouette();
+    // If a duration was already chosen, reuse it
+    if (currentDuration > 0) {
+      startTimer(currentDuration);
+    }
+  });
+
   pdfBtn.addEventListener("click", openWorksheetWindow);
-});
+  themeBtn.addEventListener("click", cycleTheme);
+
+  // Register service worker if supported
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .catch((err) => console.warn("[SW] registration failed:", err));
+  }
+}
+
+document.addEventListener("DOMContentLoaded", init);
