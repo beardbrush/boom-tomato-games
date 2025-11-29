@@ -18,35 +18,49 @@
 </head>
 <body>
   <div id="app">
+    
+    <!-- Header -->
     <header class="top-bar">
       <div class="title">Fart Detective</div>
       <div class="subtitle">Who broke wind in the lift?</div>
     </header>
 
+    <!-- Floating clue bubble (moved OUT of the layout) -->
+    <div id="guessLabel">Tap a person for a clue</div>
+
+    <!-- Main Game Layout -->
     <main class="game-area">
+
+      <!-- Status row (only cluesLabel remains inside) -->
       <div class="status-row">
         <span id="cluesLabel">Clues left: 6</span>
-        <span id="guessLabel">Tap a person for a clue</span>
       </div>
 
+      <!-- Fart banner -->
       <div id="fartBanner" class="fart-banner hidden">
         💨 Someone just farted in the lift!
       </div>
 
+      <!-- Grid -->
       <div id="grid" class="grid"></div>
 
+      <!-- Controls -->
       <div class="controls">
         <button id="accuseBtn" class="btn primary" disabled>Accuse Selected</button>
         <button id="newRoundBtn" class="btn">New Round</button>
       </div>
 
+      <!-- Result panel -->
       <div id="resultPanel" class="result-panel hidden"></div>
+
     </main>
   </div>
 
+  <!-- Game Script -->
   <script src="./game.js"></script>
+
+  <!-- Register PWA -->
   <script>
-    // PWA service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js").catch(console.warn);
     }
