@@ -1,4 +1,4 @@
-// Simple Notan + Pencil + Vintage web tool
+// Simple Notan + Pencil + Vintage web tool// Simple Notan + Pencil + Vintage web tool
 const imageInput = document.getElementById("image-input");
 const baseCanvas = document.getElementById("base-canvas");
 const displayCanvas = document.getElementById("display-canvas");
@@ -29,16 +29,16 @@ const VINTAGE_PALETTE_5 = [
   { r: 32,  g: 47,  b: 79  }  // Indigo – cool deep shadow
 ];
 
-// Pro "Baseball Card" palette – warm, cream & orange, blue only in deepest shadows
+// Steam Sports Fest–style poster palette (warm oranges + cream + deep indigo)
 const VINTAGE_PALETTE_PRO = [
-  { name: "Buff Titanium",   r: 235, g: 222, b: 202 }, // 0 – cream paper
-  { name: "Naples Yellow",   r: 241, g: 211, b: 155 }, // 1 – warm highlight
-  { name: "Yellow Ochre",    r: 214, g: 164, b:  77 }, // 2 – light mid
-  { name: "Raw Sienna",      r: 201, g: 138, b:  59 }, // 3 – mid
-  { name: "Burnt Sienna",    r: 166, g:  90, b:  50 }, // 4 – warm shadow
-  { name: "Venetian Red",    r: 166, g:  72, b:  62 }, // 5 – red/orange accents
-  { name: "Burnt Umber",     r: 122, g:  75, b:  50 }, // 6 – deep brown shadow
-  { name: "Indigo Shadow",   r:  32, g:  47, b:  79 }  // 7 – only the darkest lines
+  { name: "Buff Titanium",  r: 240, g: 228, b: 205 }, // 0 – paper highlight
+  { name: "Naples Yellow",  r: 247, g: 216, b: 170 }, // 1 – warm light
+  { name: "Yellow Ochre",   r: 224, g: 172, b:  92 }, // 2 – light mid
+  { name: "Golden Orange",  r: 233, g: 142, b:  64 }, // 3 – strong orange wash
+  { name: "Burnt Sienna",   r: 187, g: 102, b:  60 }, // 4 – warm shadow
+  { name: "Venetian Red",   r: 176, g:  76, b:  64 }, // 5 – red accents
+  { name: "Burnt Umber",    r: 118, g:  74, b:  52 }, // 6 – deep brown
+  { name: "Indigo Shadow",  r:  35, g:  48, b:  80 }  // 7 – deepest ink line
 ];
 
 imageInput.addEventListener("change", handleImageUpload);
@@ -123,7 +123,7 @@ function renderCurrentMode() {
     case "vintage":        // simple 5-colour Reeves
       applyVintageSimple();
       break;
-    case "vintage_pro":    // baseball-card pro palette
+    case "vintage_pro":    // Steam Sports Fest poster palette
       applyVintagePro();
       break;
     default:
@@ -305,7 +305,7 @@ function applyVintageSimple() {
   displayCtx.putImageData(src, 0, 0);
 }
 
-// --- Vintage B: 8-colour "Baseball Card" palette ---
+// --- Vintage B: Steam Sports Fest poster palette ---
 
 function applyVintagePro() {
   if (!baseLoaded) return;
@@ -318,7 +318,9 @@ function applyVintagePro() {
   const data = src.data;
 
   // cream paper tint for light areas
-  const PAPER_TINT = { r: 235, g: 222, b: 202 };
+  const PAPER_TINT = { r: 240, g: 228, b: 205 };
+  // warm orange wash (background energy)
+  const WASH_TINT  = { r: 245, g: 170, b:  80 };
 
   // grayscale + edge map
   const grayBuf = new Uint8ClampedArray(w * h);
@@ -343,18 +345,18 @@ function applyVintagePro() {
     }
   }
 
-  // thresholds tuned for baseball-card look (more warm, very little blue)
-  const T0 = 40;   // deepest shadow
-  const T1 = 80;
-  const T2 = 120;
-  const T3 = 155;
+  // thresholds tuned for Steam poster look
+  const T0 = 35;   // deepest shadow
+  const T1 = 70;
+  const T2 = 110;
+  const T3 = 150;
   const T4 = 185;
-  const T5 = 210;
-  const T6 = 235;  // highlights
+  const T5 = 215;
+  const T6 = 240;  // highlights
 
   for (let y = 0; y < h; y++) {
-    // gentle vertical wash to mimic uneven paper stain
-    const washFactor = 1 + 0.05 * Math.sin((y / h) * Math.PI * 2);
+    // horizontal-ish wash variation (like brush strokes behind figures)
+    const washFactor = 1 + 0.07 * Math.sin((y / h) * Math.PI * 2);
 
     for (let x = 0; x < w; x++) {
       const idx = y * w + x;
@@ -377,7 +379,7 @@ function applyVintagePro() {
       } else if (gray < T3) {
         pIndex = 4; // Burnt Sienna
       } else if (gray < T4) {
-        pIndex = 3; // Raw Sienna
+        pIndex = 3; // Golden Orange
       } else if (gray < T5) {
         pIndex = 2; // Yellow Ochre
       } else if (gray < T6) {
@@ -395,16 +397,22 @@ function applyVintagePro() {
 
       // paper tint: light areas pick up more cream
       const lightness = gray / 255;           // 0–1
-      const paperBlend = lightness * 0.45;    // up to 45% towards paper tint
-
+      const paperBlend = lightness * 0.5;     // up to 50% towards paper tint
       r = lerp(r, PAPER_TINT.r, paperBlend);
       g = lerp(g, PAPER_TINT.g, paperBlend);
       b = lerp(b, PAPER_TINT.b, paperBlend);
 
+      // warm orange wash: strongest in mid/high values (background and jerseys)
+      const mid = Math.max(0, Math.min(1, (gray - 80) / 140)); // 0 around darks, 1 in mids/highs
+      const washBlend = 0.35 * mid;
+      r = lerp(r, WASH_TINT.r, washBlend);
+      g = lerp(g, WASH_TINT.g, washBlend);
+      b = lerp(b, WASH_TINT.b, washBlend);
+
       // ink-style edge darkening
       const edge = edgeBuf[idx];
       const edgeNorm = Math.min(edge / 255, 1);
-      const lineStrength = 0.65; // how strong lines show
+      const lineStrength = 0.75; // strong comic lines
       const lineDarken = 1 - edgeNorm * lineStrength;
 
       r *= lineDarken;
@@ -434,3 +442,5 @@ function lerp(a, b, t) {
 function clamp(v) {
   return v < 0 ? 0 : v > 255 ? 255 : v;
 }
+
+
