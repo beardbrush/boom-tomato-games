@@ -24,6 +24,7 @@
         <input type="file" id="image-input" accept="image/*" />
       </label>
 
+      <!-- Mode buttons -->
       <div class="mode-buttons">
         <button data-mode="original" class="mode-btn active">Original</button>
         <button data-mode="notan" class="mode-btn">Notan</button>
@@ -32,6 +33,7 @@
         <button data-mode="vintage_pro" class="mode-btn">Vintage+ (12-colour)</button>
       </div>
 
+      <!-- Sliders for each mode -->
       <div class="sliders">
         <div class="slider-group" id="notan-controls">
           <label>
@@ -52,6 +54,9 @@
             Vintage Strength
             <input type="range" id="vintage-strength" min="0" max="100" value="70" />
           </label>
+          <p class="hint">
+            Vintage uses a limited watercolour palette (Reeves 5-colour or 12-colour pro mode).
+          </p>
         </div>
       </div>
 
@@ -76,4 +81,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
