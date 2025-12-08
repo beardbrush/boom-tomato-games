@@ -29,20 +29,16 @@ const VINTAGE_PALETTE_5 = [
   { r: 32,  g: 47,  b: 79  }  // Indigo – cool deep shadow
 ];
 
-// Pro 12-colour palette based on your full watercolour list
+// Pro "Baseball Card" palette – warm, cream & orange, blue only in deepest shadows
 const VINTAGE_PALETTE_PRO = [
-  { name: "Buff Titanium",          r: 231, g: 217, b: 197 },
-  { name: "Naples Yellow",         r: 241, g: 211, b: 155 },
-  { name: "Yellow Ochre",          r: 214, g: 164, b:  77 },
-  { name: "Raw Sienna",            r: 201, g: 138, b:  59 },
-  { name: "Burnt Sienna",          r: 166, g:  90, b:  50 },
-  { name: "Transparent Red Oxide", r: 178, g:  81, b:  41 },
-  { name: "Venetian Red",          r: 166, g:  72, b:  62 },
-  { name: "Burnt Umber",           r: 122, g:  75, b:  50 },
-  { name: "Van Dyke Brown",        r:  58, g:  36, b:  24 },
-  { name: "Sepia",                 r:  74, g:  46, b:  26 },
-  { name: "Payne Grey",            r:  88, g:  95, b: 110 },
-  { name: "Indigo",                r:  30, g:  44, b:  72 }
+  { name: "Buff Titanium",   r: 235, g: 222, b: 202 }, // 0 – cream paper
+  { name: "Naples Yellow",   r: 241, g: 211, b: 155 }, // 1 – warm highlight
+  { name: "Yellow Ochre",    r: 214, g: 164, b:  77 }, // 2 – light mid
+  { name: "Raw Sienna",      r: 201, g: 138, b:  59 }, // 3 – mid
+  { name: "Burnt Sienna",    r: 166, g:  90, b:  50 }, // 4 – warm shadow
+  { name: "Venetian Red",    r: 166, g:  72, b:  62 }, // 5 – red/orange accents
+  { name: "Burnt Umber",     r: 122, g:  75, b:  50 }, // 6 – deep brown shadow
+  { name: "Indigo Shadow",   r:  32, g:  47, b:  79 }  // 7 – only the darkest lines
 ];
 
 imageInput.addEventListener("change", handleImageUpload);
@@ -127,7 +123,7 @@ function renderCurrentMode() {
     case "vintage":        // simple 5-colour Reeves
       applyVintageSimple();
       break;
-    case "vintage_pro":    // full 12-colour palette
+    case "vintage_pro":    // baseball-card pro palette
       applyVintagePro();
       break;
     default:
@@ -309,7 +305,7 @@ function applyVintageSimple() {
   displayCtx.putImageData(src, 0, 0);
 }
 
-// --- Vintage B: 12-colour pro palette ---
+// --- Vintage B: 8-colour "Baseball Card" palette ---
 
 function applyVintagePro() {
   if (!baseLoaded) return;
@@ -321,7 +317,8 @@ function applyVintagePro() {
   const src = baseCtx.getImageData(0, 0, w, h);
   const data = src.data;
 
-  const len = VINTAGE_PALETTE_PRO.length;
+  // cream paper tint for light areas
+  const PAPER_TINT = { r: 235, g: 222, b: 202 };
 
   // grayscale + edge map
   const grayBuf = new Uint8ClampedArray(w * h);
@@ -346,9 +343,18 @@ function applyVintagePro() {
     }
   }
 
+  // thresholds tuned for baseball-card look (more warm, very little blue)
+  const T0 = 40;   // deepest shadow
+  const T1 = 80;
+  const T2 = 120;
+  const T3 = 155;
+  const T4 = 185;
+  const T5 = 210;
+  const T6 = 235;  // highlights
+
   for (let y = 0; y < h; y++) {
-    // Slight vertical wash to mimic uneven paper stain
-    const washFactor = 1 + 0.08 * Math.sin((y / h) * Math.PI * 2);
+    // gentle vertical wash to mimic uneven paper stain
+    const washFactor = 1 + 0.05 * Math.sin((y / h) * Math.PI * 2);
 
     for (let x = 0; x < w; x++) {
       const idx = y * w + x;
@@ -360,26 +366,53 @@ function applyVintagePro() {
 
       const gray = grayBuf[idx];
 
-      // Map value 0–255 onto 0–len-1
-      let pIndex = Math.floor((gray / 255) * len);
-      if (pIndex < 0) pIndex = 0;
-      if (pIndex >= len) pIndex = len - 1;
+      // map gray to one of the 8 warm palette steps
+      let pIndex;
+      if (gray < T0) {
+        pIndex = 7; // Indigo – only extreme dark lines
+      } else if (gray < T1) {
+        pIndex = 6; // Burnt Umber
+      } else if (gray < T2) {
+        pIndex = 5; // Venetian Red
+      } else if (gray < T3) {
+        pIndex = 4; // Burnt Sienna
+      } else if (gray < T4) {
+        pIndex = 3; // Raw Sienna
+      } else if (gray < T5) {
+        pIndex = 2; // Yellow Ochre
+      } else if (gray < T6) {
+        pIndex = 1; // Naples Yellow
+      } else {
+        pIndex = 0; // Buff Titanium paper
+      }
 
       const p = VINTAGE_PALETTE_PRO[pIndex];
 
+      // move original colour towards warm palette colour
       let r = lerp(r0, p.r * washFactor, strength);
       let g = lerp(g0, p.g * washFactor, strength);
       let b = lerp(b0, p.b * washFactor, strength);
 
+      // paper tint: light areas pick up more cream
+      const lightness = gray / 255;           // 0–1
+      const paperBlend = lightness * 0.45;    // up to 45% towards paper tint
+
+      r = lerp(r, PAPER_TINT.r, paperBlend);
+      g = lerp(g, PAPER_TINT.g, paperBlend);
+      b = lerp(b, PAPER_TINT.b, paperBlend);
+
+      // ink-style edge darkening
       const edge = edgeBuf[idx];
       const edgeNorm = Math.min(edge / 255, 1);
-      const lineStrength = 0.7; // slightly stronger ink feel
+      const lineStrength = 0.65; // how strong lines show
       const lineDarken = 1 - edgeNorm * lineStrength;
+
       r *= lineDarken;
       g *= lineDarken;
       b *= lineDarken;
 
-      const noise = (Math.random() - 0.5) * 12; // a bit more grain
+      // subtle grain
+      const noise = (Math.random() - 0.5) * 8; // -4..+4
       r += noise;
       g += noise;
       b += noise;
