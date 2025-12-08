@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vintage Notan & Pencil Tool – Boom Tomato Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <h1>Vintage Notan & Pencil Tool</h1>
+      <p class="bt-tagline">
+        Turn your photo into a Notan study, pencil sketch, and vintage poster reference.
+      </p>
+    </div>
+  </header>
+
+  <main class="bt-main">
+    <section class="bt-controls">
+      <label class="file-label">
+        <span>Upload a reference photo (JPG/PNG)</span>
+        <input type="file" id="image-input" accept="image/*" />
+      </label>
+
+      <div class="mode-buttons">
+        <button data-mode="original" class="mode-btn active">Original</button>
+        <button data-mode="notan" class="mode-btn">Notan</button>
+        <button data-mode="pencil" class="mode-btn">Pencil</button>
+        <button data-mode="vintage" class="mode-btn">Vintage Colour</button>
+      </div>
+
+      <div class="sliders">
+        <div class="slider-group" id="notan-controls">
+          <label>
+            Notan Threshold
+            <input type="range" id="notan-threshold" min="30" max="225" value="140" />
+          </label>
+        </div>
+
+        <div class="slider-group" id="pencil-controls">
+          <label>
+            Pencil Contrast
+            <input type="range" id="pencil-contrast" min="0" max="200" value="80" />
+          </label>
+        </div>
+
+        <div class="slider-group" id="vintage-controls">
+          <label>
+            Vintage Strength
+            <input type="range" id="vintage-strength" min="0" max="100" value="70" />
+          </label>
+        </div>
+      </div>
+
+      <button id="download-btn" class="download-btn" disabled>Download Image</button>
+    </section>
+
+    <section class="bt-canvas-wrap">
+      <canvas id="display-canvas"></canvas>
+    </section>
+
+    <!-- Hidden base canvas (original image) -->
+    <canvas id="base-canvas" style="display:none;"></canvas>
+  </main>
+
+  <footer class="bt-footer">
+    <p>
+      Boom Tomato Games – Notan & Vintage Study Tool.
+      Great for learning value, drawing and retro colour palettes.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

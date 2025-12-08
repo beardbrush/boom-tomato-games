@@ -1,0 +1,187 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #111;
+  color: #f6f1e7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bt-header {
+  background: #241812;
+  border-bottom: 2px solid #f2b46a;
+}
+
+.bt-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+.bt-logo {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: #f2b46a;
+}
+
+.bt-header h1 {
+  font-size: 1.6rem;
+  margin-top: 0.3rem;
+}
+
+.bt-tagline {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: #f0d8b6;
+}
+
+.bt-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+  gap: 1rem;
+}
+
+.bt-controls {
+  background: #1b1b1b;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #333;
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 2.2fr) minmax(0, 1.6fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .bt-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #f0d8b6;
+}
+
+.file-label input[type="file"] {
+  background: #111;
+  border-radius: 6px;
+  border: 1px solid #444;
+  padding: 0.4rem;
+  color: #f6f1e7;
+}
+
+.mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mode-btn {
+  flex: 1 1 auto;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #444;
+  background: #151515;
+  color: #f6f1e7;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.mode-btn:hover {
+  border-color: #f2b46a;
+}
+
+.mode-btn.active {
+  background: #f2b46a;
+  color: #1b120b;
+  border-color: #f2b46a;
+  transform: translateY(-1px);
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slider-group {
+  font-size: 0.85rem;
+  color: #f0d8b6;
+}
+
+.slider-group input[type="range"] {
+  width: 100%;
+}
+
+#pencil-controls,
+#vintage-controls {
+  display: none; /* default visible: Notan only when chosen */
+}
+
+.download-btn {
+  margin-top: 0.3rem;
+  grid-column: 1 / -1;
+  justify-self: flex-start;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  background: #f2b46a;
+  color: #1b120b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.download-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.download-btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.bt-canvas-wrap {
+  background: #000;
+  border-radius: 12px;
+  border: 1px solid #333;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 260px;
+}
+
+#display-canvas {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #222;
+}
+
+.bt-footer {
+  border-top: 1px solid #333;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #a8977a;
+}
