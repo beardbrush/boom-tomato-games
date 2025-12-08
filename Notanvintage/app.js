@@ -18,6 +18,33 @@ let baseLoaded = false;
 const baseCtx = baseCanvas.getContext("2d");
 const displayCtx = displayCanvas.getContext("2d");
 
+// --- Vintage palettes ---
+
+// Reeves 5-colour set (simple vintage)
+const VINTAGE_PALETTE_5 = [
+  { r: 242, g: 206, b: 121 }, // Yellow Ochre – highlight / paper
+  { r: 201, g: 132, b: 76  }, // Burnt Sienna – warm mid
+  { r: 140, g: 96,  b: 64  }, // Raw Umber – deeper mid
+  { r: 92,  g: 62,  b: 42  }, // Sepia – warm shadow
+  { r: 32,  g: 47,  b: 79  }  // Indigo – cool deep shadow
+];
+
+// Pro 12-colour palette based on your full watercolour list
+const VINTAGE_PALETTE_PRO = [
+  { name: "Buff Titanium",          r: 231, g: 217, b: 197 },
+  { name: "Naples Yellow",         r: 241, g: 211, b: 155 },
+  { name: "Yellow Ochre",          r: 214, g: 164, b:  77 },
+  { name: "Raw Sienna",            r: 201, g: 138, b:  59 },
+  { name: "Burnt Sienna",          r: 166, g:  90, b:  50 },
+  { name: "Transparent Red Oxide", r: 178, g:  81, b:  41 },
+  { name: "Venetian Red",          r: 166, g:  72, b:  62 },
+  { name: "Burnt Umber",           r: 122, g:  75, b:  50 },
+  { name: "Van Dyke Brown",        r:  58, g:  36, b:  24 },
+  { name: "Sepia",                 r:  74, g:  46, b:  26 },
+  { name: "Payne Grey",            r:  88, g:  95, b: 110 },
+  { name: "Indigo",                r:  30, g:  44, b:  72 }
+];
+
 imageInput.addEventListener("change", handleImageUpload);
 
 modeButtons.forEach((btn) => {
@@ -41,7 +68,9 @@ pencilContrastInput.addEventListener("input", () => {
 });
 
 vintageStrengthInput.addEventListener("input", () => {
-  if (currentMode === "vintage" && baseLoaded) renderCurrentMode();
+  if ((currentMode === "vintage" || currentMode === "vintage_pro") && baseLoaded) {
+    renderCurrentMode();
+  }
 });
 
 downloadBtn.addEventListener("click", () => {
@@ -54,7 +83,9 @@ downloadBtn.addEventListener("click", () => {
 function updateVisibleControls() {
   notanControls.style.display = currentMode === "notan" ? "block" : "none";
   pencilControls.style.display = currentMode === "pencil" ? "block" : "none";
-  vintageControls.style.display = currentMode === "vintage" ? "block" : "none";
+  // Show the vintage slider for BOTH vintage modes
+  vintageControls.style.display =
+    currentMode === "vintage" || currentMode === "vintage_pro" ? "block" : "none";
 }
 
 function handleImageUpload(e) {
@@ -93,8 +124,11 @@ function renderCurrentMode() {
     case "pencil":
       applyPencil();
       break;
-    case "vintage":
-      applyVintage();
+    case "vintage":        // simple 5-colour Reeves
+      applyVintageSimple();
+      break;
+    case "vintage_pro":    // full 12-colour palette
+      applyVintagePro();
       break;
     default:
       drawOriginal();
@@ -178,7 +212,9 @@ function applyPencil() {
   displayCtx.putImageData(grayImage, 0, 0);
 }
 
-function applyVintage() {
+// --- Vintage A: simple Reeves 5-colour version ---
+
+function applyVintageSimple() {
   if (!baseLoaded) return;
 
   const strength = parseInt(vintageStrengthInput.value, 10) / 100; // 0–1
@@ -188,25 +224,12 @@ function applyVintage() {
   const src = baseCtx.getImageData(0, 0, w, h);
   const data = src.data;
 
-  // --- STEP A: define Reeves 5-colour palette ---
-  // Yellow Ochre, Burnt Sienna, Raw Umber, Sepia, Indigo
-  const PALETTE = [
-    { r: 242, g: 206, b: 121 }, // 0: Yellow Ochre – highlight / paper
-    { r: 201, g: 132, b: 76  }, // 1: Burnt Sienna – warm mid
-    { r: 140, g: 96,  b: 64  }, // 2: Raw Umber – deeper mid
-    { r: 92,  g: 62,  b: 42  }, // 3: Sepia – warm shadow
-    { r: 32,  g: 47,  b: 79  }  // 4: Indigo – cool deep shadow
-  ];
-
-  // thresholds roughly mapping to 5 steps of value
   const T0 = 60;
   const T1 = 105;
   const T2 = 150;
   const T3 = 195;
 
-  // --- STEP B: build grayscale + basic edge map (pencil underdrawing) ---
-
-  // First pass: grayscale only
+  // grayscale + edge map
   const grayBuf = new Uint8ClampedArray(w * h);
 
   for (let i = 0; i < data.length; i += 4) {
@@ -217,7 +240,6 @@ function applyVintage() {
     grayBuf[i / 4] = gray;
   }
 
-  // Edge detection (very simple: difference with right/down pixels)
   const edgeBuf = new Uint8ClampedArray(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -228,14 +250,11 @@ function applyVintage() {
       const gy = y < h - 1 ? grayBuf[idx + w] : g0;
 
       const edge = Math.abs(g0 - gx) + Math.abs(g0 - gy);
-      edgeBuf[idx] = edge; // 0–510 approx, we’ll normalise later
+      edgeBuf[idx] = edge;
     }
   }
 
-  // --- STEP C: posterise to 5 Reeves colours (watercolour blocks) ---
-
   for (let y = 0; y < h; y++) {
-    // simulate slight horizontal wash variation (like Step 4)
     const washFactor = 1 + 0.06 * Math.sin((y / h) * Math.PI * 2);
 
     for (let x = 0; x < w; x++) {
@@ -261,24 +280,20 @@ function applyVintage() {
         pIndex = 0;      // highlight → Yellow Ochre
       }
 
-      const p = PALETTE[pIndex];
+      const p = VINTAGE_PALETTE_5[pIndex];
 
-      // blend original towards palette (like stepping from full colour to flat wash)
       let r = lerp(r0, p.r * washFactor, strength);
       let g = lerp(g0, p.g * washFactor, strength);
       let b = lerp(b0, p.b * washFactor, strength);
 
-      // --- STEP D: apply "pencil lines" on top (Steps 3, 6, 9) ---
-      const edge = edgeBuf[idx]; // 0–~510
-      const edgeNorm = Math.min(edge / 255, 1); // 0–1
-      const lineStrength = 0.6; // how strong the pencil lines appear
-
+      const edge = edgeBuf[idx];
+      const edgeNorm = Math.min(edge / 255, 1);
+      const lineStrength = 0.6;
       const lineDarken = 1 - edgeNorm * lineStrength;
       r *= lineDarken;
       g *= lineDarken;
       b *= lineDarken;
 
-      // --- STEP E: add tiny grain (texture / dry brush) ---
       const noise = (Math.random() - 0.5) * 10; // -5..+5
       r += noise;
       g += noise;
@@ -294,6 +309,90 @@ function applyVintage() {
   displayCtx.putImageData(src, 0, 0);
 }
 
+// --- Vintage B: 12-colour pro palette ---
+
+function applyVintagePro() {
+  if (!baseLoaded) return;
+
+  const strength = parseInt(vintageStrengthInput.value, 10) / 100; // 0–1
+  const w = baseCanvas.width;
+  const h = baseCanvas.height;
+
+  const src = baseCtx.getImageData(0, 0, w, h);
+  const data = src.data;
+
+  const len = VINTAGE_PALETTE_PRO.length;
+
+  // grayscale + edge map
+  const grayBuf = new Uint8ClampedArray(w * h);
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    grayBuf[i / 4] = gray;
+  }
+
+  const edgeBuf = new Uint8ClampedArray(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      const g0 = grayBuf[idx];
+      const gx = x < w - 1 ? grayBuf[idx + 1] : g0;
+      const gy = y < h - 1 ? grayBuf[idx + w] : g0;
+      const edge = Math.abs(g0 - gx) + Math.abs(g0 - gy);
+      edgeBuf[idx] = edge;
+    }
+  }
+
+  for (let y = 0; y < h; y++) {
+    // Slight vertical wash to mimic uneven paper stain
+    const washFactor = 1 + 0.08 * Math.sin((y / h) * Math.PI * 2);
+
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      const di = idx * 4;
+
+      const r0 = data[di];
+      const g0 = data[di + 1];
+      const b0 = data[di + 2];
+
+      const gray = grayBuf[idx];
+
+      // Map value 0–255 onto 0–len-1
+      let pIndex = Math.floor((gray / 255) * len);
+      if (pIndex < 0) pIndex = 0;
+      if (pIndex >= len) pIndex = len - 1;
+
+      const p = VINTAGE_PALETTE_PRO[pIndex];
+
+      let r = lerp(r0, p.r * washFactor, strength);
+      let g = lerp(g0, p.g * washFactor, strength);
+      let b = lerp(b0, p.b * washFactor, strength);
+
+      const edge = edgeBuf[idx];
+      const edgeNorm = Math.min(edge / 255, 1);
+      const lineStrength = 0.7; // slightly stronger ink feel
+      const lineDarken = 1 - edgeNorm * lineStrength;
+      r *= lineDarken;
+      g *= lineDarken;
+      b *= lineDarken;
+
+      const noise = (Math.random() - 0.5) * 12; // a bit more grain
+      r += noise;
+      g += noise;
+      b += noise;
+
+      data[di]     = clamp(r);
+      data[di + 1] = clamp(g);
+      data[di + 2] = clamp(b);
+      data[di + 3] = 255;
+    }
+  }
+
+  displayCtx.putImageData(src, 0, 0);
+}
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
