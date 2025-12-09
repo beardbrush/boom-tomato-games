@@ -9,6 +9,11 @@
 
 const PEN_COUNT = 4;
 const MAX_DAYS_PER_RUN = 10;
+
+const STARTING_COINS = 40;
+const PARENT_COST = 10;
+const BREED_COST = 2;
+
 const GROWTH_PER_CLICK_BASE = 10;
 const GROWTH_REQUIRED = 100;
 
@@ -46,13 +51,14 @@ const ALL_TRAITS = [
   "Hypnotic"
 ];
 
-// Feed items – used on hatchlings / mature demons
+// Feed items – cost coins and nudge stats
 const FEED_ITEMS = [
   {
     id: "blood_vial",
     name: "Blood Vial",
     shortLabel: "Blood Vial",
-    description: "Fear +1, Aesthetic +1, Chaos +1.",
+    cost: 2,
+    description: "Cost: 2 coins. Fear +1, Aesthetic +1, Chaos +1.",
     apply: (stats) => {
       stats.fear = clamp(stats.fear + 1, 0, 10);
       stats.aesthetic = clamp(stats.aesthetic + 1, 0, 10);
@@ -64,7 +70,8 @@ const FEED_ITEMS = [
     id: "bone_snack",
     name: "Bone Snack",
     shortLabel: "Bone Snack",
-    description: "Fear +1, Loyalty +1.",
+    cost: 2,
+    description: "Cost: 2 coins. Fear +1, Loyalty +1.",
     apply: (stats) => {
       stats.fear = clamp(stats.fear + 1, 0, 10);
       stats.loyalty = clamp(stats.loyalty + 1, 0, 10);
@@ -75,7 +82,8 @@ const FEED_ITEMS = [
     id: "burial_wraps",
     name: "Burial Wraps",
     shortLabel: "Burial Wraps",
-    description: "Loyalty +1, Chaos -1.",
+    cost: 2,
+    description: "Cost: 2 coins. Loyalty +1, Chaos -1.",
     apply: (stats) => {
       stats.loyalty = clamp(stats.loyalty + 1, 0, 10);
       stats.chaos = clamp(stats.chaos - 1, 0, 10);
@@ -168,7 +176,8 @@ const NIGHT_EVENTS = [
           const lost = state.demons[idx];
           state.demons[idx] = null;
           addLog(
-            `Night: Could not pay. A collector claimed your demon in Pen ${idx + 1} (${lost.name}).`
+            `Night: Could not pay. A collector claimed your demon in Pen ${idx +
+              1} (${lost.name}).`
           );
         } else {
           addLog(
@@ -180,7 +189,7 @@ const NIGHT_EVENTS = [
   }
 ];
 
-// Meta upgrades
+// Meta upgrades (rogue-lite)
 const META_UPGRADES = [
   {
     id: "fast_growth",
@@ -191,7 +200,7 @@ const META_UPGRADES = [
   {
     id: "extra_start_egg",
     name: "Extra Starting Egg",
-    description: "Start each run with an extra egg.",
+    description: "Start each run with an extra egg (after your first parents).",
     cost: 5
   },
   {
@@ -209,8 +218,9 @@ const META_UPGRADES = [
 const state = {
   day: 1,
   coins: 0,
-  soulShards: 0, // persistent
-  demons: new Array(PEN_COUNT).fill(null),
+  soulShards: 0, // persistent between runs
+  demons: new Array(PEN_COUNT).fill(null), // pens
+  shopDemons: [], // demons you can buy as parents/stock
   clients: [],
   selectedPenIndex: null,
   parentAIndex: null,
@@ -310,7 +320,7 @@ function saveMeta() {
 }
 
 /* ----------------------------
-   Demon creation & breeding
+   Demon creation & stages
 ----------------------------- */
 
 let demonIdCounter = 1;
@@ -342,6 +352,14 @@ function createRandomEgg() {
     growth: 0,
     stage: "egg" // egg -> hatchling -> mature
   };
+}
+
+// For shop: we want fully mature demons with same stat system
+function createShopDemon() {
+  const d = createRandomEgg();
+  d.growth = GROWTH_REQUIRED;
+  d.stage = "mature";
+  return d;
 }
 
 function generateDemonName(typeTemplate) {
@@ -404,9 +422,52 @@ function feedDemon(index, itemId) {
   const item = FEED_ITEMS.find((f) => f.id === itemId);
   if (!item) return;
 
+  if (state.coins < item.cost) {
+    addLog(`Not enough coins for ${item.name}.`);
+    return;
+  }
+
+  state.coins -= item.cost;
   const message = item.apply(demon.stats);
   addLog(`${message} (${demon.name} in Pen ${index + 1}).`);
 }
+
+/* ----------------------------
+   Shop – buying demons
+----------------------------- */
+
+function buyDemonFromShop(shopIndex) {
+  const demon = state.shopDemons[shopIndex];
+  if (!demon) return;
+
+  if (state.coins < PARENT_COST) {
+    addLog("Not enough coins to buy this demon.");
+    return;
+  }
+
+  const penIndex = state.demons.findIndex((d) => d === null);
+  if (penIndex === -1) {
+    addLog("No empty pen available. Sell or breed first.");
+    return;
+  }
+
+  state.coins -= PARENT_COST;
+  // Ensure it's fully mature
+  demon.growth = GROWTH_REQUIRED;
+  demon.stage = "mature";
+
+  state.demons[penIndex] = demon;
+  state.shopDemons.splice(shopIndex, 1);
+
+  addLog(
+    `Bought ${demon.name} (${demon.typeName}) and placed in Pen ${penIndex +
+      1}.`
+  );
+}
+
+/* ----------------------------
+   Breeding
+----------------------------- */
 
 function breedParents() {
   const aIdx = state.parentAIndex;
@@ -417,14 +478,23 @@ function breedParents() {
   const parentA = state.demons[aIdx];
   const parentB = state.demons[bIdx];
   if (!parentA || !parentB) return;
-  if (parentA.stage !== "mature" || parentB.stage !== "mature") return;
-
-  // Find empty pen
-  const emptyIndex = state.demons.findIndex((d) => d === null);
-  if (emptyIndex === -1) {
-    addLog("No empty pen available for breeding.");
+  if (parentA.stage !== "mature" || parentB.stage !== "mature") {
+    addLog("Both parents must be Mature to breed.");
     return;
   }
+
+  const emptyIndex = state.demons.findIndex((d) => d === null);
+  if (emptyIndex === -1) {
+    addLog("No empty pen available for the egg.");
+    return;
+  }
+
+  if (state.coins < BREED_COST) {
+    addLog(`Breeding costs ${BREED_COST} coins. You don't have enough.`);
+    return;
+  }
+
+  state.coins -= BREED_COST;
 
   // Child type: choose one parent's type (we can add hybrids later)
   const typeTemplate =
@@ -447,20 +517,17 @@ function breedParents() {
     );
     let mutation = randInt(-2, 2);
     if (state.unlocks.lucky_mutations && mutation < 0) {
-      // Skew slightly positive
-      mutation += 1;
+      mutation += 1; // skew slightly positive
     }
     stats[key] = clamp(avg + mutation, 0, 10);
   }
 
   const traits = [];
-  // Inherit some traits
   const combinedTraits = [...parentA.traits, ...parentB.traits];
   while (traits.length < 2 && combinedTraits.length > 0) {
     const t = randChoice(combinedTraits);
     if (!traits.includes(t)) traits.push(t);
   }
-  // Chance for a random extra trait
   if (Math.random() < 0.4) {
     const extra = randChoice(ALL_TRAITS);
     if (!traits.includes(extra)) traits.push(extra);
@@ -479,7 +546,8 @@ function breedParents() {
 
   state.demons[emptyIndex] = child;
   addLog(
-    `Bred a new ${child.typeName} egg (${child.name}) in Pen ${emptyIndex + 1}.`
+    `Bred a new ${child.typeName} egg (${child.name}) in Pen ${emptyIndex +
+      1}.`
   );
 }
 
@@ -491,16 +559,16 @@ let clientIdCounter = 1;
 
 function generateClient() {
   const arch = randChoice(CLIENT_ARCHETYPES);
-  const difficulty = randInt(1, 3); // simple scale
+  const difficulty = randInt(1, 3);
 
-  const minFav = arch.minFavStat + (difficulty - 1); // more difficult → higher requirement
+  const minFav = arch.minFavStat + (difficulty - 1);
   const maxChaos = arch.maxChaos - (difficulty - 1);
 
   const wantTrait =
     Math.random() < 0.5 ? arch.favTrait : randChoice(ALL_TRAITS);
 
   const rewardCoins = 5 + difficulty * 3;
-  const rewardShards = difficulty; // 1–3
+  const rewardShards = difficulty;
 
   return {
     id: clientIdCounter++,
@@ -527,19 +595,14 @@ function populateClients() {
 
 function demonFulfilsClient(demon, client) {
   if (!demon || !client) return false;
-
-  // Stage
   if (demon.stage !== "mature") return false;
 
-  // Preferred type bonus – but not required
   const matchesType = demon.typeId === client.preferredTypeId;
 
-  // Stat checks
   const statValue = demon.stats[client.favStat];
   if (statValue < client.minFavStat) return false;
   if (demon.stats.chaos > client.maxChaos) return false;
 
-  // Trait check (soft – if missing trait we still allow, but maybe half reward)
   const hasTrait = demon.traits.includes(client.wantedTrait);
 
   return {
@@ -561,7 +624,6 @@ function sellDemonToClient(penIndex, clientIndex) {
     return;
   }
 
-  // Reward calculations
   let coins = client.rewardCoins;
   let shards = client.rewardShards;
 
@@ -579,11 +641,9 @@ function sellDemonToClient(penIndex, clientIndex) {
     `Sold ${demon.name} to ${client.name} for ${coins} coins and ${shards} Soul Shard(s).`
   );
 
-  // Remove demon and client
   state.demons[penIndex] = null;
   state.clients.splice(clientIndex, 1);
 
-  // Update meta storage
   saveMeta();
 }
 
@@ -593,40 +653,55 @@ function sellDemonToClient(penIndex, clientIndex) {
 
 function startNewRun() {
   state.day = 1;
-  state.coins = 0;
+  state.coins = STARTING_COINS;
   state.demons = new Array(PEN_COUNT).fill(null);
   state.clients = [];
+  state.shopDemons = [];
   state.selectedPenIndex = null;
   state.parentAIndex = null;
   state.parentBIndex = null;
 
   loadMeta();
 
-  // Starting eggs
-  const startingEggs = state.unlocks.extra_start_egg ? 3 : 2;
-  for (let i = 0; i < startingEggs && i < PEN_COUNT; i++) {
-    state.demons[i] = createRandomEgg();
+  // Generate 10 shop demons (parents/stock)
+  for (let i = 0; i < 10; i++) {
+    state.shopDemons.push(createShopDemon());
+  }
+
+  // Optional: extra egg if unlocked
+  if (state.unlocks.extra_start_egg) {
+    const egg = createRandomEgg();
+    state.demons[0] = egg;
+    addLog(
+      "Meta upgrade: You start this run with a bonus egg in Pen 1."
+    );
   }
 
   populateClients();
   renderAll();
-  addLog("New run started at Horror Hatchery.");
+  addLog("New run started at Horror Hatchery. Buy two parents to begin breeding.");
 }
 
 function endDay() {
   state.day += 1;
 
   if (state.day > MAX_DAYS_PER_RUN) {
-    showGameOver();
+    showGameOver(
+      "Your hatchery licence expired after 10 days of questionable ethics."
+    );
     return;
   }
 
   // Trigger night event
   triggerNightEvent();
 
-  // Refresh clients
-  populateClients();
+  // Bankruptcy check – if you're out of coins after the night
+  if (state.coins <= 0) {
+    showGameOver("You ran out of coins and had to close the hatchery.");
+    return;
+  }
 
+  populateClients();
   renderAll();
 }
 
@@ -635,9 +710,7 @@ function triggerNightEvent() {
   eventDescription.textContent = event.description;
   eventModal.classList.remove("hidden");
 
-  // Apply immediately (simple model)
   event.apply(state);
-
   renderAll();
 }
 
@@ -645,8 +718,8 @@ function closeNightEvent() {
   eventModal.classList.add("hidden");
 }
 
-function showGameOver() {
-  const summary = `You survived ${MAX_DAYS_PER_RUN} days, earned ${state.coins} coins this run, and now hold a total of ${state.soulShards} Soul Shards.`;
+function showGameOver(reasonText) {
+  const summary = `${reasonText}\n\nYou survived ${state.day} day(s), earned ${state.coins} coins this run, and now hold a total of ${state.soulShards} Soul Shards.`;
   gameoverSummary.textContent = summary;
   gameoverModal.classList.remove("hidden");
   addLog("Run complete. Check your summary and start again when ready.");
@@ -707,7 +780,6 @@ function renderPens() {
     card.addEventListener("click", () => {
       state.selectedPenIndex = idx;
 
-      // Grow demon when clicked
       if (demon) {
         growDemon(idx);
       }
@@ -766,7 +838,6 @@ function renderSelectedDemonDetails() {
   const niceStage =
     demon.stage.charAt(0).toUpperCase() + demon.stage.slice(1);
 
-  // Base info
   demonDetailsBody.innerHTML = `
     <p><strong>${demon.name}</strong> (${demon.typeName}) – Stage: ${niceStage}</p>
     <div class="details-grid">
@@ -778,7 +849,6 @@ function renderSelectedDemonDetails() {
     <p class="traits-list"><strong>Traits:</strong> ${traitsText}</p>
   `;
 
-  // Step hint
   const hint = document.createElement("p");
   hint.className = "panel-caption";
   if (demon.stage === "egg") {
@@ -789,18 +859,17 @@ function renderSelectedDemonDetails() {
       "This demon is a Hatchling. Feed it to nudge its stats, then keep growing it to reach Mature.";
   } else {
     hint.textContent =
-      "This demon is Mature. You can use it as a parent for breeding, or sell it to a client.";
+      "This demon is Mature. Use it as a parent for breeding, or sell it to a client.";
   }
   demonDetailsBody.appendChild(hint);
 
-  // Feeding buttons (only if not an egg)
   if (demon.stage !== "egg") {
     const feedWrapper = document.createElement("div");
     feedWrapper.className = "feed-wrapper";
 
     const label = document.createElement("p");
     label.className = "panel-caption";
-    label.innerHTML = "<strong>Feed items:</strong>";
+    label.innerHTML = "<strong>Feed items (cost coins):</strong>";
     feedWrapper.appendChild(label);
 
     const buttonsRow = document.createElement("div");
@@ -893,6 +962,57 @@ function renderClients() {
 function renderMetaUpgrades() {
   metaUpgradesContainer.innerHTML = "";
 
+  // Shop section – buy parents / extra stock
+  if (state.shopDemons.length > 0) {
+    const shopTitle = document.createElement("div");
+    shopTitle.className = "meta-section-title";
+    shopTitle.textContent = "Breeding Stock – Buy Mature Demons";
+    metaUpgradesContainer.appendChild(shopTitle);
+
+    state.shopDemons.forEach((demon, idx) => {
+      const row = document.createElement("div");
+      row.className = "meta-upgrade demon-shop-row";
+
+      const textWrap = document.createElement("div");
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "meta-name";
+      nameSpan.textContent = `${demon.name} (${demon.typeName})`;
+
+      const statsSpan = document.createElement("span");
+      statsSpan.textContent = `F:${demon.stats.fear} L:${demon.stats.loyalty} A:${demon.stats.aesthetic} C:${demon.stats.chaos}`;
+
+      textWrap.appendChild(nameSpan);
+      textWrap.appendChild(statsSpan);
+
+      const btn = document.createElement("button");
+      btn.textContent = `Buy (${PARENT_COST} coins)`;
+      const noCoins = state.coins < PARENT_COST;
+      const noSpace = !state.demons.some((d) => d === null);
+      btn.disabled = noCoins || noSpace;
+      btn.addEventListener("click", () => {
+        buyDemonFromShop(idx);
+        renderAll();
+      });
+
+      row.appendChild(textWrap);
+      row.appendChild(btn);
+      metaUpgradesContainer.appendChild(row);
+    });
+
+    const shopHint = document.createElement("p");
+    shopHint.className = "panel-caption";
+    shopHint.textContent =
+      "Tip: Buy at least two Mature demons, set them as Parents A and B, then use Breed Parents to create eggs.";
+    metaUpgradesContainer.appendChild(shopHint);
+  }
+
+  // Divider
+  const divider = document.createElement("div");
+  divider.style.margin = "0.5rem 0";
+  divider.style.borderTop = "1px solid rgba(255,255,255,0.08)";
+  metaUpgradesContainer.appendChild(divider);
+
+  // Meta upgrades
   META_UPGRADES.forEach((u) => {
     const row = document.createElement("div");
     row.className = "meta-upgrade";
@@ -934,7 +1054,8 @@ function updateBreedingButtons() {
     state.demons[state.parentBIndex] &&
     state.demons[state.parentAIndex].stage === "mature" &&
     state.demons[state.parentBIndex].stage === "mature" &&
-    state.demons.some((d) => d === null);
+    state.demons.some((d) => d === null) &&
+    state.coins >= BREED_COST;
 
   breedBtn.disabled = !canBreed;
 
