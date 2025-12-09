@@ -771,11 +771,17 @@ function renderPens() {
   pensContainer.innerHTML = "";
 
   state.demons.forEach((demon, idx) => {
-    const card = document.createElement("div");
-    card.className = "pen-card";
-    if (state.selectedPenIndex === idx) {
-      card.classList.add("selected");
-    }
+  const card = document.createElement("div");
+  card.className = "pen-card";
+  if (state.selectedPenIndex === idx) {
+    card.classList.add("selected");
+  }
+
+  // Add stage-based class so CSS can animate differently
+  if (demon) {
+    card.classList.add(`stage-${demon.stage}`); // stage-egg | stage-hatchling | stage-mature
+  }
+
 
     card.addEventListener("click", () => {
       state.selectedPenIndex = idx;
@@ -1140,3 +1146,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   startNewRun();
 });
+
