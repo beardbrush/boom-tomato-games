@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Horror Hatchery – Boom Tomato Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <div class="bt-game-info">
+        <h1>Horror Hatchery</h1>
+        <p class="bt-subtitle">Breed demons. Fulfil horror contracts. Try not to die.</p>
+        <div class="bt-stats">
+          <span id="day-display">Day 1</span>
+          <span id="coins-display">Coins: 0</span>
+          <span id="shards-display">Soul Shards: 0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="bt-main">
+    <!-- Lab section -->
+    <section class="panel" id="lab-panel">
+      <h2>Lab Pens</h2>
+      <p class="panel-caption">Tap pens to grow demons. Mature demons can be sold or used for breeding.</p>
+
+      <div id="pens-container" class="pens-grid">
+        <!-- Pens rendered by JS -->
+      </div>
+
+      <div id="demon-details" class="details-panel">
+        <h3>Selected Demon</h3>
+        <div id="demon-details-body">
+          <p>No demon selected.</p>
+        </div>
+      </div>
+
+      <div id="breeding-panel" class="details-panel">
+        <h3>Breeding</h3>
+        <p class="panel-caption">Select two mature demons as parents, then breed if there is an empty pen.</p>
+        <div class="breeding-row">
+          <div>
+            <strong>Parent A:</strong>
+            <span id="parent-a-label">None</span>
+            <button id="set-parent-a-btn" disabled>Set from Selected</button>
+          </div>
+          <div>
+            <strong>Parent B:</strong>
+            <span id="parent-b-label">None</span>
+            <button id="set-parent-b-btn" disabled>Set from Selected</button>
+          </div>
+        </div>
+        <button id="breed-btn" disabled>Breed Parents</button>
+      </div>
+    </section>
+
+    <!-- Clients + Meta -->
+    <section class="panel" id="clients-panel">
+      <h2>Clients</h2>
+      <p class="panel-caption">Click a demon, then click a client to try and fulfil their order.</p>
+
+      <div id="clients-container" class="clients-list">
+        <!-- Clients rendered by JS -->
+      </div>
+
+      <button id="end-day-btn" class="primary-btn">End Day</button>
+
+      <div id="meta-lab" class="details-panel">
+        <h3>Meta Lab – Permanent Unlocks</h3>
+        <p class="panel-caption">
+          Spend Soul Shards to unlock upgrades that persist between runs.
+        </p>
+        <div id="meta-upgrades">
+          <!-- Upgrades rendered by JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section id="log-panel" class="panel log-panel">
+    <h2>Lab Log</h2>
+    <div id="log-messages"></div>
+  </section>
+
+  <!-- Night Event Modal -->
+  <div id="event-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Night Event</h2>
+      <p id="event-description"></p>
+      <button id="event-ok-btn" class="primary-btn">Continue</button>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameover-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Run Complete</h2>
+      <p id="gameover-summary"></p>
+      <button id="new-run-btn" class="primary-btn">Start New Run</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
