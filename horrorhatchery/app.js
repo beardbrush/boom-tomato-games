@@ -46,6 +46,44 @@ const ALL_TRAITS = [
   "Hypnotic"
 ];
 
+// Feed items – used on hatchlings / mature demons
+const FEED_ITEMS = [
+  {
+    id: "blood_vial",
+    name: "Blood Vial",
+    shortLabel: "Blood Vial",
+    description: "Fear +1, Aesthetic +1, Chaos +1.",
+    apply: (stats) => {
+      stats.fear = clamp(stats.fear + 1, 0, 10);
+      stats.aesthetic = clamp(stats.aesthetic + 1, 0, 10);
+      stats.chaos = clamp(stats.chaos + 1, 0, 10);
+      return "Fed Blood Vial: Fear +1, Aesthetic +1, Chaos +1.";
+    }
+  },
+  {
+    id: "bone_snack",
+    name: "Bone Snack",
+    shortLabel: "Bone Snack",
+    description: "Fear +1, Loyalty +1.",
+    apply: (stats) => {
+      stats.fear = clamp(stats.fear + 1, 0, 10);
+      stats.loyalty = clamp(stats.loyalty + 1, 0, 10);
+      return "Fed Bone Snack: Fear +1, Loyalty +1.";
+    }
+  },
+  {
+    id: "burial_wraps",
+    name: "Burial Wraps",
+    shortLabel: "Burial Wraps",
+    description: "Loyalty +1, Chaos -1.",
+    apply: (stats) => {
+      stats.loyalty = clamp(stats.loyalty + 1, 0, 10);
+      stats.chaos = clamp(stats.chaos - 1, 0, 10);
+      return "Fed Burial Wraps: Loyalty +1, Chaos -1.";
+    }
+  }
+];
+
 // Client archetypes
 const CLIENT_ARCHETYPES = [
   {
@@ -88,7 +126,10 @@ const NIGHT_EVENTS = [
       "A rare peaceful night. All demons feel strangely refreshed. Growth increases slightly.",
     apply: (state) => {
       state.demons.forEach((d) => {
-        if (d) d.growth = Math.min(GROWTH_REQUIRED, d.growth + 15);
+        if (d) {
+          d.growth = Math.min(GROWTH_REQUIRED, d.growth + 15);
+          updateDemonStage(d);
+        }
       });
       addLog("Night: Restful sleep. All demons gained +15 growth.");
     }
@@ -105,9 +146,7 @@ const NIGHT_EVENTS = [
           d.stats.loyalty = clamp(d.stats.loyalty - 1, 0, 10);
         }
       });
-      addLog(
-        "Night: Full moon. Wolfspawn +1 Fear, -1 Loyalty."
-      );
+      addLog("Night: Full moon. Wolfspawn +1 Fear, -1 Loyalty.");
     }
   },
   {
@@ -132,7 +171,9 @@ const NIGHT_EVENTS = [
             `Night: Could not pay. A collector claimed your demon in Pen ${idx + 1} (${lost.name}).`
           );
         } else {
-          addLog("Night: You had nothing to take. The collector leaves… for now.");
+          addLog(
+            "Night: You had nothing to take. The collector leaves… for now."
+          );
         }
       }
     }
@@ -299,7 +340,7 @@ function createRandomEgg() {
     stats,
     traits,
     growth: 0,
-    stage: "egg" // egg -> growing -> mature
+    stage: "egg" // egg -> hatchling -> mature
   };
 }
 
@@ -322,6 +363,17 @@ function getGrowthPerClick() {
   return growth;
 }
 
+// Stage thresholds: 0–29 egg, 30–79 hatchling, 80–100 mature
+function updateDemonStage(demon) {
+  if (demon.growth >= 80) {
+    demon.stage = "mature";
+  } else if (demon.growth >= 30) {
+    demon.stage = "hatchling";
+  } else {
+    demon.stage = "egg";
+  }
+}
+
 function growDemon(index) {
   const demon = state.demons[index];
   if (!demon) return;
@@ -332,12 +384,28 @@ function growDemon(index) {
     GROWTH_REQUIRED
   );
 
-  if (demon.growth >= GROWTH_REQUIRED && demon.stage !== "mature") {
-    demon.stage = "mature";
+  const wasStage = demon.stage;
+  updateDemonStage(demon);
+
+  if (demon.stage === "mature" && wasStage !== "mature") {
     addLog(`Demon ${demon.name} in Pen ${index + 1} has matured.`);
-  } else if (demon.growth > 0 && demon.stage === "egg") {
-    demon.stage = "growing";
   }
+}
+
+function feedDemon(index, itemId) {
+  const demon = state.demons[index];
+  if (!demon) return;
+
+  if (demon.stage === "egg") {
+    addLog("You can't feed an egg. Grow it into a hatchling first.");
+    return;
+  }
+
+  const item = FEED_ITEMS.find((f) => f.id === itemId);
+  if (!item) return;
+
+  const message = item.apply(demon.stats);
+  addLog(`${message} (${demon.name} in Pen ${index + 1}).`);
 }
 
 function breedParents() {
@@ -387,10 +455,7 @@ function breedParents() {
 
   const traits = [];
   // Inherit some traits
-  const combinedTraits = [
-    ...parentA.traits,
-    ...parentB.traits
-  ];
+  const combinedTraits = [...parentA.traits, ...parentB.traits];
   while (traits.length < 2 && combinedTraits.length > 0) {
     const t = randChoice(combinedTraits);
     if (!traits.includes(t)) traits.push(t);
@@ -665,9 +730,9 @@ function renderPens() {
 
     const stage = document.createElement("div");
     stage.className = "pen-stage";
-    stage.textContent = `${demon.name} – ${
-      demon.stage.charAt(0).toUpperCase() + demon.stage.slice(1)
-    }`;
+    const niceStage =
+      demon.stage.charAt(0).toUpperCase() + demon.stage.slice(1);
+    stage.textContent = `${demon.name} – ${niceStage}`;
     card.appendChild(stage);
 
     const progress = document.createElement("div");
@@ -698,10 +763,12 @@ function renderSelectedDemonDetails() {
   const traitsText =
     demon.traits.length > 0 ? demon.traits.join(", ") : "None";
 
+  const niceStage =
+    demon.stage.charAt(0).toUpperCase() + demon.stage.slice(1);
+
+  // Base info
   demonDetailsBody.innerHTML = `
-    <p><strong>${demon.name}</strong> (${demon.typeName}) – Stage: ${
-    demon.stage
-  }</p>
+    <p><strong>${demon.name}</strong> (${demon.typeName}) – Stage: ${niceStage}</p>
     <div class="details-grid">
       <div>Fear: ${demon.stats.fear}</div>
       <div>Loyalty: ${demon.stats.loyalty}</div>
@@ -709,8 +776,57 @@ function renderSelectedDemonDetails() {
       <div>Chaos: ${demon.stats.chaos}</div>
     </div>
     <p class="traits-list"><strong>Traits:</strong> ${traitsText}</p>
-    <p class="panel-caption">Click a client card to try selling this demon to them.</p>
   `;
+
+  // Step hint
+  const hint = document.createElement("p");
+  hint.className = "panel-caption";
+  if (demon.stage === "egg") {
+    hint.textContent =
+      "Tap this pen to grow the egg. At Hatchling stage you can feed it to shape its stats.";
+  } else if (demon.stage === "hatchling") {
+    hint.textContent =
+      "This demon is a Hatchling. Feed it to nudge its stats, then keep growing it to reach Mature.";
+  } else {
+    hint.textContent =
+      "This demon is Mature. You can use it as a parent for breeding, or sell it to a client.";
+  }
+  demonDetailsBody.appendChild(hint);
+
+  // Feeding buttons (only if not an egg)
+  if (demon.stage !== "egg") {
+    const feedWrapper = document.createElement("div");
+    feedWrapper.className = "feed-wrapper";
+
+    const label = document.createElement("p");
+    label.className = "panel-caption";
+    label.innerHTML = "<strong>Feed items:</strong>";
+    feedWrapper.appendChild(label);
+
+    const buttonsRow = document.createElement("div");
+    buttonsRow.className = "feed-buttons";
+
+    FEED_ITEMS.forEach((item) => {
+      const btn = document.createElement("button");
+      btn.className = "feed-btn";
+      btn.textContent = item.shortLabel;
+      btn.title = item.description;
+      btn.addEventListener("click", () => {
+        feedDemon(idx, item.id);
+        renderAll();
+      });
+      buttonsRow.appendChild(btn);
+    });
+
+    feedWrapper.appendChild(buttonsRow);
+    demonDetailsBody.appendChild(feedWrapper);
+  }
+
+  const sellNote = document.createElement("p");
+  sellNote.className = "panel-caption";
+  sellNote.textContent =
+    "When you're happy with a Mature demon, click a client card on the right to try selling it.";
+  demonDetailsBody.appendChild(sellNote);
 }
 
 function renderClients() {
@@ -731,7 +847,7 @@ function renderClients() {
     card.addEventListener("click", () => {
       if (state.selectedPenIndex == null) {
         addLog(
-          `Select a demon first, then click a client to attempt a sale.`
+          "Select a demon first, then click a client to attempt a sale."
         );
         return;
       }
@@ -825,12 +941,16 @@ function updateBreedingButtons() {
   parentALabel.textContent =
     state.parentAIndex == null
       ? "None"
-      : `Pen ${state.parentAIndex + 1} (${state.demons[state.parentAIndex]?.name || "Empty"})`;
+      : `Pen ${state.parentAIndex + 1} (${
+          state.demons[state.parentAIndex]?.name || "Empty"
+        })`;
 
   parentBLabel.textContent =
     state.parentBIndex == null
       ? "None"
-      : `Pen ${state.parentBIndex + 1} (${state.demons[state.parentBIndex]?.name || "Empty"})`;
+      : `Pen ${state.parentBIndex + 1} (${
+          state.demons[state.parentBIndex]?.name || "Empty"
+        })`;
 }
 
 function renderAll() {
