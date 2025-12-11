@@ -205,13 +205,7 @@ const PASSPORTS = {
 };
 
 // For home menu labels
-const DEMO_ORDER = [
-  "DEMO001",
-  "DEMO002",
-  "DEMO003",
-  "DEMO004",
-  "DEMO005"
-];
+const DEMO_ORDER = ["DEMO001", "DEMO002", "DEMO003", "DEMO004", "DEMO005"];
 
 // ====== RENDERING ======
 
@@ -360,7 +354,9 @@ function renderHomeMenu() {
   const list = document.getElementById("demo-list");
   if (!list) return;
 
-  const baseUrl = window.location.origin + window.location.pathname.replace(/index\.html$/, "");
+  const baseUrl =
+    window.location.origin +
+    window.location.pathname.replace(/index\.html$/, "");
   list.innerHTML = DEMO_ORDER.map((id) => {
     const data = PASSPORTS[id];
     const url = `${baseUrl}?id=${id}`;
@@ -398,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (id && PASSPORTS[id]) {
-    // Quick view mode (after scanning QR)
+    // Quick view mode (after scanning QR or direct link)
     if (splash) splash.classList.add("hidden");
     if (homeMenu) homeMenu.classList.add("hidden");
     if (quickWrapper) quickWrapper.classList.remove("hidden");
