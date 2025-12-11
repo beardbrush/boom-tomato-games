@@ -99,9 +99,8 @@
       const grid = document.getElementById("qr-grid");
       if (!grid) return;
 
-      const base =
-        window.location.origin +
-        window.location.pathname.replace(/qr\.html$/, "");
+      // Always point to /passport/?id=DEMO00X
+      const base = window.location.origin + "/passport/";
 
       const cardsHtml = Object.entries(DEMO_IDS)
         .map(([id, info]) => {
