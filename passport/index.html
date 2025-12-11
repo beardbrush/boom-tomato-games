@@ -7,7 +7,8 @@
   <meta name="theme-color" content="#03363d" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <!-- IMPORTANT: version bump forces browser to load new CSS -->
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
   <header class="bt-header">
@@ -28,36 +29,29 @@
         Prototype tool to show how QR-based vulnerability passports could work
         for police, ambulance and social care teams.
       </p>
+
       <div class="splash-actions">
-        <a href="scan.html" class="btn-primary splash-btn">
-          📷 Scan existing passport
-        </a>
-        <button id="view-demos-btn" class="btn-outline splash-btn">
-          🧪 Use demo passports
-        </button>
-        <a id="qr-cards-link" class="btn-outline splash-btn" href="qr.html">
-          🔳 Printable QR cards (demo)
-        </a>
+        <a href="scan.html" class="btn-primary splash-btn">📷 Scan existing passport</a>
+        <button id="view-demos-btn" class="btn-outline splash-btn">🧪 Use demo passports</button>
+        <a id="qr-cards-link" class="btn-outline splash-btn" href="qr.html">🔳 Printable QR cards (demo)</a>
       </div>
+
       <p class="splash-note">
-        This is a demo using fictional names (New Testament apostles).<br />
+        This is a demo using fictional names (New Testament apostles).<br>
         Not for real client data.
       </p>
     </section>
 
-    <!-- Home menu: list of demo passports -->
+    <!-- Home menu -->
     <section id="home-menu" class="passport-section home-menu hidden">
       <h2>Demo profiles</h2>
       <p class="home-menu-text">
-        Tap a profile below, or scan the matching QR card, to see the emergency
-        quick view screen that responders would access.
+        Tap a profile below, or scan the matching QR card, to see the emergency quick view screen.
       </p>
-      <div id="demo-list" class="demo-list">
-        <!-- Filled by JS -->
-      </div>
+      <div id="demo-list" class="demo-list"></div>
     </section>
 
-    <!-- Quick view + fake professional area wrapper -->
+    <!-- Quick view -->
     <section id="quick-view-wrapper" class="hidden">
       <section class="status-card" id="status-card"></section>
 
@@ -65,31 +59,20 @@
 
       <section class="passport-section info-note">
         <p>
-          This passport gives basic guidance only. Use professional judgement
-          and follow local policies and procedures.
+          This passport gives basic guidance only. Use professional judgement and follow local policies and procedures.
         </p>
       </section>
 
       <section class="passport-section">
-        <button class="btn-outline" id="professional-btn">
-          🔒 Professional area (demo)
-        </button>
+        <button class="btn-outline" id="professional-btn">🔒 Professional area (demo)</button>
       </section>
 
-      <section
-        class="passport-section professional-panel hidden"
-        id="professional-panel"
-      >
+      <section class="passport-section professional-panel hidden" id="professional-panel">
         <h2>Professional appendix (demo only)</h2>
         <p class="professional-note">
-          In a real system this area would be secured by professional login and
-          show multi-agency approved information (communication profile,
-          triggers, crisis plan, safeguarding notes, etc.).
+          In a real system this area would show multi-agency information such as crisis plans and safeguarding notes.
         </p>
-
-        <div id="professional-content">
-          <!-- Filled by JS -->
-        </div>
+        <div id="professional-content"></div>
       </section>
     </section>
   </main>
