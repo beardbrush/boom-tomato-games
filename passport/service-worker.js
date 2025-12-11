@@ -2,12 +2,12 @@
    Social Services Passport – Service Worker
 -------------------------------------------------- */
 
-const CACHE_NAME = "btg-passport-v2";  // ⬅ bumped version
+const CACHE_NAME = "btg-passport-v4";  // IMPORTANT: bump version
 
 const ASSETS = [
   "./",
   "./index.html",
-  "./style.css",
+  "./style.css?v=3",
   "./app.js",
   "./qr.html",
   "./scan.html",
@@ -16,10 +16,7 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
@@ -27,26 +24,24 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      )
+      Promise.all(keys.map((key) => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET") return;
+  if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(req).then((cached) => {
+    caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(req).then((res) => {
+
+      return fetch(event.request).then((res) => {
         const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return res;
       });
     })
