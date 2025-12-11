@@ -186,8 +186,28 @@ body {
   margin-top: 0.75rem;
 }
 
+/* NEW tidy layout for splash buttons */
 .splash-actions {
   margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.splash-btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* On wider screens, line buttons up nicely */
+@media (min-width: 800px) {
+  .splash-actions {
+    flex-direction: row;
+  }
+  .splash-btn {
+    width: auto;
+    flex: 1 1 0;
+  }
 }
 
 /* Home menu */
@@ -235,6 +255,10 @@ body {
 
 /* Professional panel */
 
+.professional-panel is-invalid {
+  font-size: 0.85rem;
+}
+
 .professional-panel {
   font-size: 0.85rem;
 }
@@ -267,3 +291,4 @@ body {
     flex: 1 1 calc(50% - 0.5rem);
   }
 }
+
