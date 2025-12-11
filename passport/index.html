@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#03363d" />
 
   <link rel="manifest" href="manifest.json" />
-  <!-- IMPORTANT: version bump forces browser to load new CSS -->
+  <!-- Version query forces the browser to fetch the latest CSS -->
   <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
@@ -31,54 +31,84 @@
       </p>
 
       <div class="splash-actions">
-        <a href="scan.html" class="btn-primary splash-btn">📷 Scan existing passport</a>
-        <button id="view-demos-btn" class="btn-outline splash-btn">🧪 Use demo passports</button>
-        <a id="qr-cards-link" class="btn-outline splash-btn" href="qr.html">🔳 Printable QR cards (demo)</a>
+        <a href="scan.html" class="btn-primary splash-btn">
+          📷 Scan existing passport
+        </a>
+        <button id="view-demos-btn" class="btn-outline splash-btn">
+          🧪 Use demo passports
+        </button>
+        <a id="qr-cards-link" class="btn-outline splash-btn" href="qr.html">
+          🔳 Printable QR cards (demo)
+        </a>
       </div>
 
       <p class="splash-note">
-        This is a demo using fictional names (New Testament apostles).<br>
+        This is a demo using fictional names (New Testament apostles).<br />
         Not for real client data.
       </p>
     </section>
 
-    <!-- Home menu -->
+    <!-- Home menu: list of demo passports -->
     <section id="home-menu" class="passport-section home-menu hidden">
+      <button id="back-to-splash-btn" class="btn-link-back">
+        ← Back to start
+      </button>
+
       <h2>Demo profiles</h2>
       <p class="home-menu-text">
-        Tap a profile below, or scan the matching QR card, to see the emergency quick view screen.
+        Tap a profile below, or scan the matching QR card, to see the emergency
+        quick view screen that responders would access.
       </p>
-      <div id="demo-list" class="demo-list"></div>
+      <div id="demo-list" class="demo-list">
+        <!-- Filled by JS -->
+      </div>
     </section>
 
-    <!-- Quick view -->
+    <!-- Quick view + professional area wrapper -->
     <section id="quick-view-wrapper" class="hidden">
+      <button id="back-to-home-btn" class="btn-link-back">
+        ← Back to start
+      </button>
+
       <section class="status-card" id="status-card"></section>
 
       <section class="passport-section" id="quick-view"></section>
 
       <section class="passport-section info-note">
         <p>
-          This passport gives basic guidance only. Use professional judgement and follow local policies and procedures.
+          This passport gives basic guidance only. Use professional judgement
+          and follow local policies and procedures.
         </p>
       </section>
 
       <section class="passport-section">
-        <button class="btn-outline" id="professional-btn">🔒 Professional area (demo)</button>
+        <button class="btn-outline" id="professional-btn">
+          🔒 Professional area (demo)
+        </button>
       </section>
 
-      <section class="passport-section professional-panel hidden" id="professional-panel">
+      <section
+        class="passport-section professional-panel hidden"
+        id="professional-panel"
+      >
         <h2>Professional appendix (demo only)</h2>
         <p class="professional-note">
-          In a real system this area would show multi-agency information such as crisis plans and safeguarding notes.
+          In a real system this area would be secured by professional login and
+          show multi-agency approved information (communication profile,
+          triggers, crisis plan, safeguarding notes, etc.).
         </p>
-        <div id="professional-content"></div>
+
+        <div id="professional-content">
+          <!-- Filled by JS -->
+        </div>
       </section>
     </section>
   </main>
 
   <footer class="bt-footer">
-    <p>Prototype – Boom Tomato Games. Not for real client data.</p>
+    <div class="bt-footer-inner">
+      <p>Prototype – Boom Tomato Games. Not for real client data.</p>
+    </div>
   </footer>
 
   <script src="app.js"></script>
