@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scan Passport QR – Social Services Passport</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .scan-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .scan-card {
+      background: rgba(5, 11, 18, 0.95);
+      border-radius: 0.9rem;
+      padding: 0.75rem 1rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 0.75rem;
+    }
+    .scan-video {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #000;
+      display: block;
+      margin: 0.5rem auto 0.75rem;
+    }
+    .scan-status {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 0.4rem;
+    }
+    .scan-result {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+    }
+    .scan-result code {
+      word-break: break-all;
+      font-size: 0.8rem;
+    }
+    .scan-actions {
+      margin-top: 0.5rem;
+    }
+    .scan-actions .btn-primary {
+      width: auto;
+      padding-inline: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <div class="bt-title-block">
+        <h1>Social Services Passport</h1>
+        <p class="bt-subtitle">Scan an existing passport QR code</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="scan-wrapper">
+    <section class="scan-card">
+      <h2>Scan passport QR</h2>
+      <p class="scan-status" id="scan-status">
+        Point your camera at a Social Services Passport QR card. When a code is
+        detected, it will appear below and you can open it.
+      </p>
+
+      <video id="qr-video" class="scan-video" playsinline></video>
+
+      <div id="scan-result" class="scan-result hidden">
+        <p><strong>Code detected:</strong></p>
+        <p><code id="scan-text"></code></p>
+        <div class="scan-actions">
+          <a id="open-link" class="btn-primary" href="#" target="_self">
+            Open passport
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="passport-section info-note">
+      <p>
+        This scanner is for demo purposes. For live systems, scanning would be
+        restricted to authorised professionals and log access events.
+      </p>
+      <p>
+        You can also use your phone's normal camera to scan Boom Tomato QR cards
+        – they will open in this passport app.
+      </p>
+    </section>
+  </main>
+
+  <footer class="bt-footer">
+    <p>
+      <a href="index.html" style="color: inherit;">← Back to passport home</a>
+    </p>
+  </footer>
+
+  <!-- jsQR library from CDN -->
+  <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+  <script>
+    const video = document.getElementById("qr-video");
+    const statusEl = document.getElementById("scan-status");
+    const resultEl = document.getElementById("scan-result");
+    const textEl = document.getElementById("scan-text");
+    const openLink = document.getElementById("open-link");
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let stream = null;
+    let scanning = false;
+    let lastValue = null;
+
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusEl.textContent =
+          "Camera access is not supported in this browser. Try Chrome on Android or Safari on iOS.";
+        return;
+      }
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
+        video.srcObject = stream;
+        await video.play();
+        scanning = true;
+        statusEl.textContent = "Scanning… hold the QR code steady in the frame.";
+        requestAnimationFrame(tick);
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent =
+          "Could not access camera. Please check permissions and try again.";
+      }
+    }
+
+    function tick() {
+      if (!scanning) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        if (canvas.width !== video.videoWidth) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        const code = jsQR(imageData.data, canvas.width, canvas.height, {
+          inversionAttempts: "dontInvert"
+        });
+
+        if (code && code.data !== lastValue) {
+          lastValue = code.data;
+          showResult(code.data);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    function showResult(value) {
+      textEl.textContent = value;
+      resultEl.classList.remove("hidden");
+
+      // Default: open whatever is in the QR
+      let href = value;
+
+      // If it's just an ID, build a passport URL
+      if (/^DEMO0[0-9]/.test(value)) {
+        href = window.location.origin + "/passport/?id=" + value;
+      }
+
+      openLink.href = href;
+
+      // If it's a full URL, keep it
+      // Optionally auto-open if it looks like our passport URL
+      const origin = window.location.origin;
+      if (value.startsWith(origin + "/passport")) {
+        // keep as-is
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", startCamera);
+  </script>
+</body>
+</html>
