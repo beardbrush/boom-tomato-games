@@ -105,9 +105,10 @@
       const cardsHtml = Object.entries(DEMO_IDS)
         .map(([id, info]) => {
           const url = `${base}?id=${id}`;
-          const qrSrc =
-            "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" +
-            encodeURIComponent(url);
+            const qrSrc =
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
+      encodeURIComponent(url);
+
           return `
             <article class="qr-card">
               <div class="qr-name">${info.name}</div>
@@ -126,3 +127,4 @@
   </script>
 </body>
 </html>
+
