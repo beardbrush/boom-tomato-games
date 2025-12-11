@@ -386,6 +386,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const profBtn = document.getElementById("professional-btn");
   const profPanel = document.getElementById("professional-panel");
   const qrCardsLink = document.getElementById("qr-cards-link");
+  const backToSplashBtn = document.getElementById("back-to-splash-btn");
+  const backToHomeBtn = document.getElementById("back-to-home-btn");
 
   // Set QR cards link robustly
   if (qrCardsLink) {
@@ -400,18 +402,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (quickWrapper) quickWrapper.classList.remove("hidden");
     renderPassport(id);
   } else {
-    // Home splash + demo menu
+    // Home splash + demo menu toggle
     if (splash) splash.classList.remove("hidden");
     if (homeMenu) homeMenu.classList.add("hidden");
     if (quickWrapper) quickWrapper.classList.add("hidden");
     renderHomeMenu();
 
-    if (viewDemosBtn) {
+    if (viewDemosBtn && splash && homeMenu) {
       viewDemosBtn.addEventListener("click", () => {
         splash.classList.add("hidden");
         homeMenu.classList.remove("hidden");
       });
     }
+
+    // Back from demo list → splash
+    if (backToSplashBtn && splash && homeMenu) {
+      backToSplashBtn.addEventListener("click", () => {
+        homeMenu.classList.add("hidden");
+        splash.classList.remove("hidden");
+      });
+    }
+  }
+
+  // Back from quick view → start (clears ?id=DEMOxxx)
+  if (backToHomeBtn) {
+    backToHomeBtn.addEventListener("click", () => {
+      window.location.href = window.location.pathname;
+    });
   }
 
   if (profBtn && profPanel) {
