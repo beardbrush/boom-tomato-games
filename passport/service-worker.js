@@ -2,8 +2,7 @@
    Social Services Passport – Service Worker
 -------------------------------------------------- */
 
-
-const CACHE_NAME = "btg-passport-v1";
+const CACHE_NAME = "btg-passport-v2";  // ⬅ bumped version
 
 const ASSETS = [
   "./",
@@ -11,14 +10,16 @@ const ASSETS = [
   "./style.css",
   "./app.js",
   "./qr.html",
-  "./scan.html",   // ← add this
+  "./scan.html",
   "./manifest.json"
 ];
 
-
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .catch(() => {})
   );
   self.skipWaiting();
 });
@@ -51,4 +52,3 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
-
