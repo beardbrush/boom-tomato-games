@@ -99,15 +99,17 @@
       const grid = document.getElementById("qr-grid");
       if (!grid) return;
 
-      // Always point to /passport/?id=DEMO00X
+      // Always direct to: https://boomtomatogames.com/passport/?id=DEMO00X
       const base = window.location.origin + "/passport/";
 
       const cardsHtml = Object.entries(DEMO_IDS)
         .map(([id, info]) => {
           const url = `${base}?id=${id}`;
-            const qrSrc =
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
-      encodeURIComponent(url);
+
+          // ✅ Working QR provider
+          const qrSrc =
+            "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
+            encodeURIComponent(url);
 
           return `
             <article class="qr-card">
@@ -127,4 +129,3 @@
   </script>
 </body>
 </html>
-
