@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QR Cards – Social Services Passport</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .qr-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .qr-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .qr-card {
+      flex: 1 1 calc(50% - 1rem);
+      border-radius: 0.8rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.75rem;
+      background: #050b12;
+      text-align: center;
+    }
+    .qr-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .qr-tag {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 0.5rem;
+    }
+    .qr-url {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      word-break: break-all;
+      margin-top: 0.5rem;
+    }
+    .qr-img {
+      background: #fff;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+      .bt-header, .bt-footer {
+        display: none;
+      }
+      .qr-card {
+        border-color: #000;
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <div class="bt-title-block">
+        <h1>QR Cards – Social Services Passport</h1>
+        <p class="bt-subtitle">Demo profiles (fictional names)</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="qr-wrapper">
+    <p style="font-size:0.85rem; opacity:0.9;">
+      These QR cards are for demonstration only. Scan with a mobile camera to
+      open the relevant demo passport quick view.
+    </p>
+    <div id="qr-grid" class="qr-grid">
+      <!-- Filled by JS -->
+    </div>
+  </main>
+
+  <footer class="bt-footer">
+    <p>Print from your browser's Print option. Prototype only.</p>
+  </footer>
+
+  <script>
+    const DEMO_IDS = {
+      DEMO001: { name: "Peter", tag: "Epilepsy, diabetes, asthma" },
+      DEMO002: { name: "John", tag: "Autism, sensory sensitivity" },
+      DEMO003: { name: "James", tag: "Substance history, trauma" },
+      DEMO004: { name: "Andrew", tag: "Epilepsy, cardiac history" },
+      DEMO005: { name: "Philip", tag: "Learning disability, anxiety" }
+    };
+
+    function buildQrCards() {
+      const grid = document.getElementById("qr-grid");
+      if (!grid) return;
+
+      const base =
+        window.location.origin +
+        window.location.pathname.replace(/qr\.html$/, "");
+
+      const cardsHtml = Object.entries(DEMO_IDS)
+        .map(([id, info]) => {
+          const url = `${base}?id=${id}`;
+          const qrSrc =
+            "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" +
+            encodeURIComponent(url);
+          return `
+            <article class="qr-card">
+              <div class="qr-name">${info.name}</div>
+              <div class="qr-tag">${info.tag}</div>
+              <img class="qr-img" src="${qrSrc}" alt="QR for ${info.name}" />
+              <div class="qr-url">${url}</div>
+            </article>
+          `;
+        })
+        .join("");
+
+      grid.innerHTML = cardsHtml;
+    }
+
+    document.addEventListener("DOMContentLoaded", buildQrCards);
+  </script>
+</body>
+</html>

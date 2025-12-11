@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Social Services Passport – Boom Tomato</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#03363d" />
+
+  <link rel="manifest" href="manifest.json" />
+  <!-- You can add real icons later -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="bt-header">
+    <div class="bt-header-inner">
+      <div class="bt-logo">Boom Tomato Games</div>
+      <div class="bt-title-block">
+        <h1>Social Services Passport</h1>
+        <p class="bt-subtitle">Emergency quick view for frontline responders</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="passport-main">
+    <!-- Splash / landing screen -->
+    <section id="splash-screen" class="passport-section splash">
+      <h2>Boom Tomato Social Care Passport</h2>
+      <p class="splash-text">
+        Prototype tool to show how QR-based vulnerability passports could work
+        for police, ambulance and social care teams.
+      </p>
+      <div class="splash-actions">
+        <button id="view-demos-btn" class="btn-primary">
+          View demo profiles
+        </button>
+        <a id="qr-cards-link" class="btn-outline" href="qr.html">
+          Printable QR cards (demo)
+        </a>
+      </div>
+      <p class="splash-note">
+        This is a demo using fictional names (New Testament apostles).<br />
+        Not for real client data.
+      </p>
+    </section>
+
+    <!-- Home menu: list of demo passports -->
+    <section id="home-menu" class="passport-section home-menu hidden">
+      <h2>Demo profiles</h2>
+      <p class="home-menu-text">
+        Tap a profile below, or scan the matching QR card, to see the
+        emergency quick view screen that responders would access.
+      </p>
+      <div id="demo-list" class="demo-list">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Quick view + fake professional area wrapper -->
+    <section id="quick-view-wrapper" class="hidden">
+      <section class="status-card" id="status-card"></section>
+
+      <section class="passport-section" id="quick-view"></section>
+
+      <section class="passport-section info-note">
+        <p>
+          This passport gives basic guidance only. Use professional judgement
+          and follow local policies and procedures.
+        </p>
+      </section>
+
+      <section class="passport-section">
+        <button class="btn-outline" id="professional-btn">
+          🔒 Professional area (demo)
+        </button>
+      </section>
+
+      <section class="passport-section professional-panel hidden" id="professional-panel">
+        <h2>Professional appendix (demo only)</h2>
+        <p class="professional-note">
+          In a real system this area would be secured by professional login and
+          show multi-agency approved information (communication profile,
+          triggers, crisis plan, safeguarding notes, etc.).
+        </p>
+
+        <div id="professional-content">
+          <!-- Filled by JS -->
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="bt-footer">
+    <p>Prototype – Boom Tomato Games. Not for real client data.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
