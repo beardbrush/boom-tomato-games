@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b0f14"/>
+  <title>Boom Tomato — Value Trainer</title>
+
+  <link rel="manifest" href="./manifest.json"/>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#0b0f14; --card:#121a24; --card2:#0f1620;
+      --line:rgba(255,255,255,.10);
+      --text:#eef6ff; --muted:rgba(238,246,255,.72);
+      --accent:#7fffe0; --accent2:#ffd57a;
+      --bad:#ff6a6a;
+      --r:14px;
+      --shadow: 0 14px 34px rgba(0,0,0,.35);
+    }
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 50% 0%, #101c2a 0%, var(--bg) 55%);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:14px;}
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(11,15,20,.92), rgba(11,15,20,.70));
+      border-bottom:1px solid var(--line);
+    }
+    .top{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:12px 14px;
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .dot{width:10px;height:10px;border-radius:99px;background:var(--accent); box-shadow:0 0 0 3px rgba(127,255,224,.12)}
+    .title{font-weight:800; letter-spacing:.2px}
+    .sub{font-size:12px;color:var(--muted)}
+    .pill{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background: rgba(127,255,224,.10); border:1px solid rgba(127,255,224,.18);
+      color: var(--accent);
+      user-select:none;
+      cursor:default;
+    }
+
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; align-items:start;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(18,26,36,.92), rgba(15,22,32,.92));
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{margin:0; font-size:14px; letter-spacing:.2px}
+    .card .hd{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 12px; border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .card .bd{padding:12px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .row + .row{margin-top:10px}
+    button, .btn, select, input[type="range"], input[type="file"]{
+      font:inherit;
+    }
+    button, .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      border-radius: 12px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition: transform .05s ease, background .15s ease;
+      user-select:none;
+    }
+    button:hover{background: rgba(255,255,255,.08)}
+    button:active{transform: translateY(1px)}
+    button.primary{
+      border-color: rgba(127,255,224,.22);
+      background: rgba(127,255,224,.10);
+      color: var(--accent);
+    }
+    button.warn{
+      border-color: rgba(255,213,122,.25);
+      background: rgba(255,213,122,.10);
+      color: var(--accent2);
+    }
+    button.bad{
+      border-color: rgba(255,106,106,.25);
+      background: rgba(255,106,106,.10);
+      color: var(--bad);
+    }
+    .tiny{font-size:12px; color:var(--muted)}
+    .toggle{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:12px; border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .toggle input{width:18px;height:18px}
+    .sliders{opacity:.55; pointer-events:none}
+    .sliders.active{opacity:1; pointer-events:auto}
+    .slider{
+      display:grid; grid-template-columns: 120px 1fr 46px; gap:10px; align-items:center;
+      margin-top:8px;
+    }
+    .slider label{font-size:12px;color:var(--muted)}
+    .valnum{font-size:12px; color:var(--text); text-align:right; opacity:.9}
+    input[type="range"]{width:100%}
+
+    .viewArea{
+      display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+      align-items:start;
+    }
+    @media (max-width: 680px){ .viewArea{grid-template-columns:1fr;} }
+    .canvasWrap{
+      position:relative;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      overflow:hidden;
+      background:#0b1119;
+      min-height:220px;
+    }
+    canvas{display:block; width:100%; height:auto;}
+    .overlayLabel{
+      position:absolute; left:10px; top:10px;
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.9);
+      pointer-events:none;
+    }
+    .maskBar{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .maskBtn{
+      padding:8px 10px;
+      font-size:12px;
+    }
+    .maskBtn.active{
+      border-color: rgba(127,255,224,.35);
+      background: rgba(127,255,224,.12);
+      color: var(--accent);
+    }
+
+    .gallery{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 980px){ .gallery{grid-template-columns: repeat(3, minmax(0,1fr));} }
+    @media (max-width: 520px){ .gallery{grid-template-columns: repeat(2, minmax(0,1fr));} }
+
+    .thumb{
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background: rgba(255,255,255,.03);
+      cursor:pointer;
+    }
+    .thumb img{display:block; width:100%; height:auto}
+    .thumb .meta{
+      padding:8px;
+      font-size:11px;
+      color: var(--muted);
+      border-top:1px solid var(--line);
+    }
+
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.62);
+      display:none; align-items:center; justify-content:center;
+      padding:14px;
+      z-index:50;
+    }
+    .modal.open{display:flex}
+    .modalCard{
+      width:min(980px, 100%);
+      background: linear-gradient(180deg, rgba(18,26,36,.98), rgba(15,22,32,.98));
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .modalCard .hd{padding:12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line)}
+    .modalCard .bd{padding:12px}
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px; border-radius:999px;
+      color: rgba(255,255,255,.92);
+      display:none;
+      z-index:60;
+      font-size:12px;
+    }
+    .toast.show{display:block}
+    .hr{height:1px; background:var(--line); margin:12px 0}
+    .k{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <div class="title">Boom Tomato — Value Trainer</div>
+        <div class="sub">Snap a photo → 2/3/4/5-value breakdown. Save & share.</div>
+      </div>
+    </div>
+    <div class="pill" id="installPill">Ready</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <section class="card">
+      <div class="hd">
+        <h2>Capture & Process</h2>
+        <div class="tiny">Mode cycles: <span class="k">Even → Fixed → Manual</span></div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <button class="primary" id="btnCamera">📷 Camera</button>
+          <button id="btnSnap" class="warn" disabled>● Snap</button>
+          <button id="btnStopCam" disabled>Stop</button>
+          <label class="btn" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;">
+            📁 Upload
+            <input id="file" type="file" accept="image/*" capture="environment" style="display:none">
+          </label>
+          <button id="btnSave" class="primary" disabled>💾 Save</button>
+          <button id="btnDownload" disabled>⬇ Download</button>
+          <button id="btnShare" disabled>↗ Share</button>
+        </div>
+
+        <div class="row">
+          <button id="btnMode" class="primary">Mode: Even Split</button>
+          <button id="btnValues">Values: 4</button>
+          <button id="btnPalette">Palette: Ink-friendly</button>
+          <button id="btnCrop">Crop: Fit</button>
+        </div>
+
+        <div class="row">
+          <div class="toggle"><input type="checkbox" id="chkGrid"><label for="chkGrid">Grid overlay</label></div>
+          <div class="toggle"><input type="checkbox" id="chkEdges"><label for="chkEdges">Edge overlay</label></div>
+          <div class="toggle"><input type="checkbox" id="chkSplit" checked><label for="chkSplit">Side-by-side</label></div>
+        </div>
+
+        <div class="row tiny" id="hintRow">
+          Tip: In Manual mode, nudge thresholds to simplify forms. Tap a “Value” below to isolate it.
+        </div>
+
+        <div id="sliders" class="sliders">
+          <div class="slider">
+            <label>Threshold 1</label>
+            <input id="t1" type="range" min="0" max="255" value="64">
+            <div class="valnum" id="t1v">64</div>
+          </div>
+          <div class="slider">
+            <label>Threshold 2</label>
+            <input id="t2" type="range" min="0" max="255" value="128">
+            <div class="valnum" id="t2v">128</div>
+          </div>
+          <div class="slider">
+            <label>Threshold 3</label>
+            <input id="t3" type="range" min="0" max="255" value="192">
+            <div class="valnum" id="t3v">192</div>
+          </div>
+          <div class="tiny">Manual thresholds auto-sort so they stay in order.</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="viewArea" id="viewArea">
+          <div>
+            <div class="tiny">Original</div>
+            <div class="canvasWrap">
+              <div class="overlayLabel" id="labelOrig">Original</div>
+              <video id="video" playsinline muted style="display:none;width:100%"></video>
+              <canvas id="cOrig"></canvas>
+            </div>
+          </div>
+          <div id="processedCol">
+            <div class="tiny">Values</div>
+            <div class="canvasWrap">
+              <div class="overlayLabel" id="labelProc">Values</div>
+              <canvas id="cProc"></canvas>
+            </div>
+            <div class="maskBar" id="maskBar"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="hd">
+        <h2>Saved Gallery (offline)</h2>
+        <div class="row">
+          <button id="btnClear" class="bad">Clear</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="tiny">Tap a saved image to reload it.</div>
+        <div style="height:10px"></div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalCard">
+    <div class="hd">
+      <div><strong id="modalTitle">Saved</strong> <span class="tiny" id="modalMeta"></span></div>
+      <div class="row">
+        <button id="modalDownload">⬇ Download</button>
+        <button id="modalShare">↗ Share</button>
+        <button id="modalDelete" class="bad">Delete</button>
+        <button id="modalClose">Close</button>
+      </div>
+    </div>
+    <div class="bd">
+      <img id="modalImg" alt="Saved image" style="width:100%;height:auto;border-radius:12px;border:1px solid var(--line)"/>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Boom Tomato — Value Trainer (PWA)
+   FIXED: Removed recursion that froze the UI after image load.
+   Now overlays never call process() — they only draw on top.
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const cOrig = $("#cOrig"), cProc = $("#cProc");
+const ctxO = cOrig.getContext("2d", { willReadFrequently:true });
+const ctxP = cProc.getContext("2d", { willReadFrequently:true });
+
+const video = $("#video");
+const btnCamera = $("#btnCamera");
+const btnSnap = $("#btnSnap");
+const btnStopCam = $("#btnStopCam");
+const file = $("#file");
+const btnMode = $("#btnMode");
+const btnValues = $("#btnValues");
+const btnPalette = $("#btnPalette");
+const btnCrop = $("#btnCrop");
+const chkGrid = $("#chkGrid");
+const chkEdges = $("#chkEdges");
+const chkSplit = $("#chkSplit");
+const slidersWrap = $("#sliders");
+const t1 = $("#t1"), t2 = $("#t2"), t3 = $("#t3");
+const t1v = $("#t1v"), t2v = $("#t2v"), t3v = $("#t3v");
+const maskBar = $("#maskBar");
+const btnSave = $("#btnSave");
+const btnDownload = $("#btnDownload");
+const btnShare = $("#btnShare");
+const galleryEl = $("#gallery");
+const btnClear = $("#btnClear");
+const installPill = $("#installPill");
+
+const modal = $("#modal");
+const modalImg = $("#modalImg");
+const modalTitle = $("#modalTitle");
+const modalMeta = $("#modalMeta");
+const modalClose = $("#modalClose");
+const modalDownload = $("#modalDownload");
+const modalShare = $("#modalShare");
+const modalDelete = $("#modalDelete");
+let modalCurrentId = null;
+
+const toast = $("#toast");
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove("show"), 1700);
+}
+
+const MODES = ["even","fixed","manual"];
+let modeIndex = 0;
+
+const VALUES_LIST = [2,3,4,5];
+let valuesIndex = 2; // default 4 values
+let numValues = VALUES_LIST[valuesIndex];
+
+const PALETTES = {
+  ink: (n)=> {
+    if(n===2) return [25, 235];
+    if(n===3) return [25, 130, 235];
+    if(n===4) return [20, 90, 170, 235];
+    return [20, 75, 135, 195, 240];
+  },
+  pure: (n)=> {
+    if(n===2) return [0, 255];
+    if(n===3) return [0, 128, 255];
+    if(n===4) return [0, 85, 170, 255];
+    return [0, 64, 128, 192, 255];
+  }
+};
+let paletteKey = "ink";
+
+const CROP = ["fit","square"];
+let cropIndex = 0;
+
+let stream = null;
+
+// Base image (cropped) that we treat as "the original"
+let sourceImage = null;        // ImageData
+let lastProcessedImage = null; // ImageData (processed, no grid)
+// Used for edge overlay
+let lastGray = null;           // Float array of grayscale values
+
+let maskIndex = -1; // -1 = none; else isolate that band
+
+// ---------- PWA install hint ----------
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  window._deferredInstallPrompt = e;
+  installPill.textContent = "Installable";
+  installPill.style.background = "rgba(255,213,122,.10)";
+  installPill.style.borderColor = "rgba(255,213,122,.25)";
+  installPill.style.color = "var(--accent2)";
+  installPill.style.cursor = "pointer";
+  installPill.onclick = async ()=>{
+    if(!window._deferredInstallPrompt) return;
+    window._deferredInstallPrompt.prompt();
+    const { outcome } = await window._deferredInstallPrompt.userChoice;
+    showToast(outcome === "accepted" ? "Installed!" : "Install dismissed");
+    window._deferredInstallPrompt = null;
+  };
+});
+
+// ---------- UI wiring ----------
+function updateModeUI(){
+  const mode = MODES[modeIndex];
+  btnMode.textContent = "Mode: " + (mode==="even" ? "Even Split" : mode==="fixed" ? "Fixed Thresholds" : "Manual");
+  slidersWrap.classList.toggle("active", mode==="manual");
+}
+function updateValuesUI(){
+  btnValues.textContent = "Values: " + numValues;
+  buildMaskButtons();
+}
+function updatePaletteUI(){
+  btnPalette.textContent = "Palette: " + (paletteKey==="ink" ? "Ink-friendly" : "Pure");
+}
+function updateCropUI(){
+  btnCrop.textContent = "Crop: " + (CROP[cropIndex]==="fit" ? "Fit" : "Square");
+}
+
+btnMode.onclick = ()=>{ modeIndex = (modeIndex+1)%MODES.length; updateModeUI(); processIfReady(); };
+btnValues.onclick = ()=>{ valuesIndex = (valuesIndex+1)%VALUES_LIST.length; numValues = VALUES_LIST[valuesIndex]; maskIndex = -1; updateValuesUI(); processIfReady(); };
+btnPalette.onclick = ()=>{ paletteKey = (paletteKey==="ink" ? "pure" : "ink"); updatePaletteUI(); processIfReady(); };
+btnCrop.onclick = ()=>{ cropIndex = (cropIndex+1)%CROP.length; updateCropUI(); processIfReady(true); };
+
+chkGrid.onchange = ()=> redrawAll();       // just redraw, no processing
+chkEdges.onchange = ()=> processIfReady(); // edges affects processed output
+chkSplit.onchange = ()=>{
+  $("#processedCol").style.display = chkSplit.checked ? "" : "none";
+  $("#labelOrig").textContent = chkSplit.checked ? "Original" : "Preview";
+  redrawAll();
+};
+
+[t1,t2,t3].forEach(inp => inp.oninput = ()=>{
+  t1v.textContent = t1.value; t2v.textContent = t2.value; t3v.textContent = t3.value;
+  processIfReady();
+});
+
+function buildMaskButtons(){
+  maskBar.innerHTML = "";
+  const labels = Array.from({length:numValues}, (_,i)=>`Value ${i+1}`);
+
+  const allBtn = document.createElement("button");
+  allBtn.className = "maskBtn " + (maskIndex===-1 ? "active" : "");
+  allBtn.textContent = "All values";
+  allBtn.onclick = ()=>{ maskIndex = -1; buildMaskButtons(); processIfReady(); };
+  maskBar.appendChild(allBtn);
+
+  labels.forEach((lab,i)=>{
+    const b = document.createElement("button");
+    b.className = "maskBtn " + (maskIndex===i ? "active" : "");
+    b.textContent = lab;
+    b.onclick = ()=>{ maskIndex = i; buildMaskButtons(); processIfReady(); };
+    maskBar.appendChild(b);
+  });
+}
+buildMaskButtons();
+updateModeUI(); updateValuesUI(); updatePaletteUI(); updateCropUI();
+
+// ---------- Camera ----------
+btnCamera.onclick = async ()=>{
+  try{
+    if(stream) await stopCam();
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:"environment" } }, audio:false });
+    video.srcObject = stream;
+    video.style.display = "block";
+    await video.play();
+    btnSnap.disabled = false;
+    btnStopCam.disabled = false;
+    showToast("Camera ready");
+  }catch(err){
+    console.warn(err);
+    showToast("Camera blocked — use Upload");
+  }
+};
+
+btnSnap.onclick = ()=>{
+  if(!stream) return;
+  const vw = video.videoWidth || 1280;
+  const vh = video.videoHeight || 720;
+  drawSourceFromVideo(vw, vh);
+  showToast("Snapped");
+};
+
+btnStopCam.onclick = stopCam;
+async function stopCam(){
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream = null;
+  }
+  video.pause();
+  video.srcObject = null;
+  video.style.display = "none";
+  btnSnap.disabled = true;
+  btnStopCam.disabled = true;
+  showToast("Camera stopped");
+}
+
+function drawSourceFromVideo(vw, vh){
+  const maxW = 1200;
+  const scale = Math.min(1, maxW / vw);
+  const w = Math.round(vw * scale);
+  const h = Math.round(vh * scale);
+  cOrig.width = w; cOrig.height = h;
+  ctxO.drawImage(video, 0, 0, w, h);
+
+  sourceImage = getCroppedImageData();
+  renderOriginalBase();
+  process();
+}
+
+file.onchange = async (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const img = new Image();
+  img.onload = ()=>{
+    const maxW = 1400;
+    const s = Math.min(1, maxW / img.width);
+    const w = Math.round(img.width * s);
+    const h = Math.round(img.height * s);
+    cOrig.width = w; cOrig.height = h;
+    ctxO.drawImage(img, 0, 0, w, h);
+
+    sourceImage = getCroppedImageData();
+    renderOriginalBase();
+    process();
+    showToast("Loaded");
+  };
+  img.src = URL.createObjectURL(f);
+};
+
+// ---------- Crop / render helpers ----------
+function getCroppedImageData(){
+  const w = cOrig.width, h = cOrig.height;
+  if(CROP[cropIndex]==="fit"){
+    return ctxO.getImageData(0,0,w,h);
+  }
+  const side = Math.min(w,h);
+  const x = Math.floor((w - side)/2);
+  const y = Math.floor((h - side)/2);
+  return ctxO.getImageData(x,y,side,side);
+}
+
+function renderOriginalBase(){
+  if(!sourceImage) return;
+  cOrig.width = sourceImage.width;
+  cOrig.height = sourceImage.height;
+  ctxO.putImageData(sourceImage, 0, 0);
+  redrawOverlaysOnly();
+}
+
+function renderProcessedBase(){
+  if(!lastProcessedImage) return;
+  cProc.width = lastProcessedImage.width;
+  cProc.height = lastProcessedImage.height;
+  ctxP.putImageData(lastProcessedImage, 0, 0);
+}
+
+function redrawOverlaysOnly(){
+  if(!sourceImage) return;
+  if(chkGrid.checked){
+    drawGrid(ctxO, cOrig.width, cOrig.height);
+    if(lastProcessedImage){
+      drawGrid(ctxP, cProc.width, cProc.height);
+    }
+  }
+}
+
+function redrawAll(){
+  // redraw base images then overlays (NO process() here)
+  if(sourceImage){
+    ctxO.putImageData(sourceImage,0,0);
+  }
+  if(lastProcessedImage){
+    ctxP.putImageData(lastProcessedImage,0,0);
+  }
+  redrawOverlaysOnly();
+}
+
+function processIfReady(recrop=false){
+  if(!sourceImage) return;
+  if(recrop){
+    // sourceImage was based on whatever was in cOrig at the time,
+    // so re-crop from the current original canvas content:
+    sourceImage = getCroppedImageData();
+    renderOriginalBase();
+  }
+  process();
+}
+
+// ---------- Processing ----------
+function computeThresholds(grayValues){
+  const mode = MODES[modeIndex];
+
+  if(numValues===2){
+    if(mode==="fixed") return [128];
+    if(mode==="manual"){
+      const sorted = [Number(t1.value), Number(t2.value), Number(t3.value)].sort((a,b)=>a-b);
+      return [sorted[1] ?? 128];
+    }
+    const sorted = grayValues.slice().sort((a,b)=>a-b);
+    return [sorted[Math.floor(sorted.length*0.5)] || 128];
+  }
+
+  if(mode==="fixed"){
+    const cuts = [];
+    for(let i=1;i<numValues;i++) cuts.push(Math.round(255 * (i/numValues)));
+    return cuts;
+  }
+
+  if(mode==="manual"){
+    const manual = [Number(t1.value), Number(t2.value), Number(t3.value)].sort((a,b)=>a-b);
+    return manual.slice(0, numValues-1);
+  }
+
+  const sorted = grayValues.slice().sort((a,b)=>a-b);
+  const cuts = [];
+  for(let i=1;i<numValues;i++){
+    cuts.push(sorted[Math.floor(sorted.length*(i/numValues))] || Math.round(255*(i/numValues)));
+  }
+  return cuts;
+}
+
+function process(){
+  if(!sourceImage) return;
+
+  const w = sourceImage.width, h = sourceImage.height;
+  const src = sourceImage.data;
+
+  // build grayscale array once
+  const grays = new Array(w*h);
+  for(let i=0, p=0; i<src.length; i+=4, p++){
+    grays[p] = (src[i] + src[i+1] + src[i+2]) / 3;
+  }
+  lastGray = grays;
+
+  const thresholds = computeThresholds(grays);
+  const palette = PALETTES[paletteKey](numValues);
+
+  const out = new Uint8ClampedArray(src.length);
+  for(let i=0, p=0; i<src.length; i+=4, p++){
+    const v = grays[p];
+    let band = 0;
+    while(band < thresholds.length && v >= thresholds[band]) band++;
+
+    let g = palette[band];
+    if(maskIndex !== -1){
+      g = (band === maskIndex) ? palette[band] : 245;
+    }
+
+    out[i] = out[i+1] = out[i+2] = g;
+    out[i+3] = 255;
+  }
+
+  // base processed image (NO grid baked in)
+  lastProcessedImage = new ImageData(out, w, h);
+
+  // render base processed
+  renderProcessedBase();
+
+  // optional edge overlay (drawn on top, not stored in lastProcessedImage)
+  if(chkEdges.checked){
+    drawEdgesOverlay(w,h, grays);
+  }
+
+  // overlays on top (grid etc)
+  redrawOverlaysOnly();
+
+  // enable actions
+  btnSave.disabled = false;
+  btnDownload.disabled = false;
+  btnShare.disabled = false;
+
+  // update labels
+  $("#labelProc").textContent = (maskIndex===-1 ? `${numValues} Values` : `Mask: Value ${maskIndex+1}`);
+}
+
+function drawEdgesOverlay(w,h, grays){
+  const edge = ctxP.getImageData(0,0,w,h);
+  const d = edge.data;
+
+  function g(x,y){ return grays[y*w + x]; }
+  const thresh = 45;
+
+  for(let y=1;y<h-1;y++){
+    for(let x=1;x<w-1;x++){
+      const gx =
+        -g(x-1,y-1) + g(x+1,y-1) +
+        -2*g(x-1,y)   + 2*g(x+1,y) +
+        -g(x-1,y+1) + g(x+1,y+1);
+      const gy =
+        -g(x-1,y-1) -2*g(x,y-1) -g(x+1,y-1) +
+         g(x-1,y+1) +2*g(x,y+1) +g(x+1,y+1);
+      const mag = Math.abs(gx) + Math.abs(gy);
+      if(mag > thresh){
+        const i = (y*w + x)*4;
+        d[i]=d[i+1]=d[i+2]= (paletteKey==="ink" ? 20 : 0);
+      }
+    }
+  }
+  ctxP.putImageData(edge, 0, 0);
+}
+
+// ---------- Grid overlay ----------
+function drawGrid(ctx, w, h){
+  const step = Math.max(24, Math.round(Math.min(w,h)/12));
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  for(let x=0; x<=w; x+=step){
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+  }
+  for(let y=0; y<=h; y+=step){
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ---------- Download / Share ----------
+btnDownload.onclick = async ()=>{
+  const blob = await canvasToBlob(cProc);
+  downloadBlob(blob, filenameNow("values"));
+};
+
+btnShare.onclick = async ()=>{
+  const blob = await canvasToBlob(cProc);
+  const f = new File([blob], filenameNow("values"), { type: "image/png" });
+  if(navigator.canShare && navigator.canShare({ files:[f] })){
+    await navigator.share({ files:[f], title:"Value Trainer", text:`${numValues}-value breakdown` });
+  }else{
+    downloadBlob(blob, filenameNow("values"));
+    showToast("Share not supported — downloaded instead");
+  }
+};
+
+function filenameNow(prefix){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  return `${prefix}_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.png`;
+}
+function downloadBlob(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+function canvasToBlob(canvas){
+  return new Promise(res=>canvas.toBlob(b=>res(b), "image/png", 1));
+}
+
+// ---------- IndexedDB Gallery ----------
+const DB_NAME = "btg_value_trainer";
+const STORE = "images";
+let db = null;
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      const store = db.createObjectStore(STORE, { keyPath:"id" });
+      store.createIndex("created","created");
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+function tx(store, mode="readonly"){
+  return db.transaction(store, mode).objectStore(store);
+}
+async function dbAddImage(record){
+  return new Promise((resolve,reject)=>{
+    const req = tx(STORE,"readwrite").add(record);
+    req.onsuccess = ()=>resolve(true);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbGetAll(){
+  return new Promise((resolve,reject)=>{
+    const req = tx(STORE).getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbGet(id){
+  return new Promise((resolve,reject)=>{
+    const req = tx(STORE).get(id);
+    req.onsuccess = ()=>resolve(req.result || null);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbDelete(id){
+  return new Promise((resolve,reject)=>{
+    const req = tx(STORE,"readwrite").delete(id);
+    req.onsuccess = ()=>resolve(true);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbClear(){
+  return new Promise((resolve,reject)=>{
+    const req = tx(STORE,"readwrite").clear();
+    req.onsuccess = ()=>resolve(true);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+
+function uid(){
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+btnSave.onclick = async ()=>{
+  if(!lastProcessedImage) return;
+
+  const blob = await canvasToBlob(cProc);
+  const thumb = await canvasToThumbDataURL(cProc, 420);
+
+  const rec = {
+    id: uid(),
+    created: Date.now(),
+    numValues,
+    mode: MODES[modeIndex],
+    palette: paletteKey,
+    crop: CROP[cropIndex],
+    edges: chkEdges.checked,
+    grid: chkGrid.checked,
+    mask: maskIndex,
+    png: blob,
+    thumb
+  };
+  await dbAddImage(rec);
+  showToast("Saved");
+  await renderGallery();
+};
+
+async function canvasToThumbDataURL(canvas, maxW){
+  const w = canvas.width, h = canvas.height;
+  const s = Math.min(1, maxW / w);
+  const tw = Math.max(1, Math.round(w*s));
+  const th = Math.max(1, Math.round(h*s));
+  const t = document.createElement("canvas");
+  t.width = tw; t.height = th;
+  t.getContext("2d").drawImage(canvas,0,0,tw,th);
+  return t.toDataURL("image/jpeg", .86);
+}
+
+btnClear.onclick = async ()=>{
+  if(!confirm("Clear all saved images?")) return;
+  await dbClear();
+  showToast("Cleared");
+  await renderGallery();
+};
+
+function fmtMeta(rec){
+  const d = new Date(rec.created);
+  const pad = n=>String(n).padStart(2,"0");
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${rec.numValues}v · ${rec.mode} · ${rec.palette} · ${stamp}`;
+}
+
+async function renderGallery(){
+  const all = await dbGetAll();
+  all.sort((a,b)=>b.created - a.created);
+  galleryEl.innerHTML = "";
+  if(all.length===0){
+    galleryEl.innerHTML = `<div class="tiny" style="grid-column:1/-1; opacity:.8">No saves yet. Take a photo → process → Save.</div>`;
+    return;
+  }
+  for(const rec of all){
+    const div = document.createElement("div");
+    div.className = "thumb";
+    div.innerHTML = `
+      <img alt="thumb" src="${rec.thumb}">
+      <div class="meta">${fmtMeta(rec)}</div>
+    `;
+    div.onclick = ()=>openModal(rec.id);
+    galleryEl.appendChild(div);
+  }
+}
+
+async function openModal(id){
+  const rec = await dbGet(id);
+  if(!rec) return;
+  modalCurrentId = id;
+  modalTitle.textContent = "Saved Image";
+  modalMeta.textContent = " · " + fmtMeta(rec);
+  modalImg.src = URL.createObjectURL(rec.png);
+  modal.classList.add("open");
+
+  modalDownload.onclick = ()=>downloadBlob(rec.png, filenameNow("values_saved"));
+  modalShare.onclick = async ()=>{
+    const f = new File([rec.png], filenameNow("values_saved"), {type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({ files:[f], title:"Value Trainer", text:"Saved breakdown" });
+    }else{
+      downloadBlob(rec.png, filenameNow("values_saved"));
+      showToast("Share not supported — downloaded instead");
+    }
+  };
+  modalDelete.onclick = async ()=>{
+    if(!confirm("Delete this saved image?")) return;
+    await dbDelete(id);
+    modal.classList.remove("open");
+    showToast("Deleted");
+    await renderGallery();
+  };
+}
+
+modalClose.onclick = ()=>modal.classList.remove("open");
+modal.onclick = (e)=>{ if(e.target === modal) modal.classList.remove("open"); };
+
+// ---------- Init DB + Service Worker ----------
+(async function init(){
+  try{
+    db = await openDB();
+    await renderGallery();
+  }catch(err){
+    console.warn(err);
+    showToast("Storage unavailable");
+  }
+
+  if("serviceWorker" in navigator){
+    try{
+      await navigator.serviceWorker.register("./sw.js");
+      installPill.textContent = "Offline ready";
+    }catch(e){
+      console.warn(e);
+      installPill.textContent = "No SW";
+    }
+  }
+})();
+</script>
+</body>
+</html>
