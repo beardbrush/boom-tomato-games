@@ -231,10 +231,13 @@
           <button class="primary" id="btnCamera">📷 Camera</button>
           <button id="btnSnap" class="warn" disabled>● Snap</button>
           <button id="btnStopCam" disabled>Stop</button>
+
           <label class="btn" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;">
             📁 Upload
-            <input id="file" type="file" accept="image/*" capture="environment" style="display:none">
+            <!-- FIX: no capture attr, so phones can choose Gallery -->
+            <input id="file" type="file" accept="image/*" style="display:none">
           </label>
+
           <button id="btnSave" class="primary" disabled>💾 Save</button>
           <button id="btnDownload" disabled>⬇ Download</button>
           <button id="btnShare" disabled>↗ Share</button>
@@ -608,7 +611,6 @@ function redrawOverlaysOnly(){
 }
 
 function redrawAll(){
-  // redraw base images then overlays (NO process() here)
   if(sourceImage){
     ctxO.putImageData(sourceImage,0,0);
   }
@@ -621,8 +623,6 @@ function redrawAll(){
 function processIfReady(recrop=false){
   if(!sourceImage) return;
   if(recrop){
-    // sourceImage was based on whatever was in cOrig at the time,
-    // so re-crop from the current original canvas content:
     sourceImage = getCroppedImageData();
     renderOriginalBase();
   }
@@ -668,7 +668,6 @@ function process(){
   const w = sourceImage.width, h = sourceImage.height;
   const src = sourceImage.data;
 
-  // build grayscale array once
   const grays = new Array(w*h);
   for(let i=0, p=0; i<src.length; i+=4, p++){
     grays[p] = (src[i] + src[i+1] + src[i+2]) / 3;
@@ -693,26 +692,19 @@ function process(){
     out[i+3] = 255;
   }
 
-  // base processed image (NO grid baked in)
   lastProcessedImage = new ImageData(out, w, h);
-
-  // render base processed
   renderProcessedBase();
 
-  // optional edge overlay (drawn on top, not stored in lastProcessedImage)
   if(chkEdges.checked){
     drawEdgesOverlay(w,h, grays);
   }
 
-  // overlays on top (grid etc)
   redrawOverlaysOnly();
 
-  // enable actions
   btnSave.disabled = false;
   btnDownload.disabled = false;
   btnShare.disabled = false;
 
-  // update labels
   $("#labelProc").textContent = (maskIndex===-1 ? `${numValues} Values` : `Mask: Value ${maskIndex+1}`);
 }
 
