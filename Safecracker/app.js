@@ -45,8 +45,8 @@ window.SC = (() => {
     o.start(t); o.stop(t+dur+.02);
   }
 
-  const detentClick = ()=>tone(420,0.018,"triangle",0.035); // every number
-  const gateClick   = ()=>tone(620,0.055,"triangle",0.065); // exact pin
+  const detentClick = ()=>tone(420,0.018,"triangle",0.035);
+  const gateClick   = ()=>tone(620,0.055,"triangle",0.065);
   const clunk       = ()=>tone(110,0.12,"square",0.08);
   const failBuzz    = ()=>tone(70,0.16,"square",0.085);
 
@@ -66,7 +66,6 @@ window.SC = (() => {
   function openMiniModal(){
     const modal = $("#miniModal");
     if(!modal) return;
-    modal.classList.add("open");
     modal.setAttribute("aria-hidden","false");
 
     const totalMoney = getNum(K.totalMoney,0);
@@ -83,7 +82,6 @@ window.SC = (() => {
   function closeMiniModal(){
     const modal = $("#miniModal");
     if(!modal) return;
-    modal.classList.remove("open");
     modal.setAttribute("aria-hidden","true");
   }
 
@@ -94,9 +92,7 @@ window.SC = (() => {
 
   /* ===================== SAFE ===================== */
   function initSafe(){
-    // ====== CONFIG (this is the mechanic you asked about) ======
-    const PIN_TIME = 20; // seconds per pin (reset after each correct commit)
-    // ===========================================================
+    const PIN_TIME = 20;
 
     // Header + UI fields
     const hdrSafe = $("#hdrSafe");
@@ -119,6 +115,9 @@ window.SC = (() => {
     const prompt = $("#prompt");
     const face = $("#safeFace");
 
+    // ✅ bottom open bar
+    const openBar = $("#openBar");
+
     // Top buttons / modal wiring
     const btnBack = $("#btnBack");
     const btnAch = $("#btnAch");
@@ -132,13 +131,11 @@ window.SC = (() => {
     miniScrim && miniScrim.addEventListener("click", closeMiniModal);
     btnEndRun && btnEndRun.addEventListener("click", endRunToIndex);
 
-    // Basic identity
     const SAFE_NAME = "Endurance";
     hdrSafe && (hdrSafe.textContent = "SAFE");
     hdrSub && (hdrSub.textContent = "Endurance");
     uiSafe && (uiSafe.textContent = SAFE_NAME);
 
-    // Endurance setup
     let combo = Array.from({length:6},()=>Math.floor(Math.random()*60));
     let step = 0;
 
@@ -147,45 +144,46 @@ window.SC = (() => {
     let lastGateFired = false;
     let locked = false;
 
-    // Timer + Noise
-    let timeLeft = PIN_TIME;          // ✅ starts at PIN_TIME
-    let noise = 0;                    // 0..100
+    let timeLeft = PIN_TIME;
+    let noise = 0;
     let lastTick = performance.now();
     let rafId = 0;
 
-    // Track dial speed to drive noise
     let lastAngleForSpeed = 0;
     let lastSpeedT = performance.now();
 
-    // Run money UI (from storage)
     const run = getRun();
     uiRunMoney && (uiRunMoney.textContent = fmtMoney(run.money));
 
     function setOpenEnabled(on){
-      if(!lever) return;
-      lever.disabled = !on;
-      lever.classList.toggle("disabled", !on);
-      lever.classList.toggle("ready", !!on); // safe even if CSS doesn't have it
+      if(lever){
+        lever.disabled = !on;
+        lever.classList.toggle("disabled", !on);
+        lever.classList.toggle("ready", !!on);
+      }
+
+      // ✅ show/hide the bottom bar itself
+      if(openBar){
+        openBar.classList.toggle("show", !!on);
+        openBar.setAttribute("aria-hidden", on ? "false" : "true");
+      }
     }
 
     function updateTopUI(){
       uiPins && (uiPins.textContent = String(combo.length));
       uiProg && (uiProg.textContent = `${step}/${combo.length}`);
 
-      // Show mm:ss (we only use seconds here)
       const sec = Math.max(0, Math.ceil(timeLeft));
       uiTime && (uiTime.textContent = `00:${pad2(sec)}`);
 
       uiNoise && (uiNoise.textContent = `${Math.floor(noise)}%`);
 
       if(timerPill){
-        // Make it feel urgent near end
         if(timeLeft <= 6) timerPill.classList.add("warn");
       }
     }
 
     function resetPinTimer(){
-      // ✅ THIS is the missing mechanic
       timeLeft = PIN_TIME;
       updateTopUI();
     }
@@ -206,7 +204,6 @@ window.SC = (() => {
       face && face.classList.add("open");
       prompt && (prompt.textContent = "SAFE OPENED");
 
-      // Update totals
       const reward = 10 + combo.length * 5;
       const totalMoney = getNum(K.totalMoney,0) + reward;
       const totalSafes = getNum(K.totalSafes,0) + 1;
@@ -220,7 +217,6 @@ window.SC = (() => {
       setRun(r);
 
       setNum(K.bestStreak, Math.max(getNum(K.bestStreak,0), r.streak));
-
       uiRunMoney && (uiRunMoney.textContent = fmtMoney(r.money));
 
       setTimeout(() => {
@@ -245,7 +241,6 @@ window.SC = (() => {
         return;
       }
 
-      // Noise decays slightly when calm
       noise = clamp(noise - dt * 1.5, 0, 100);
 
       if(noise >= 100){
@@ -268,24 +263,20 @@ window.SC = (() => {
         number = n;
         numRead && (numRead.textContent = pad2(n));
 
-        // DETENT CLICK — every number
         detentClick();
 
-        // Noise per detent; higher if spinning quickly
         const now = performance.now();
         const dA = Math.abs(angle - lastAngleForSpeed);
-        const dT = Math.max(1, now - lastSpeedT); // ms
-        const speed = dA / dT; // deg/ms
+        const dT = Math.max(1, now - lastSpeedT);
+        const speed = dA / dT;
         noise = clamp(noise + (1.2 + speed * 120), 0, 100);
 
         lastAngleForSpeed = angle;
         lastSpeedT = now;
 
-        // reset gate latch when leaving number
         lastGateFired = false;
       }
 
-      // GATE CLICK — exact pin, once per entry
       if(number === combo[step] && !lastGateFired){
         gateClick();
         lastGateFired = true;
@@ -319,10 +310,9 @@ window.SC = (() => {
 
     dial.addEventListener("pointerup",()=>{
       dragging=false;
-      setDialByAngle(number * 6); // snap cleanly
+      setDialByAngle(number * 6);
     });
 
-    /* ===== HUB COMMIT ===== */
     hub.addEventListener("click",()=>{
       if(locked) return;
       armAudio();
@@ -339,7 +329,6 @@ window.SC = (() => {
       step++;
       lastGateFired = false;
 
-      // ✅ KEY FIX: reset clock on each successful pin commit
       resetPinTimer();
 
       if(step >= combo.length){
@@ -352,7 +341,6 @@ window.SC = (() => {
       updateTopUI();
     });
 
-    /* ===== OPEN ===== */
     lever.addEventListener("click",()=>{
       if(step < combo.length || locked) return;
       winOpen();
@@ -360,7 +348,7 @@ window.SC = (() => {
 
     // Init state
     setOpenEnabled(false);
-    resetPinTimer();                 // ✅ ensure we start at full pin time
+    resetPinTimer();
     setDialByAngle(Math.random() * 360);
 
     prompt && (prompt.textContent="SPIN • LISTEN FOR THE GATE");
