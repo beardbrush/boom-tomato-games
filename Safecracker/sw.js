@@ -27,8 +27,6 @@ self.addEventListener("activate", (evt) => {
 
 self.addEventListener("fetch", (evt) => {
   const req = evt.request;
-
-  // Only handle GET. Let other requests pass through.
   if (req.method !== "GET") return;
 
   evt.respondWith(
@@ -37,7 +35,6 @@ self.addEventListener("fetch", (evt) => {
 
       return fetch(req)
         .then((res) => {
-          // Cache same-origin successful GETs
           try {
             const url = new URL(req.url);
             if (url.origin === location.origin && res.ok) {
@@ -48,7 +45,6 @@ self.addEventListener("fetch", (evt) => {
           return res;
         })
         .catch(async () => {
-          // Offline fallback
           return (await caches.match("./index.html")) || (await caches.match("./"));
         });
     })
