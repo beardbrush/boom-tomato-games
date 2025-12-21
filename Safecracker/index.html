@@ -84,16 +84,6 @@
       border-bottom:1px solid rgba(202,163,90,.14);
     }
 
-    /* NEW: header row so OPEN can live higher up */
-    .headRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-
     .badge{
       display:inline-block;
       padding:8px 12px;
@@ -104,27 +94,8 @@
       text-transform:uppercase;
       color:var(--dim);
       font-weight:800;
-      margin:0; /* was margin-bottom:10px; now handled by headRow */
+      margin:0 0 10px 0;
     }
-
-    /* NEW: compact OPEN button in header (higher placement) */
-    .topBtn{
-      border-radius:999px;
-      border:1px solid rgba(202,163,90,.26);
-      background:
-        radial-gradient(circle at 30% 25%, rgba(202,163,90,.12), rgba(0,0,0,.26));
-      color:var(--ink);
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      font-weight:900;
-      padding:10px 12px;
-      user-select:none;
-      cursor:pointer;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
-      touch-action: manipulation;
-      white-space:nowrap;
-    }
-    .topBtn:active{ transform: translateY(1px); }
 
     h1{
       margin:0;
@@ -194,10 +165,7 @@
   <div class="wrap">
     <div class="card">
       <div class="head">
-        <div class="headRow">
-          <div class="badge">Endurance</div>
-          <button id="openBtn" class="topBtn" type="button">Open</button>
-        </div>
+        <div class="badge">Endurance</div>
 
         <h1>Safecracker</h1>
         <div class="sub">Spin the dial quietly. Hear the gate click. Press the hub to commit.</div>
@@ -222,7 +190,6 @@
     (function(){
       const startBtn = document.getElementById("startBtn");
       const achBtn   = document.getElementById("achBtn");
-      const openBtn  = document.getElementById("openBtn");
 
       // Prevent double-trigger (pointer + click)
       let locked = false;
@@ -245,9 +212,6 @@
 
       bindTap(startBtn, () => go("./safe.html?mode=endurance"));
       bindTap(achBtn,   () => go("./achievements.html"));
-
-      // OPEN is now higher up (top right). Adjust query string if you want different behavior.
-      bindTap(openBtn,  () => go("./safe.html?mode=endurance&open=1"));
     })();
   </script>
 </body>
