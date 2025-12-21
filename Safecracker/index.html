@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b0704"/>
+  <title>SAFECRACKER — Endurance</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brandMark">SC</div>
+        <div class="brandTxt">
+          <div class="title">SAFECRACKER</div>
+          <div class="sub">Endurance • Finger Dial • Exact Numbers</div>
+        </div>
+      </div>
+
+      <div class="topBtns">
+        <button class="btnGhost" id="btnAchievements">Achievements</button>
+        <button class="btnGhost" id="btnReset">Reset</button>
+      </div>
+    </header>
+
+    <section class="card hero">
+      <div class="heroGrid">
+        <div class="heroLeft">
+          <div class="decoLabel">CURRENT SAFE</div>
+          <div class="safeName" id="safeName">—</div>
+          <div class="safeMeta" id="safeMeta">—</div>
+
+          <div class="meterWrap">
+            <div class="meterRow">
+              <div class="decoLabel">RUN TIMER</div>
+              <div class="meterPill">Per-tumbler window: <b id="timeRule">30s</b></div>
+            </div>
+            <div class="miniNote" id="patternNote">Pattern Mode locked — open <b>24 safes</b> to unlock.</div>
+          </div>
+
+          <div class="actions">
+            <button class="btnPrimary" id="btnStart">Start Run</button>
+            <button class="btnSecondary" id="btnContinue" style="display:none;">Continue Run</button>
+          </div>
+
+          <div class="tips">
+            <div class="tip"><b>Spin slow</b> to keep Noise down.</div>
+            <div class="tip"><b>Press the dial hub</b> to CRACK at the exact number.</div>
+            <div class="tip"><b>Pull the lever</b> to OPEN after all tumblers.</div>
+          </div>
+        </div>
+
+        <div class="heroRight">
+          <div class="statGrid">
+            <div class="stat">
+              <div class="k">Total Money</div>
+              <div class="v" id="stMoney">$0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Safes Opened</div>
+              <div class="v" id="stSafes">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Best Streak</div>
+              <div class="v" id="stBest">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Pattern Unlock</div>
+              <div class="v" id="stUnlock">Locked</div>
+            </div>
+          </div>
+
+          <div class="runCard" id="runCard" style="display:none;">
+            <div class="decoLabel">CURRENT RUN</div>
+            <div class="runLine">Safes cracked: <b id="runSafes">0</b></div>
+            <div class="runLine">Money earned: <b id="runMoney">$0</b></div>
+            <div class="runLine">Current safe: <b id="runSafe">—</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card small">
+      <div class="smallHdr">
+        <div class="decoLabel">RECENT RUNS</div>
+      </div>
+      <div class="recent" id="recent"></div>
+    </section>
+  </main>
+
+  <!-- Achievements modal -->
+  <div class="modal" id="achModal" aria-hidden="true">
+    <div class="modalScrim" id="achScrim"></div>
+    <div class="modalCard">
+      <div class="modalHdr">
+        <div class="modalTitle">Achievements</div>
+        <button class="btnGhost" id="btnCloseAch">Close</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="achGrid">
+          <div class="achItem">
+            <div class="k">Total Money</div>
+            <div class="v" id="achMoney">$0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Total Safes Opened</div>
+            <div class="v" id="achSafes">0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Best Streak</div>
+            <div class="v" id="achBest">0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Pattern Mode</div>
+            <div class="v" id="achPattern">Locked</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="howto">
+          <div class="howHdr">How it works</div>
+          <ul>
+            <li>Spin the dial with your finger. <b>Fast = loud</b>.</li>
+            <li><b>Noise 100%</b> = caught (game over).</li>
+            <li>You must CRACK each tumbler <b>within the timer</b> (Iron/Bronze 30s, Steel 20s).</li>
+            <li>After each correct CRACK, the timer resets for the next tumbler.</li>
+            <li>Open 8 Iron → 8 Bronze → Steel forever.</li>
+            <li>Open <b>24 safes</b> to unlock <b>Classic Pattern Mode</b> (Right to number / Left past / etc.).</li>
+          </ul>
+
+          <div class="patternBox" id="patternBox" style="display:none;">
+            <div class="howHdr">Classic Pattern Mode (Unlocked)</div>
+            <p class="miniNote">
+              You must follow the pattern:
+              <b>Right to 1st</b> → <b>Left past 1st to 2nd</b> → <b>Right to 3rd</b> → repeat…
+              (The safe teaches this in-game when you enable the toggle.)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFtr">
+        <button class="btnSecondary" id="btnClearHistory">Clear Recent Runs</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>
+    SC.initIndex();
+  </script>
+</body>
+</html>
