@@ -42,7 +42,7 @@
           <div class="pill">Run $: <b id="uiRunMoney">$0</b></div>
         </div>
 
-        <!-- ✅ Removed top OPEN button (it will live at the bottom now) -->
+        <!-- ✅ No OPEN button up here -->
       </div>
 
       <div class="safeStage">
@@ -70,7 +70,6 @@
               <div class="ticks"></div>
               <div class="ticks2"></div>
 
-              <!-- hub is the ONLY "crack" input -->
               <button class="hubBtn" id="hubBtn" aria-label="Press to crack">
                 <div class="hubTxt">
                   <div class="hubTop">PRESS</div>
@@ -93,7 +92,7 @@
           </label>
         </div>
 
-        <!-- ✅ OPEN BAR (BOTTOM) -->
+        <!-- ✅ BOTTOM OPEN BAR (only appears when ready) -->
         <div class="openBar" id="openBar" aria-hidden="true">
           <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
             <span class="leverHandle"></span>
@@ -104,7 +103,6 @@
     </section>
   </main>
 
-  <!-- mini stats modal -->
   <div class="modal" id="miniModal" aria-hidden="true">
     <div class="modalScrim" id="miniScrim"></div>
     <div class="modalCard">
@@ -141,29 +139,6 @@
   <script src="./app.js"></script>
   <script>
     SC.initSafe();
-
-    // ✅ Show the bottom OPEN bar only when the lever becomes enabled.
-    (function(){
-      const lever = document.getElementById("leverBtn");
-      const bar = document.getElementById("openBar");
-
-      if(!lever || !bar) return;
-
-      function sync(){
-        const ready = !lever.disabled && !lever.classList.contains("disabled");
-        if(ready){
-          bar.classList.add("show");
-          bar.setAttribute("aria-hidden","false");
-        }else{
-          bar.classList.remove("show");
-          bar.setAttribute("aria-hidden","true");
-        }
-      }
-
-      sync();
-      const mo = new MutationObserver(sync);
-      mo.observe(lever, { attributes:true, attributeFilter:["disabled","class"] });
-    })();
   </script>
 </body>
 </html>
