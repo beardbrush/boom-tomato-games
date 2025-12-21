@@ -3,171 +3,270 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <meta name="theme-color" content="#0b0f14"/>
-  <title>CaseScribe — Offline Notes</title>
+  <meta name="theme-color" content="#07080b"/>
+  <title>CaseScribe — Offline Notes (v2)</title>
 
   <link rel="manifest" href="./manifest.json"/>
 
   <style>
     *{box-sizing:border-box}
     :root{
-      --bg:#0b0f14; --panel:#111a24; --panel2:#0f1620;
-      --line:rgba(255,255,255,.10);
-      --txt:#eef6ff; --muted:rgba(238,246,255,.72);
-      --accent:#7fffe0; --accent2:#ffd57a;
-      --good:#43ff8b; --warn:#ffcc66; --bad:#ff5a7a;
-      --shadow: 0 18px 40px rgba(0,0,0,.55);
+      --bg0:#07080b;
+      --bg1:#0b0f14;
+
+      --panel: rgba(14,18,26,.86);
+      --panel2: rgba(12,16,22,.88);
+
+      --line: rgba(255,255,255,.10);
+      --line2: rgba(255,255,255,.06);
+
+      --txt:#eef6ff;
+      --muted: rgba(238,246,255,.72);
+
+      --gold:#d6b06a;
+      --gold2:#f3e3b6;
+      --teal:#7fffe0;
+
+      --good:#43ff8b;
+      --warn:#ffcc66;
+      --bad:#ff5a7a;
+
+      --shadow: 0 18px 40px rgba(0,0,0,.60);
       --r:18px;
+      --r2:22px;
     }
+
     body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(127,255,224,.12), transparent 55%),
-                  radial-gradient(1000px 650px at 80% 0%, rgba(255,213,122,.10), transparent 55%),
-                  linear-gradient(180deg, #070a10, var(--bg));
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--txt);
       min-height:100vh;
+      background:
+        radial-gradient(900px 520px at 18% 0%, rgba(214,176,106,.12), transparent 55%),
+        radial-gradient(850px 540px at 85% 5%, rgba(127,255,224,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
     }
+
+    /* ===== Art Deco header pattern ===== */
     header{
       position:sticky; top:0; z-index:10;
-      backdrop-filter: blur(10px);
-      background: rgba(11,15,20,.72);
-      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      background: rgba(7,8,11,.78);
+      border-bottom: 1px solid rgba(214,176,106,.28);
     }
-    .wrap{max-width:1080px; margin:0 auto; padding:14px 14px;}
-    .topbar{display:flex; gap:10px; align-items:center; justify-content:space-between;}
-    .brand{display:flex; gap:10px; align-items:center;}
+    .wrap{max-width:1120px; margin:0 auto; padding:14px 14px;}
+    .topbar{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+
+    .brand{display:flex; gap:12px; align-items:center; min-width:0;}
     .logo{
-      width:38px; height:38px; border-radius:12px;
-      background: linear-gradient(135deg, rgba(127,255,224,.35), rgba(255,213,122,.30));
-      border:1px solid rgba(255,255,255,.14);
+      width:44px; height:44px; border-radius:14px;
+      border:1px solid rgba(214,176,106,.40);
+      background:
+        linear-gradient(135deg, rgba(214,176,106,.30), rgba(243,227,182,.10)),
+        radial-gradient(circle at 30% 30%, rgba(127,255,224,.18), transparent 60%);
       box-shadow: var(--shadow);
       display:grid; place-items:center;
-      font-weight:800; letter-spacing:.5px;
+      font-weight:900; letter-spacing:.7px;
+      position:relative;
+      overflow:hidden;
     }
-    h1{margin:0; font-size:16px; line-height:1.15}
+    .logo:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(214,176,106,.0) 0px,
+        rgba(214,176,106,.0) 10px,
+        rgba(214,176,106,.16) 10px,
+        rgba(214,176,106,.16) 12px
+      );
+      opacity:.55;
+      transform: rotate(8deg);
+      pointer-events:none;
+    }
+    .logo span{position:relative; z-index:1;}
+
+    h1{margin:0; font-size:16px; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
     .sub{font-size:12px; color:var(--muted); margin-top:2px}
+
     .pill{
       font-size:12px; padding:7px 10px; border-radius:999px;
-      border:1px solid var(--line);
+      border:1px solid rgba(214,176,106,.26);
       background: rgba(255,255,255,.05);
       color:var(--muted);
       display:flex; gap:8px; align-items:center;
       user-select:none;
+      white-space:nowrap;
     }
     .dot{width:8px; height:8px; border-radius:50%;}
     .dot.ok{background:var(--good)}
     .dot.off{background:rgba(255,255,255,.25)}
+
+    /* ===== Layout ===== */
     main .grid{
       display:grid; gap:12px;
       grid-template-columns: 1fr;
       padding: 14px;
-      max-width:1080px; margin:0 auto;
+      max-width:1120px; margin:0 auto;
     }
     @media(min-width: 980px){
-      main .grid{grid-template-columns: 1.05fr .95fr;}
+      main .grid{grid-template-columns: 1.08fr .92fr;}
     }
+
     .card{
-      background: rgba(17,26,36,.86);
-      border:1px solid var(--line);
-      border-radius: var(--r);
+      background: var(--panel);
+      border:1px solid rgba(214,176,106,.22);
+      border-radius: var(--r2);
       box-shadow: var(--shadow);
       overflow:hidden;
+      position:relative;
     }
-    .card .hd{
+    /* Deco corner lines */
+    .card:before, .card:after{
+      content:"";
+      position:absolute; pointer-events:none;
+      width:88px; height:88px;
+      border:1px solid rgba(214,176,106,.22);
+      opacity:.65;
+    }
+    .card:before{top:10px; left:10px; border-right:none; border-bottom:none; border-radius:18px 0 0 0;}
+    .card:after{bottom:10px; right:10px; border-left:none; border-top:none; border-radius:0 0 18px 0;}
+
+    .hd{
       padding:12px 12px 10px;
-      border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+      border-bottom:1px solid rgba(214,176,106,.18);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), transparent),
+        linear-gradient(90deg, rgba(214,176,106,.18), rgba(127,255,224,.08), rgba(214,176,106,.18));
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .title{font-weight:800; font-size:13px; letter-spacing:.3px}
+    .title{
+      font-weight:900;
+      font-size:13px;
+      letter-spacing:.55px;
+      text-transform:uppercase;
+    }
     .mini{font-size:12px; color:var(--muted)}
     .body{padding:12px}
+
     label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
     input, textarea, select{
       width:100%;
       padding:12px 12px;
       border-radius:14px;
-      border:1px solid var(--line);
-      background: rgba(15,22,32,.85);
+      border:1px solid rgba(214,176,106,.16);
+      background: rgba(10,13,18,.72);
       color:var(--txt);
       outline:none;
     }
-    textarea{min-height:110px; resize:vertical; line-height:1.35}
+    textarea{
+      min-height:110px; resize:vertical; line-height:1.38;
+      /* allow keyboard + browser spellcheck */
+      spellcheck:true;
+    }
+
     .row{display:grid; gap:10px; grid-template-columns: 1fr}
     @media(min-width: 560px){
       .row.two{grid-template-columns: 1fr 1fr}
       .row.three{grid-template-columns: 1fr 1fr 1fr}
     }
+
     .btnrow{display:flex; flex-wrap:wrap; gap:10px}
     button{
-      border:1px solid var(--line);
+      border:1px solid rgba(214,176,106,.22);
       background: rgba(255,255,255,.06);
       color:var(--txt);
       padding:11px 12px;
       border-radius: 999px;
-      font-weight:700;
+      font-weight:800;
       cursor:pointer;
       user-select:none;
     }
     button.primary{
-      background: linear-gradient(135deg, rgba(127,255,224,.18), rgba(255,213,122,.12));
-      border-color: rgba(127,255,224,.26);
+      background: linear-gradient(135deg, rgba(214,176,106,.20), rgba(127,255,224,.10));
+      border-color: rgba(214,176,106,.38);
+    }
+    button.gold{
+      background: linear-gradient(135deg, rgba(214,176,106,.22), rgba(243,227,182,.10));
+      border-color: rgba(214,176,106,.44);
     }
     button.danger{
       background: rgba(255,90,122,.10);
       border-color: rgba(255,90,122,.30);
     }
     button:active{transform: translateY(1px)}
+
     .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
     .chip{
       display:flex; gap:8px; align-items:center;
       padding:8px 10px; border-radius:999px;
-      border:1px solid var(--line);
+      border:1px solid rgba(214,176,106,.18);
       background: rgba(255,255,255,.05);
       font-size:12px; color:var(--muted);
     }
     .chip input{width:auto; margin:0}
-    .sep{height:1px; background:var(--line); margin:12px 0}
+
+    .sep{height:1px; background: rgba(214,176,106,.14); margin:12px 0}
+
     pre.out{
       white-space:pre-wrap;
       word-wrap:break-word;
       margin:0;
       padding:12px;
       border-radius: 14px;
-      border:1px solid var(--line);
-      background: rgba(10,15,22,.75);
-      line-height:1.4;
+      border:1px solid rgba(214,176,106,.18);
+      background: rgba(8,10,14,.70);
+      line-height:1.45;
       font-size:13px;
     }
+
     .hint{font-size:12px; color:var(--muted); margin-top:8px}
-    .list{
-      display:flex; flex-direction:column; gap:10px;
-    }
+
+    .list{display:flex; flex-direction:column; gap:10px}
     .item{
-      border:1px solid var(--line);
+      border:1px solid rgba(214,176,106,.16);
       background: rgba(255,255,255,.04);
       border-radius: 14px;
       padding:10px;
       display:flex; gap:10px; justify-content:space-between; align-items:flex-start;
     }
     .item .a{min-width:0}
-    .item .t{font-weight:800; font-size:12px}
+    .item .t{font-weight:900; font-size:12px; letter-spacing:.3px}
     .item .m{font-size:12px; color:var(--muted); margin-top:4px}
     .item .b{display:flex; gap:8px}
     .smallbtn{padding:8px 10px; font-size:12px}
+
     .badge{
       display:inline-flex; align-items:center; gap:6px;
       font-size:12px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line);
+      border:1px solid rgba(214,176,106,.20);
       background: rgba(255,255,255,.05);
       color:var(--muted);
+      white-space:nowrap;
     }
     .badge.bad{border-color: rgba(255,90,122,.35); background: rgba(255,90,122,.08); color: rgba(255,220,230,.92)}
+    .badge.good{border-color: rgba(67,255,139,.22); background: rgba(67,255,139,.08); color: rgba(220,255,235,.92)}
+
+    /* Proofread panel */
+    .proof{
+      border:1px solid rgba(214,176,106,.18);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding:10px;
+    }
+    .proof .k{font-weight:900; font-size:12px; letter-spacing:.35px; text-transform:uppercase}
+    .proof ul{margin:8px 0 0; padding-left:18px; color:var(--muted); font-size:12px}
+    .proof li{margin:6px 0}
+    .proof .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+
     footer{padding:16px 14px 22px; color:rgba(238,246,255,.55); font-size:12px; text-align:center}
+
     .toast{
       position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      background: rgba(10,15,22,.92);
-      border:1px solid var(--line);
+      background: rgba(8,10,14,.92);
+      border:1px solid rgba(214,176,106,.22);
       padding:10px 12px;
       border-radius: 999px;
       color:var(--txt);
@@ -186,14 +285,14 @@
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <div class="logo">CS</div>
-        <div>
+        <div class="logo"><span>CS</span></div>
+        <div style="min-width:0;">
           <h1>CaseScribe</h1>
-          <div class="sub">Offline professional note builder (no internet required)</div>
+          <div class="sub">Offline professional note builder • Art Deco v2</div>
         </div>
       </div>
 
-      <div class="pill" id="offlinePill" title="Offline status">
+      <div class="pill" title="Offline status">
         <span class="dot off" id="netDot"></span>
         <span id="netText">Checking…</span>
       </div>
@@ -209,9 +308,9 @@
       <div class="hd">
         <div>
           <div class="title">1) Capture</div>
-          <div class="mini">Paste transcript or type notes, then generate a clean record.</div>
+          <div class="mini">Type/paste notes. Spellcheck is enabled on all text fields.</div>
         </div>
-        <span class="badge" id="autosaveBadge">Autosave: ON</span>
+        <span class="badge good" id="autosaveBadge">Autosave: ON</span>
       </div>
 
       <div class="body">
@@ -241,30 +340,30 @@
         <input id="reason" placeholder="e.g., Welfare check, review, safeguarding concern"/>
 
         <label>Raw notes / transcript</label>
-        <textarea id="raw" placeholder="Paste anything here…"></textarea>
+        <textarea id="raw" spellcheck="true" placeholder="Paste anything here…"></textarea>
 
         <div class="row two">
           <div>
             <label>What was said (Reported)</label>
-            <textarea id="reported" placeholder="Statements, allegations, disclosures…"></textarea>
+            <textarea id="reported" spellcheck="true" placeholder="Statements, allegations, disclosures…"></textarea>
           </div>
           <div>
             <label>What was observed (Factual)</label>
-            <textarea id="observed" placeholder="What you saw/heard directly…"></textarea>
+            <textarea id="observed" spellcheck="true" placeholder="What you saw/heard directly…"></textarea>
           </div>
         </div>
 
         <label>Actions taken</label>
-        <textarea id="actions" placeholder="Calls made, visits completed, referrals, advice given…"></textarea>
+        <textarea id="actions" spellcheck="true" placeholder="Calls made, visits completed, referrals, advice given…"></textarea>
 
         <div class="row two">
           <div>
             <label>Outcomes / next steps</label>
-            <textarea id="next" placeholder="Plan, follow-up date, who will do what…"></textarea>
+            <textarea id="next" spellcheck="true" placeholder="Plan, follow-up date, who will do what…"></textarea>
           </div>
           <div>
             <label>Missing info / clarifications needed</label>
-            <textarea id="missing" placeholder="What’s not stated / what needs confirming…"></textarea>
+            <textarea id="missing" spellcheck="true" placeholder="What’s not stated / what needs confirming…"></textarea>
           </div>
         </div>
 
@@ -273,6 +372,7 @@
         <div class="row">
           <div>
             <div class="title" style="font-size:13px; margin-bottom:6px;">Risks / Safeguarding</div>
+
             <div class="chips" id="riskChips">
               <label class="chip"><input type="checkbox" value="Immediate risk of harm (self/others)"/>Immediate risk</label>
               <label class="chip"><input type="checkbox" value="Neglect / unsafe environment"/>Neglect/unsafe</label>
@@ -285,11 +385,29 @@
             </div>
 
             <label>Risk notes</label>
-            <textarea id="riskNotes" placeholder="Neutral risk summary + any safeguarding actions…"></textarea>
+            <textarea id="riskNotes" spellcheck="true" placeholder="Neutral risk summary + any safeguarding actions…"></textarea>
 
             <div class="hint">
-              If “Immediate risk” is ticked, CaseScribe will add an <b>Immediate Concerns</b> section in the output.
+              If “Immediate risk” is ticked, output adds <b>Immediate Concerns</b> guidance.
             </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Proofread panel -->
+        <div class="proof">
+          <div class="k">Proofread (offline)</div>
+          <div class="mini">Flags common issues and offers quick fixes (not AI).</div>
+          <ul id="proofList">
+            <li>Tap “Run proofread” to scan your fields.</li>
+          </ul>
+          <div class="actions">
+            <button class="gold" id="btnProofread">Run proofread</button>
+            <button id="btnApplyFixes">Apply safe fixes</button>
+          </div>
+          <div class="hint">
+            Your Android keyboard’s spellcheck will also underline spelling mistakes as you type.
           </div>
         </div>
 
@@ -305,7 +423,7 @@
         </div>
 
         <div class="hint">
-          Tip: “Quick-fill from raw” tries to split your raw notes into Reported/Observed using simple heuristics (not AI).
+          “Quick-fill” uses simple heuristics (not AI). Proofread is offline and conservative.
         </div>
       </div>
     </section>
@@ -315,7 +433,7 @@
       <div class="hd">
         <div>
           <div class="title">2) Output</div>
-          <div class="mini">Copy/paste straight into your record system.</div>
+          <div class="mini">Copy/paste into your case system.</div>
         </div>
         <span class="badge" id="riskBadge">Risk: None</span>
       </div>
@@ -336,7 +454,7 @@
         <div class="list" id="draftList"></div>
 
         <div class="hint" style="margin-top:10px;">
-          Offline note builder. If you later want “real AI rewriting”, we can add an optional online mode (API key) — but this version stays fully offline.
+          Offline-first. If later you want optional “AI rewrite mode”, we can add a toggle that only runs when online.
         </div>
       </div>
     </aside>
@@ -364,7 +482,6 @@
   window.addEventListener('offline', updateNet);
   updateNet();
 
-  // Register service worker (needed for offline)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }
@@ -408,8 +525,8 @@
     checks.forEach(c => c.checked = arr.includes(c.value));
   }
 
-  const AUTOSAVE_KEY = "casescribe_autosave_v1";
-  const DRAFTS_KEY   = "casescribe_drafts_v1";
+  const AUTOSAVE_KEY = "casescribe_autosave_v2";
+  const DRAFTS_KEY   = "casescribe_drafts_v2";
 
   function readForm(){
     const obj = {};
@@ -454,9 +571,6 @@
     const raw = $('raw').value.trim();
     if(!raw){ pop("Nothing in raw notes"); return; }
 
-    // Simple splitter:
-    // Lines starting with "said", quotes, "reported", "stated", "told", "disclosed" => Reported
-    // Lines starting with "observed", "noted", "seen", "appeared", "presented", measurements => Observed
     const lines = raw.split(/\n+/).map(l=>l.trim()).filter(Boolean);
 
     const rep = [];
@@ -472,7 +586,6 @@
       else other.push(l);
     }
 
-    // Put "other" into reported by default (safer as "reported" than claiming observation)
     const reportedText = [...rep, ...other].join('\n');
     const observedText = obs.join('\n');
 
@@ -489,7 +602,6 @@
   function bulletize(text){
     const t = (text||"").trim();
     if(!t) return ["Not stated"];
-    // Split by lines, or sentences if no line breaks
     const parts = t.includes('\n')
       ? t.split('\n')
       : t.split(/(?<=[.!?])\s+/);
@@ -557,20 +669,24 @@
     lines.push("Missing info / clarifications needed");
     for(const b of bulletize(data.missing)) lines.push("- " + b);
 
-    const out = lines.join("\n");
-    $('output').textContent = out;
+    $('output').textContent = lines.join("\n");
     autosave();
     pop("Record generated");
   }
 
   // ---------- Drafts ----------
   function loadDrafts(){
-    try{
-      return JSON.parse(localStorage.getItem(DRAFTS_KEY) || "[]");
-    }catch(e){ return []; }
+    try{ return JSON.parse(localStorage.getItem(DRAFTS_KEY) || "[]"); }
+    catch(e){ return []; }
   }
   function saveDrafts(arr){
     localStorage.setItem(DRAFTS_KEY, JSON.stringify(arr));
+  }
+
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
   }
 
   function renderDrafts(){
@@ -656,7 +772,6 @@
       await navigator.clipboard.writeText(text);
       pop("Copied");
     }catch(e){
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -687,19 +802,130 @@
     fields.forEach(k => $(k).value = "");
     setRisks([]);
     updateRiskUI();
+    $('proofList').innerHTML = "<li>Tap “Run proofread” to scan your fields.</li>";
     $('output').textContent = "Generate record to see formatted output here…";
     autosave();
     pop("Cleared");
   }
 
-  // ---------- HTML escape ----------
-  function escapeHtml(s){
-    return (s||"").replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
+  // ---------- Proofread (offline, conservative) ----------
+  const proofList = $('proofList');
+  let lastFixes = []; // {field, before, after, label}
+
+  function getTextFields(){
+    return [
+      'reason','raw','reported','observed','actions','next','missing','riskNotes'
+    ];
   }
 
-  // ---------- Wire buttons ----------
+  function countRegex(str, re){
+    const m = str.match(re);
+    return m ? m.length : 0;
+  }
+
+  function proofread(){
+    lastFixes = [];
+    const issues = [];
+
+    const names = {
+      reason:"Reason", raw:"Raw notes", reported:"Reported", observed:"Observed",
+      actions:"Actions taken", next:"Next steps", missing:"Missing info", riskNotes:"Risk notes"
+    };
+
+    for(const id of getTextFields()){
+      const el = $(id);
+      const txt = (el.value || "");
+      if(!txt.trim()) continue;
+
+      // Issue: double spaces
+      const dbl = countRegex(txt, / {2,}/g);
+      if(dbl){
+        issues.push(`${names[id]}: ${dbl} double-space region(s).`);
+        const after = txt.replace(/ {2,}/g, " ");
+        if(after !== txt) lastFixes.push({field:id, before:txt, after, label:`Fix double spaces in ${names[id]}`});
+      }
+
+      // Issue: repeated word (simple)
+      const rep = txt.match(/\b(\w+)\s+\1\b/gi);
+      if(rep && rep.length){
+        issues.push(`${names[id]}: repeated word(s) found (e.g., "${rep[0]}").`);
+        // No auto-fix (too risky)
+      }
+
+      // Issue: lowercase "i" as a single pronoun
+      const loneI = txt.match(/(^|[^\w])i([^\w]|$)/g);
+      if(loneI && loneI.length){
+        issues.push(`${names[id]}: ${loneI.length} lowercase "i" pronoun instance(s).`);
+        const after = txt.replace(/(^|[^\w])i([^\w]|$)/g, (m, a, b) => `${a}I${b}`);
+        if(after !== txt) lastFixes.push({field:id, before:txt, after, label:`Capitalise "I" in ${names[id]}`});
+      }
+
+      // Issue: sentence starts lowercase after punctuation + space
+      const startLower = txt.match(/([.!?]\s+)([a-z])/g);
+      if(startLower && startLower.length){
+        issues.push(`${names[id]}: ${startLower.length} sentence start(s) may need capitals.`);
+        const after = txt.replace(/([.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+        if(after !== txt) lastFixes.push({field:id, before:txt, after, label:`Capitalise sentence starts in ${names[id]}`});
+      }
+
+      // Issue: line ends without punctuation (only for multi-line bullet-ish content)
+      const lines = txt.split("\n").map(s=>s.trim()).filter(Boolean);
+      if(lines.length >= 3){
+        let noPunct = 0;
+        for(const l of lines){
+          if(!/[.!?]$/.test(l) && l.length > 25) noPunct++;
+        }
+        if(noPunct){
+          issues.push(`${names[id]}: ${noPunct} longer line(s) end without punctuation.`);
+          // No auto-fix (some lines are headings/bullets)
+        }
+      }
+    }
+
+    if(issues.length === 0){
+      proofList.innerHTML = "<li>No issues flagged by offline proofread.</li>";
+      pop("Proofread: clean");
+      return;
+    }
+
+    proofList.innerHTML = issues.map(x => `<li>${escapeHtml(x)}</li>`).join("");
+    pop(`Proofread: ${issues.length} flagged`);
+  }
+
+  function applyFixes(){
+    if(!lastFixes.length){
+      pop("No safe fixes available");
+      return;
+    }
+
+    // Apply latest fix per field (merged)
+    const byField = new Map();
+    for(const fx of lastFixes){
+      byField.set(fx.field, fx.after);
+    }
+    for(const [field, after] of byField.entries()){
+      $(field).value = after;
+    }
+
+    autosave();
+    proofread(); // re-scan after fix
+    pop("Fixes applied");
+  }
+
+  // ---------- Boot ----------
+  if(!$('date').value) $('date').value = nowISODate();
+  if(!$('time').value) $('time').value = nowISOTime();
+
+  loadAutosave();
+  updateRiskUI();
+  renderDrafts();
+
+  // autosave on input
+  [...document.querySelectorAll('input,textarea,select')].forEach(el=>{
+    el.addEventListener('input', autosave);
+  });
+
+  // Buttons
   $('btnGenerate').addEventListener('click', genOutput);
   $('btnQuickFill').addEventListener('click', quickFill);
   $('btnCopy').addEventListener('click', copyOutput);
@@ -708,19 +934,9 @@
   $('btnClear').addEventListener('click', clearAll);
   $('btnExport').addEventListener('click', exportDrafts);
 
-  // autosave on input
-  [...document.querySelectorAll('input,textarea,select')].forEach(el=>{
-    el.addEventListener('input', autosave);
-  });
+  $('btnProofread').addEventListener('click', proofread);
+  $('btnApplyFixes').addEventListener('click', applyFixes);
 
-  // ---------- Boot ----------
-  // Set default date/time once, if empty
-  if(!$('date').value) $('date').value = nowISODate();
-  if(!$('time').value) $('time').value = nowISOTime();
-
-  loadAutosave();
-  updateRiskUI();
-  renderDrafts();
 })();
 </script>
 </body>
