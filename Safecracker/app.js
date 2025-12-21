@@ -3,6 +3,7 @@
    - Detent click on every number
    - Gate click ONLY on exact pin
    - No visual indication
+   - TIMER resets on each correct committed pin
    ========================================================== */
 
 window.SC = (() => {
@@ -87,14 +88,16 @@ window.SC = (() => {
   }
 
   function endRunToIndex(){
-    // Reset run state
     setRun({ money: 0, streak: 0 });
-    // Go back to index
     location.href = "./index.html";
   }
 
   /* ===================== SAFE ===================== */
   function initSafe(){
+    // ====== CONFIG (this is the mechanic you asked about) ======
+    const PIN_TIME = 20; // seconds per pin (reset after each correct commit)
+    // ===========================================================
+
     // Header + UI fields
     const hdrSafe = $("#hdrSafe");
     const hdrSub  = $("#hdrSub");
@@ -145,7 +148,7 @@ window.SC = (() => {
     let locked = false;
 
     // Timer + Noise
-    let timeLeft = 30.0;              // seconds
+    let timeLeft = PIN_TIME;          // ✅ starts at PIN_TIME
     let noise = 0;                    // 0..100
     let lastTick = performance.now();
     let rafId = 0;
@@ -168,14 +171,23 @@ window.SC = (() => {
     function updateTopUI(){
       uiPins && (uiPins.textContent = String(combo.length));
       uiProg && (uiProg.textContent = `${step}/${combo.length}`);
-      uiTime && (uiTime.textContent = `00:${pad2(Math.max(0, Math.ceil(timeLeft)))}`);
+
+      // Show mm:ss (we only use seconds here)
+      const sec = Math.max(0, Math.ceil(timeLeft));
+      uiTime && (uiTime.textContent = `00:${pad2(sec)}`);
+
       uiNoise && (uiNoise.textContent = `${Math.floor(noise)}%`);
 
-      // Optional urgency styling (uses your .warn pill already)
       if(timerPill){
-        if(timeLeft <= 10) timerPill.classList.add("warn");
-        // keep it warn always if your CSS expects it; we won’t remove.
+        // Make it feel urgent near end
+        if(timeLeft <= 6) timerPill.classList.add("warn");
       }
+    }
+
+    function resetPinTimer(){
+      // ✅ THIS is the missing mechanic
+      timeLeft = PIN_TIME;
+      updateTopUI();
     }
 
     function gameOver(msg){
@@ -184,7 +196,6 @@ window.SC = (() => {
       failBuzz();
       prompt && (prompt.textContent = msg);
       setOpenEnabled(false);
-      // You can add a class for visuals if your CSS supports it
       face && face.classList.add("failed");
     }
 
@@ -196,7 +207,7 @@ window.SC = (() => {
       prompt && (prompt.textContent = "SAFE OPENED");
 
       // Update totals
-      const reward = 10 + combo.length * 5; // simple reward; tweak later
+      const reward = 10 + combo.length * 5;
       const totalMoney = getNum(K.totalMoney,0) + reward;
       const totalSafes = getNum(K.totalSafes,0) + 1;
 
@@ -212,7 +223,6 @@ window.SC = (() => {
 
       uiRunMoney && (uiRunMoney.textContent = fmtMoney(r.money));
 
-      // Small delay then back to index (keeps it snappy on mobile)
       setTimeout(() => {
         location.href = "./index.html";
       }, 650);
@@ -235,10 +245,9 @@ window.SC = (() => {
         return;
       }
 
-      // Noise decay very slightly if you stop spinning
+      // Noise decays slightly when calm
       noise = clamp(noise - dt * 1.5, 0, 100);
 
-      // Noise fail
       if(noise >= 100){
         noise = 100;
         updateTopUI();
@@ -262,12 +271,11 @@ window.SC = (() => {
         // DETENT CLICK — every number
         detentClick();
 
-        // Add noise per detent: higher if spinning quickly
+        // Noise per detent; higher if spinning quickly
         const now = performance.now();
         const dA = Math.abs(angle - lastAngleForSpeed);
         const dT = Math.max(1, now - lastSpeedT); // ms
-        const speed = dA / dT; // deg per ms (tiny numbers)
-        // Scale into something usable
+        const speed = dA / dT; // deg/ms
         noise = clamp(noise + (1.2 + speed * 120), 0, 100);
 
         lastAngleForSpeed = angle;
@@ -311,8 +319,7 @@ window.SC = (() => {
 
     dial.addEventListener("pointerup",()=>{
       dragging=false;
-      // snap cleanly
-      setDialByAngle(number * 6);
+      setDialByAngle(number * 6); // snap cleanly
     });
 
     /* ===== HUB COMMIT ===== */
@@ -323,7 +330,6 @@ window.SC = (() => {
       if(number !== combo[step]){
         failBuzz();
         prompt && (prompt.textContent="WRONG • KEEP LISTENING");
-        // penalty noise spike for wrong commit
         noise = clamp(noise + 8, 0, 100);
         updateTopUI();
         return;
@@ -332,6 +338,9 @@ window.SC = (() => {
       clunk();
       step++;
       lastGateFired = false;
+
+      // ✅ KEY FIX: reset clock on each successful pin commit
+      resetPinTimer();
 
       if(step >= combo.length){
         prompt && (prompt.textContent="ALL TUMBLERS SET • OPEN");
@@ -351,12 +360,12 @@ window.SC = (() => {
 
     // Init state
     setOpenEnabled(false);
+    resetPinTimer();                 // ✅ ensure we start at full pin time
     setDialByAngle(Math.random() * 360);
 
     prompt && (prompt.textContent="SPIN • LISTEN FOR THE GATE");
     updateTopUI();
 
-    // Start tick loop
     lastTick = performance.now();
     rafId = requestAnimationFrame(tick);
   }
