@@ -41,6 +41,14 @@
           <div class="pill">Noise: <b id="uiNoise">0%</b></div>
           <div class="pill">Run $: <b id="uiRunMoney">$0</b></div>
         </div>
+
+        <!-- ✅ OPEN SAFE belongs high up on the SAFE screen (not on index) -->
+        <div class="pillRow" style="justify-content:flex-end;">
+          <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
+            <span class="leverHandle"></span>
+            <span class="leverTxt">OPEN</span>
+          </button>
+        </div>
       </div>
 
       <div class="safeStage">
@@ -80,10 +88,7 @@
             </div>
           </div>
 
-          <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
-            <span class="leverHandle"></span>
-            <span class="leverTxt">OPEN</span>
-          </button>
+          <!-- ❌ removed from here (was too low / wrong UX position) -->
         </div>
 
         <div class="progressDots" id="dots"></div>
