@@ -3,7 +3,7 @@
   "short_name": "CaseScribe",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
+  "background_color": "#07080b",
+  "theme_color": "#07080b",
   "icons": []
 }
