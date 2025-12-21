@@ -22,6 +22,7 @@
           <div class="sub" id="hdrSub">—</div>
         </div>
       </div>
+
       <div class="topBtns">
         <button class="btnGhost smallBtn" id="btnAch">Stats</button>
       </div>
@@ -46,7 +47,7 @@
         <div class="prompt" id="prompt">Spin the dial. Press the hub to CRACK.</div>
 
         <div class="safeFace" id="safeFace">
-          <div class="safePlate">RATTLESNAKE • CO.</div>
+          <div class="safePlate" id="safePlate">RATTLESNAKE • CO.</div>
 
           <div class="hinge h1"></div>
           <div class="hinge h2"></div>
@@ -58,7 +59,7 @@
           <div class="dialWrap" id="dialWrap" aria-label="Safe dial">
             <div class="needle"></div>
 
-            <div class="window">
+            <div class="window" id="numWindow">
               <div class="num" id="numRead">00</div>
               <div class="sub">dial 0–59</div>
             </div>
@@ -67,11 +68,12 @@
               <div class="ticks"></div>
               <div class="ticks2"></div>
 
+              <!-- hub is the ONLY "crack" input -->
               <button class="hubBtn" id="hubBtn" aria-label="Press to crack">
                 <div class="hubTxt">
                   <div class="hubTop">PRESS</div>
                   <div class="hubMid">CRACK</div>
-                  <div class="hubBot">SIMPLE</div>
+                  <div class="hubBot" id="hubMode">SIMPLE</div>
                 </div>
               </button>
             </div>
@@ -81,23 +83,86 @@
         <div class="progressDots" id="dots"></div>
 
         <div class="miniFooter">
-          <div class="miniNote">Exact numbers only • slow hands stay quiet</div>
+          <div class="miniNote" id="ruleNote">Exact numbers only • slow hands stay quiet</div>
+          <label class="toggle" id="patternToggleWrap" style="display:none;">
+            <input type="checkbox" id="patternToggle">
+            <span class="toggleUI"></span>
+            <span class="toggleTxt">Classic Pattern</span>
+          </label>
         </div>
-      </div>
 
-      <!-- 🔽 BOTTOM OPEN BAR -->
-      <div class="openBar">
-        <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
-          <span class="leverHandle"></span>
-          <span class="leverTxt">OPEN SAFE</span>
-        </button>
+        <!-- ✅ OPEN BAR (BOTTOM) — hidden until lever becomes enabled -->
+        <div class="openBar" id="openBar" aria-hidden="true">
+          <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
+            <span class="leverHandle"></span>
+            <span class="leverTxt">OPEN SAFE</span>
+          </button>
+        </div>
       </div>
     </section>
   </main>
 
+  <!-- mini stats modal -->
+  <div class="modal" id="miniModal" aria-hidden="true">
+    <div class="modalScrim" id="miniScrim"></div>
+    <div class="modalCard">
+      <div class="modalHdr">
+        <div class="modalTitle">Run Stats</div>
+        <button class="btnGhost" id="btnCloseMini">Close</button>
+      </div>
+      <div class="modalBody">
+        <div class="achGrid">
+          <div class="achItem">
+            <div class="k">Total Money</div>
+            <div class="v" id="mMoney">$0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Safes Opened</div>
+            <div class="v" id="mSafes">0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Best Streak</div>
+            <div class="v" id="mBest">0</div>
+          </div>
+          <div class="achItem">
+            <div class="k">Pattern</div>
+            <div class="v" id="mPattern">Locked</div>
+          </div>
+        </div>
+      </div>
+      <div class="modalFtr">
+        <button class="btnSecondary" id="btnEndRun">End Run</button>
+      </div>
+    </div>
+  </div>
+
   <script src="./app.js"></script>
+
   <script>
+    // Start the safe logic (your existing app.js provides SC.initSafe)
     SC.initSafe();
+
+    // ✅ Foundation fix: show OPEN bar only when lever becomes enabled
+    (function(){
+      const lever = document.getElementById("leverBtn");
+      const bar = document.getElementById("openBar");
+
+      const update = () => {
+        const ready = !lever.disabled && !lever.classList.contains("disabled");
+        if(ready){
+          bar.classList.add("show");
+          bar.setAttribute("aria-hidden","false");
+        }else{
+          bar.classList.remove("show");
+          bar.setAttribute("aria-hidden","true");
+        }
+      };
+
+      update();
+
+      const mo = new MutationObserver(update);
+      mo.observe(lever, { attributes:true, attributeFilter:["disabled","class"] });
+    })();
   </script>
 </body>
 </html>
