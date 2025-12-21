@@ -41,6 +41,8 @@
           <div class="pill">Noise: <b id="uiNoise">0%</b></div>
           <div class="pill">Run $: <b id="uiRunMoney">$0</b></div>
         </div>
+
+        <!-- ✅ Removed top OPEN button (it will live at the bottom now) -->
       </div>
 
       <div class="safeStage">
@@ -91,7 +93,7 @@
           </label>
         </div>
 
-        <!-- ✅ OPEN BAR (BOTTOM) — hidden until lever becomes enabled -->
+        <!-- ✅ OPEN BAR (BOTTOM) -->
         <div class="openBar" id="openBar" aria-hidden="true">
           <button class="lever disabled" id="leverBtn" aria-label="Open safe" disabled>
             <span class="leverHandle"></span>
@@ -137,17 +139,17 @@
   </div>
 
   <script src="./app.js"></script>
-
   <script>
-    // Start the safe logic (your existing app.js provides SC.initSafe)
     SC.initSafe();
 
-    // ✅ Foundation fix: show OPEN bar only when lever becomes enabled
+    // ✅ Show the bottom OPEN bar only when the lever becomes enabled.
     (function(){
       const lever = document.getElementById("leverBtn");
       const bar = document.getElementById("openBar");
 
-      const update = () => {
+      if(!lever || !bar) return;
+
+      function sync(){
         const ready = !lever.disabled && !lever.classList.contains("disabled");
         if(ready){
           bar.classList.add("show");
@@ -156,11 +158,10 @@
           bar.classList.remove("show");
           bar.setAttribute("aria-hidden","true");
         }
-      };
+      }
 
-      update();
-
-      const mo = new MutationObserver(update);
+      sync();
+      const mo = new MutationObserver(sync);
       mo.observe(lever, { attributes:true, attributeFilter:["disabled","class"] });
     })();
   </script>
