@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b0f14"/>
+  <title>CaseScribe — Offline Notes</title>
+
+  <link rel="manifest" href="./manifest.json"/>
+
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#0b0f14; --panel:#111a24; --panel2:#0f1620;
+      --line:rgba(255,255,255,.10);
+      --txt:#eef6ff; --muted:rgba(238,246,255,.72);
+      --accent:#7fffe0; --accent2:#ffd57a;
+      --good:#43ff8b; --warn:#ffcc66; --bad:#ff5a7a;
+      --shadow: 0 18px 40px rgba(0,0,0,.55);
+      --r:18px;
+    }
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(127,255,224,.12), transparent 55%),
+                  radial-gradient(1000px 650px at 80% 0%, rgba(255,213,122,.10), transparent 55%),
+                  linear-gradient(180deg, #070a10, var(--bg));
+      color:var(--txt);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,20,.72);
+      border-bottom: 1px solid var(--line);
+    }
+    .wrap{max-width:1080px; margin:0 auto; padding:14px 14px;}
+    .topbar{display:flex; gap:10px; align-items:center; justify-content:space-between;}
+    .brand{display:flex; gap:10px; align-items:center;}
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(127,255,224,.35), rgba(255,213,122,.30));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow);
+      display:grid; place-items:center;
+      font-weight:800; letter-spacing:.5px;
+    }
+    h1{margin:0; font-size:16px; line-height:1.15}
+    .sub{font-size:12px; color:var(--muted); margin-top:2px}
+    .pill{
+      font-size:12px; padding:7px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color:var(--muted);
+      display:flex; gap:8px; align-items:center;
+      user-select:none;
+    }
+    .dot{width:8px; height:8px; border-radius:50%;}
+    .dot.ok{background:var(--good)}
+    .dot.off{background:rgba(255,255,255,.25)}
+    main .grid{
+      display:grid; gap:12px;
+      grid-template-columns: 1fr;
+      padding: 14px;
+      max-width:1080px; margin:0 auto;
+    }
+    @media(min-width: 980px){
+      main .grid{grid-template-columns: 1.05fr .95fr;}
+    }
+    .card{
+      background: rgba(17,26,36,.86);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:12px 12px 10px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .title{font-weight:800; font-size:13px; letter-spacing:.3px}
+    .mini{font-size:12px; color:var(--muted)}
+    .body{padding:12px}
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
+    input, textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(15,22,32,.85);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{min-height:110px; resize:vertical; line-height:1.35}
+    .row{display:grid; gap:10px; grid-template-columns: 1fr}
+    @media(min-width: 560px){
+      .row.two{grid-template-columns: 1fr 1fr}
+      .row.three{grid-template-columns: 1fr 1fr 1fr}
+    }
+    .btnrow{display:flex; flex-wrap:wrap; gap:10px}
+    button{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--txt);
+      padding:11px 12px;
+      border-radius: 999px;
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+    }
+    button.primary{
+      background: linear-gradient(135deg, rgba(127,255,224,.18), rgba(255,213,122,.12));
+      border-color: rgba(127,255,224,.26);
+    }
+    button.danger{
+      background: rgba(255,90,122,.10);
+      border-color: rgba(255,90,122,.30);
+    }
+    button:active{transform: translateY(1px)}
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+    .chip{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      font-size:12px; color:var(--muted);
+    }
+    .chip input{width:auto; margin:0}
+    .sep{height:1px; background:var(--line); margin:12px 0}
+    pre.out{
+      white-space:pre-wrap;
+      word-wrap:break-word;
+      margin:0;
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(10,15,22,.75);
+      line-height:1.4;
+      font-size:13px;
+    }
+    .hint{font-size:12px; color:var(--muted); margin-top:8px}
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .item{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding:10px;
+      display:flex; gap:10px; justify-content:space-between; align-items:flex-start;
+    }
+    .item .a{min-width:0}
+    .item .t{font-weight:800; font-size:12px}
+    .item .m{font-size:12px; color:var(--muted); margin-top:4px}
+    .item .b{display:flex; gap:8px}
+    .smallbtn{padding:8px 10px; font-size:12px}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color:var(--muted);
+    }
+    .badge.bad{border-color: rgba(255,90,122,.35); background: rgba(255,90,122,.08); color: rgba(255,220,230,.92)}
+    footer{padding:16px 14px 22px; color:rgba(238,246,255,.55); font-size:12px; text-align:center}
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(10,15,22,.92);
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius: 999px;
+      color:var(--txt);
+      box-shadow: var(--shadow);
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index:50;
+      font-size:13px;
+    }
+    .toast.on{opacity:1; transform:translateX(-50%) translateY(-6px)}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">CS</div>
+        <div>
+          <h1>CaseScribe</h1>
+          <div class="sub">Offline professional note builder (no internet required)</div>
+        </div>
+      </div>
+
+      <div class="pill" id="offlinePill" title="Offline status">
+        <span class="dot off" id="netDot"></span>
+        <span id="netText">Checking…</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- LEFT: INPUT -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <div class="title">1) Capture</div>
+          <div class="mini">Paste transcript or type notes, then generate a clean record.</div>
+        </div>
+        <span class="badge" id="autosaveBadge">Autosave: ON</span>
+      </div>
+
+      <div class="body">
+        <div class="row two">
+          <div>
+            <label>Date</label>
+            <input id="date" type="date"/>
+          </div>
+          <div>
+            <label>Time</label>
+            <input id="time" type="time"/>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Location</label>
+            <input id="location" placeholder="e.g., Home visit / Office / Ward / Phone call"/>
+          </div>
+          <div>
+            <label>People present</label>
+            <input id="people" placeholder="e.g., Service user, staff, family, interpreter"/>
+          </div>
+        </div>
+
+        <label>Reason for contact</label>
+        <input id="reason" placeholder="e.g., Welfare check, review, safeguarding concern"/>
+
+        <label>Raw notes / transcript</label>
+        <textarea id="raw" placeholder="Paste anything here…"></textarea>
+
+        <div class="row two">
+          <div>
+            <label>What was said (Reported)</label>
+            <textarea id="reported" placeholder="Statements, allegations, disclosures…"></textarea>
+          </div>
+          <div>
+            <label>What was observed (Factual)</label>
+            <textarea id="observed" placeholder="What you saw/heard directly…"></textarea>
+          </div>
+        </div>
+
+        <label>Actions taken</label>
+        <textarea id="actions" placeholder="Calls made, visits completed, referrals, advice given…"></textarea>
+
+        <div class="row two">
+          <div>
+            <label>Outcomes / next steps</label>
+            <textarea id="next" placeholder="Plan, follow-up date, who will do what…"></textarea>
+          </div>
+          <div>
+            <label>Missing info / clarifications needed</label>
+            <textarea id="missing" placeholder="What’s not stated / what needs confirming…"></textarea>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div>
+            <div class="title" style="font-size:13px; margin-bottom:6px;">Risks / Safeguarding</div>
+            <div class="chips" id="riskChips">
+              <label class="chip"><input type="checkbox" value="Immediate risk of harm (self/others)"/>Immediate risk</label>
+              <label class="chip"><input type="checkbox" value="Neglect / unsafe environment"/>Neglect/unsafe</label>
+              <label class="chip"><input type="checkbox" value="Abuse allegation (physical/emotional/financial)"/>Abuse allegation</label>
+              <label class="chip"><input type="checkbox" value="Medication concerns"/>Medication</label>
+              <label class="chip"><input type="checkbox" value="Capacity / consent unclear"/>Capacity/consent</label>
+              <label class="chip"><input type="checkbox" value="Mental health escalation"/>Mental health</label>
+              <label class="chip"><input type="checkbox" value="Substance misuse"/>Substance</label>
+              <label class="chip"><input type="checkbox" value="Housing / homelessness risk"/>Housing</label>
+            </div>
+
+            <label>Risk notes</label>
+            <textarea id="riskNotes" placeholder="Neutral risk summary + any safeguarding actions…"></textarea>
+
+            <div class="hint">
+              If “Immediate risk” is ticked, CaseScribe will add an <b>Immediate Concerns</b> section in the output.
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="btnrow">
+          <button class="primary" id="btnGenerate">Generate record</button>
+          <button id="btnQuickFill">Quick-fill from raw</button>
+          <button id="btnCopy">Copy output</button>
+          <button id="btnShare">Share</button>
+          <button id="btnSave">Save draft</button>
+          <button class="danger" id="btnClear">Clear</button>
+        </div>
+
+        <div class="hint">
+          Tip: “Quick-fill from raw” tries to split your raw notes into Reported/Observed using simple heuristics (not AI).
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: OUTPUT + HISTORY -->
+    <aside class="card">
+      <div class="hd">
+        <div>
+          <div class="title">2) Output</div>
+          <div class="mini">Copy/paste straight into your record system.</div>
+        </div>
+        <span class="badge" id="riskBadge">Risk: None</span>
+      </div>
+
+      <div class="body">
+        <pre class="out" id="output">Generate record to see formatted output here…</pre>
+
+        <div class="sep"></div>
+
+        <div class="hd" style="padding:0; border:none; background:none; margin-bottom:8px;">
+          <div>
+            <div class="title">Saved drafts</div>
+            <div class="mini">Stored on this device only (local storage).</div>
+          </div>
+          <button class="smallbtn" id="btnExport">Export JSON</button>
+        </div>
+
+        <div class="list" id="draftList"></div>
+
+        <div class="hint" style="margin-top:10px;">
+          Offline note builder. If you later want “real AI rewriting”, we can add an optional online mode (API key) — but this version stays fully offline.
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<div class="toast" id="toast">Copied</div>
+
+<footer>
+  CaseScribe PWA • Offline-first • No data leaves your device
+</footer>
+
+<script>
+(() => {
+  // ---------- PWA install/offline ----------
+  const netDot = document.getElementById('netDot');
+  const netText = document.getElementById('netText');
+  function updateNet(){
+    const on = navigator.onLine;
+    netDot.className = "dot " + (on ? "ok" : "off");
+    netText.textContent = on ? "Online (cached)" : "Offline";
+  }
+  window.addEventListener('online', updateNet);
+  window.addEventListener('offline', updateNet);
+  updateNet();
+
+  // Register service worker (needed for offline)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const toast = $('toast');
+  function pop(msg){
+    toast.textContent = msg;
+    toast.classList.add('on');
+    setTimeout(()=>toast.classList.remove('on'), 1300);
+  }
+
+  function nowISODate(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  function nowISOTime(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mi = String(d.getMinutes()).padStart(2,'0');
+    return `${hh}:${mi}`;
+  }
+
+  // ---------- State ----------
+  const fields = [
+    'date','time','location','people','reason',
+    'raw','reported','observed','actions','next','missing',
+    'riskNotes'
+  ];
+
+  function getRisks(){
+    const checks = [...document.querySelectorAll('#riskChips input[type="checkbox"]')];
+    return checks.filter(c=>c.checked).map(c=>c.value);
+  }
+  function setRisks(arr){
+    const checks = [...document.querySelectorAll('#riskChips input[type="checkbox"]')];
+    checks.forEach(c => c.checked = arr.includes(c.value));
+  }
+
+  const AUTOSAVE_KEY = "casescribe_autosave_v1";
+  const DRAFTS_KEY   = "casescribe_drafts_v1";
+
+  function readForm(){
+    const obj = {};
+    fields.forEach(k => obj[k] = $(k).value || "");
+    obj.risks = getRisks();
+    return obj;
+  }
+  function writeForm(obj){
+    fields.forEach(k => { if($(k)) $(k).value = obj[k] || ""; });
+    setRisks(obj.risks || []);
+    updateRiskUI();
+  }
+
+  function autosave(){
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(readForm()));
+  }
+  function loadAutosave(){
+    const s = localStorage.getItem(AUTOSAVE_KEY);
+    if(!s) return;
+    try{ writeForm(JSON.parse(s)); }catch(e){}
+  }
+
+  // ---------- Risk badge ----------
+  const riskBadge = $('riskBadge');
+  function updateRiskUI(){
+    const risks = getRisks();
+    if(risks.length === 0){
+      riskBadge.textContent = "Risk: None";
+      riskBadge.className = "badge";
+    } else {
+      const immediate = risks.some(r => r.toLowerCase().includes("immediate"));
+      riskBadge.textContent = immediate ? "Risk: IMMEDIATE" : `Risk: ${risks.length} flagged`;
+      riskBadge.className = "badge bad";
+    }
+  }
+  document.querySelectorAll('#riskChips input').forEach(el => {
+    el.addEventListener('change', ()=>{ updateRiskUI(); autosave(); });
+  });
+
+  // ---------- Quick-fill heuristics ----------
+  function quickFill(){
+    const raw = $('raw').value.trim();
+    if(!raw){ pop("Nothing in raw notes"); return; }
+
+    // Simple splitter:
+    // Lines starting with "said", quotes, "reported", "stated", "told", "disclosed" => Reported
+    // Lines starting with "observed", "noted", "seen", "appeared", "presented", measurements => Observed
+    const lines = raw.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+
+    const rep = [];
+    const obs = [];
+    const other = [];
+
+    const repRe = /^(said|stated|reported|told|disclosed|alleged|claims?|mentioned|shared|advised|requested)\b/i;
+    const obsRe = /^(observed|noted|seen|appeared|presented|visible|heard|smelled|environment|property|room|injury|bruise|redness)\b/i;
+
+    for(const l of lines){
+      if(repRe.test(l) || l.includes('"') || l.includes('“') || l.includes('”')) rep.push(l);
+      else if(obsRe.test(l)) obs.push(l);
+      else other.push(l);
+    }
+
+    // Put "other" into reported by default (safer as "reported" than claiming observation)
+    const reportedText = [...rep, ...other].join('\n');
+    const observedText = obs.join('\n');
+
+    if(!$('reported').value.trim()) $('reported').value = reportedText;
+    if(!$('observed').value.trim()) $('observed').value = observedText;
+
+    pop("Quick-fill complete");
+    autosave();
+  }
+
+  // ---------- Output generation ----------
+  function cleanLine(s){ return (s || "").trim() || "Not stated"; }
+
+  function bulletize(text){
+    const t = (text||"").trim();
+    if(!t) return ["Not stated"];
+    // Split by lines, or sentences if no line breaks
+    const parts = t.includes('\n')
+      ? t.split('\n')
+      : t.split(/(?<=[.!?])\s+/);
+    const out = parts.map(p=>p.trim()).filter(Boolean);
+    return out.length ? out : ["Not stated"];
+  }
+
+  function genOutput(){
+    const data = readForm();
+    const risks = data.risks || [];
+    const immediate = risks.some(r => r.toLowerCase().includes("immediate"));
+
+    const dt = (data.date || data.time)
+      ? `${data.date || "Not stated"} ${data.time || ""}`.trim()
+      : "Not stated";
+
+    const lines = [];
+    lines.push("CASE NOTE / INTERACTION RECORD");
+    lines.push("================================");
+    lines.push(`Date/Time: ${dt}`);
+    lines.push(`Location: ${cleanLine(data.location)}`);
+    lines.push(`People present: ${cleanLine(data.people)}`);
+    lines.push("");
+
+    lines.push("Reason for contact");
+    lines.push("- " + cleanLine(data.reason));
+    lines.push("");
+
+    lines.push("What was said (Reported)");
+    for(const b of bulletize(data.reported || data.raw)) lines.push("- " + b);
+    lines.push("");
+
+    lines.push("What was observed (Factual)");
+    for(const b of bulletize(data.observed)) lines.push("- " + b);
+    lines.push("");
+
+    lines.push("Actions taken");
+    for(const b of bulletize(data.actions)) lines.push("- " + b);
+    lines.push("");
+
+    lines.push("Outcomes / next steps");
+    for(const b of bulletize(data.next)) lines.push("- " + b);
+    lines.push("");
+
+    lines.push("Risks / safeguarding");
+    if(risks.length === 0){
+      lines.push("- Not stated");
+    } else {
+      for(const r of risks) lines.push("- " + r);
+    }
+    if((data.riskNotes||"").trim()){
+      lines.push("");
+      lines.push("Risk notes");
+      for(const b of bulletize(data.riskNotes)) lines.push("- " + b);
+    }
+
+    if(immediate){
+      lines.push("");
+      lines.push("Immediate Concerns");
+      lines.push("- Immediate risk indicator present. Follow local safeguarding / duty escalation procedures.");
+      lines.push("- Document who was informed, when, and any actions taken.");
+    }
+
+    lines.push("");
+    lines.push("Missing info / clarifications needed");
+    for(const b of bulletize(data.missing)) lines.push("- " + b);
+
+    const out = lines.join("\n");
+    $('output').textContent = out;
+    autosave();
+    pop("Record generated");
+  }
+
+  // ---------- Drafts ----------
+  function loadDrafts(){
+    try{
+      return JSON.parse(localStorage.getItem(DRAFTS_KEY) || "[]");
+    }catch(e){ return []; }
+  }
+  function saveDrafts(arr){
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(arr));
+  }
+
+  function renderDrafts(){
+    const list = $('draftList');
+    const drafts = loadDrafts();
+
+    if(drafts.length === 0){
+      list.innerHTML = `<div class="mini">No saved drafts yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = "";
+    drafts.slice().reverse().forEach((d, idxFromEnd) => {
+      const idx = drafts.length - 1 - idxFromEnd;
+
+      const title = d.reason ? d.reason.slice(0,38) : "Draft";
+      const when  = (d.date || d.time) ? `${d.date||""} ${d.time||""}`.trim() : "No date/time";
+      const riskCount = (d.risks||[]).length;
+
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `
+        <div class="a">
+          <div class="t">${escapeHtml(title || "Draft")}</div>
+          <div class="m">${escapeHtml(when)} • ${riskCount ? (riskCount + " risk flags") : "No risk flags"}</div>
+        </div>
+        <div class="b">
+          <button class="smallbtn" data-act="load" data-idx="${idx}">Load</button>
+          <button class="smallbtn danger" data-act="del" data-idx="${idx}">Del</button>
+        </div>
+      `;
+      list.appendChild(el);
+    });
+
+    list.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const act = btn.dataset.act;
+        const i = Number(btn.dataset.idx);
+        const drafts = loadDrafts();
+        if(!drafts[i]) return;
+
+        if(act === 'load'){
+          writeForm(drafts[i]);
+          genOutput();
+          pop("Draft loaded");
+        } else if(act === 'del'){
+          drafts.splice(i,1);
+          saveDrafts(drafts);
+          renderDrafts();
+          pop("Draft deleted");
+        }
+      });
+    });
+  }
+
+  function saveDraft(){
+    const drafts = loadDrafts();
+    drafts.push(readForm());
+    saveDrafts(drafts);
+    renderDrafts();
+    pop("Draft saved");
+  }
+
+  function exportDrafts(){
+    const drafts = loadDrafts();
+    const blob = new Blob([JSON.stringify(drafts, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "casescribe_drafts.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    pop("Exported");
+  }
+
+  // ---------- Copy / Share ----------
+  async function copyOutput(){
+    const text = $('output').textContent || "";
+    if(!text.trim()){ pop("Nothing to copy"); return; }
+    try{
+      await navigator.clipboard.writeText(text);
+      pop("Copied");
+    }catch(e){
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      pop("Copied");
+    }
+  }
+
+  async function shareOutput(){
+    const text = $('output').textContent || "";
+    if(!text.trim()){ pop("Generate output first"); return; }
+
+    if(navigator.share){
+      try{
+        await navigator.share({ title: "CaseScribe Note", text });
+        pop("Shared");
+      }catch(e){}
+    } else {
+      await copyOutput();
+      pop("Share not supported — copied instead");
+    }
+  }
+
+  // ---------- Clear ----------
+  function clearAll(){
+    fields.forEach(k => $(k).value = "");
+    setRisks([]);
+    updateRiskUI();
+    $('output').textContent = "Generate record to see formatted output here…";
+    autosave();
+    pop("Cleared");
+  }
+
+  // ---------- HTML escape ----------
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  // ---------- Wire buttons ----------
+  $('btnGenerate').addEventListener('click', genOutput);
+  $('btnQuickFill').addEventListener('click', quickFill);
+  $('btnCopy').addEventListener('click', copyOutput);
+  $('btnShare').addEventListener('click', shareOutput);
+  $('btnSave').addEventListener('click', saveDraft);
+  $('btnClear').addEventListener('click', clearAll);
+  $('btnExport').addEventListener('click', exportDrafts);
+
+  // autosave on input
+  [...document.querySelectorAll('input,textarea,select')].forEach(el=>{
+    el.addEventListener('input', autosave);
+  });
+
+  // ---------- Boot ----------
+  // Set default date/time once, if empty
+  if(!$('date').value) $('date').value = nowISODate();
+  if(!$('time').value) $('time').value = nowISOTime();
+
+  loadAutosave();
+  updateRiskUI();
+  renderDrafts();
+})();
+</script>
+</body>
+</html>
