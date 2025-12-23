@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <meta name="theme-color" content="#0b1220"/>
-  <title>Boz’s Stairs — Fitness</title>
+  <title>Stair Fitness</title>
 
   <link rel="manifest" href="./manifest.json"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
@@ -20,8 +20,8 @@
       <div class="brand">
         <div class="logo" aria-hidden="true">⬆︎</div>
         <div>
-          <div class="title">Boz’s Stairs</div>
-          <div class="subtitle" id="subtitle">Fitness tracker</div>
+          <div class="title">Stair Fitness</div>
+          <div class="subtitle" id="subtitle">Active: House • rise + stairs</div>
         </div>
       </div>
 
@@ -30,18 +30,28 @@
       </button>
     </header>
 
-    <!-- Screens -->
+    <!-- ONE SCROLLABLE PAGE -->
     <main class="screenWrap">
 
-      <!-- INFO -->
+      <!-- SETUP -->
       <section class="screen" id="screen-info">
         <div class="card">
           <div class="cardHd">
             <div>
-              <div class="cardTitle">Set up your house</div>
-              <div class="cardSub">Imperial inputs • Lock once as “Boz’s house”</div>
+              <div class="cardTitle">Setup</div>
+              <div class="cardSub">Save 3 stair profiles: House / Work / Gym</div>
             </div>
-            <div class="badge" id="lockBadge">Not locked</div>
+            <div class="badge soft" id="activeBadge">Active: House</div>
+          </div>
+
+          <div class="profileBar">
+            <button class="chip on" id="chip-house" data-profile="house">House</button>
+            <button class="chip" id="chip-work" data-profile="work">Work</button>
+            <button class="chip" id="chip-gym" data-profile="gym">Gym</button>
+          </div>
+
+          <div class="hint" id="profileHint">
+            Active profile: <b>House</b>. Edit stairs below, then save to the active slot.
           </div>
 
           <div class="formGrid">
@@ -95,13 +105,14 @@
           </div>
 
           <div class="btnRow">
-            <button class="btn" id="btnLock">Lock as “Boz’s house”</button>
-            <button class="btn ghost" id="btnUnlock">Unlock</button>
+            <button class="btn primary" id="btnSaveSlot">Save to active slot</button>
+            <button class="btn ghost" id="btnLoadSlot">Load from active slot</button>
+            <button class="btn ghost" id="btnClearSlot">Clear slot</button>
           </div>
 
           <div class="btnRow">
-            <button class="btn primary" data-nav="session">Start a session</button>
-            <button class="btn ghost" data-nav="achievements">Achievements</button>
+            <button class="btn" id="btnLockSlot">Lock slot</button>
+            <button class="btn ghost" id="btnUnlockSlot">Unlock slot</button>
           </div>
 
           <div class="tinyRow">
@@ -113,7 +124,7 @@
         <div class="card">
           <div class="cardHd">
             <div>
-              <div class="cardTitle">Today’s snapshot</div>
+              <div class="cardTitle">Snapshot (active profile)</div>
               <div class="cardSub">Updates as you change settings</div>
             </div>
           </div>
@@ -122,18 +133,18 @@
       </section>
 
       <!-- SESSION -->
-      <section class="screen" id="screen-session" hidden>
+      <section class="screen" id="screen-session">
         <div class="card">
           <div class="cardHd">
             <div>
               <div class="cardTitle">Session</div>
-              <div class="cardSub">Tap each time you do a full flight</div>
+              <div class="cardSub">Tap each time you do a full flight (up + down)</div>
             </div>
-            <div class="badge soft" id="sessionDate"></div>
+            <div class="badge soft" id="sessionBadge">Using: House</div>
           </div>
 
           <div class="bigTapGrid">
-            <button class="btn tap" id="btnAddFlight">+1 Flight</button>
+            <button class="btn tap primary" id="btnAddFlight">+1 Flight</button>
             <button class="btn ghost tap" id="btnUndo">Undo</button>
           </div>
 
@@ -155,10 +166,6 @@
 
           <div class="btnRow">
             <button class="btn primary" id="btnFinish">Finish session</button>
-            <button class="btn ghost" data-nav="info">Back to setup</button>
-          </div>
-
-          <div class="tinyRow">
             <button class="btn ghost small" id="btnDownload">Download JSON</button>
             <button class="btn ghost small" id="btnCopy">Copy summary</button>
           </div>
@@ -178,7 +185,7 @@
       </section>
 
       <!-- ACHIEVEMENTS -->
-      <section class="screen" id="screen-achievements" hidden>
+      <section class="screen" id="screen-achievements">
         <div class="card">
           <div class="cardHd">
             <div>
@@ -189,21 +196,16 @@
           </div>
 
           <div class="achList" id="achList"></div>
-
-          <div class="btnRow">
-            <button class="btn primary" data-nav="session">Go to session</button>
-            <button class="btn ghost" data-nav="info">Back</button>
-          </div>
         </div>
       </section>
 
     </main>
 
-    <!-- Bottom Nav -->
+    <!-- Bottom Nav = scroll jumps -->
     <nav class="nav">
-      <button class="navBtn" data-nav="info" id="navInfo">Setup</button>
-      <button class="navBtn" data-nav="session" id="navSession">Session</button>
-      <button class="navBtn" data-nav="achievements" id="navAch">Achievements</button>
+      <button class="navBtn on" data-jump="#screen-info" id="navInfo">Setup</button>
+      <button class="navBtn" data-jump="#screen-session" id="navSession">Session</button>
+      <button class="navBtn" data-jump="#screen-achievements" id="navAch">Achievements</button>
     </nav>
 
   </div>
