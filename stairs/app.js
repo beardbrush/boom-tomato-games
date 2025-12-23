@@ -1,18 +1,30 @@
-/* Boz’s Stairs — PWA mini app
-   Screens: info / session / achievements
-   Saves to localStorage
+/* Stair Fitness — PWA mini app (single scroll)
+   - 3 stair profiles: house / work / gym
+   - Each profile can be locked/unlocked
+   - Session uses the active profile
+   - Saves to localStorage
 */
 
 (() => {
   const $ = (id) => document.getElementById(id);
 
   const STORE = {
-    lock: "boz_stairs_lock_v3",
-    cfg:  "boz_stairs_cfg_v3",
-    sess: "boz_stairs_sess_v3",
-    day:  "boz_stairs_day_v3",   // today’s flights
-    hist: "boz_stairs_hist_v3",  // array of sessions
-    undo: "boz_stairs_undo_v3"
+    active: "stairs_active_profile_v1",     // "house" | "work" | "gym"
+    profiles: "stairs_profiles_v1",         // { house:{stairsOneWay, stairRiseIn}, work:{...}, gym:{...} }
+    locks: "stairs_profile_locks_v1",       // { house:true/false, work:true/false, gym:true/false }
+    body: "stairs_body_v1",                 // shared: weight/height/pace
+    sess: "stairs_session_v1",              // current flights (live)
+    hist: "stairs_history_v1",              // finished sessions
+    undo: "stairs_undo_v1"
+  };
+
+  const DEFAULT_PROFILE = { stairsOneWay: 13, stairRiseIn: 7.0 };
+  const DEFAULT_BODY = {
+    weightSt: 13.4, weightLb: 0,
+    heightFt: 5, heightIn: 10,
+    intensity: "general",
+    stairsPerMin: 60,
+    viewMode: "ascent"
   };
 
   const METS = { slow: 4.0, general: 6.8, fast: 8.8 };
@@ -30,9 +42,9 @@
     { id:"ten_flights", name:"10 Flights", desc:"Total flights (all time) reaches 10.", rule: s => s.totalFlightsAll >= 10 },
     { id:"fifty_flights", name:"50 Flights", desc:"Total flights (all time) reaches 50.", rule: s => s.totalFlightsAll >= 50 },
     { id:"hundred_flights", name:"100 Flights", desc:"Total flights (all time) reaches 100.", rule: s => s.totalFlightsAll >= 100 },
-    { id:"pisa", name:"Pisa Height", desc:"Your ascent equals the Leaning Tower of Pisa.", rule: s => s.bestAscentFt >= 185.9 },
-    { id:"bigben", name:"Big Ben Height", desc:"Your ascent equals Big Ben.", rule: s => s.bestAscentFt >= 315.0 },
-    { id:"eiffel", name:"Eiffel Height", desc:"Your ascent equals the Eiffel Tower.", rule: s => s.bestAscentFt >= 1083.0 }
+    { id:"pisa", name:"Pisa Height", desc:"Your best ascent equals the Leaning Tower of Pisa.", rule: s => s.bestAscentFt >= 185.9 },
+    { id:"bigben", name:"Big Ben Height", desc:"Your best ascent equals Big Ben.", rule: s => s.bestAscentFt >= 315.0 },
+    { id:"eiffel", name:"Eiffel Height", desc:"Your best ascent equals the Eiffel Tower.", rule: s => s.bestAscentFt >= 1083.0 }
   ];
 
   // helpers
@@ -41,12 +53,91 @@
   const fmt0 = (n)=> isFinite(n) ? Math.round(n).toLocaleString() : "—";
   const getJSON = (k,d)=> { try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch{ return d } };
   const setJSON = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
-  const todayKey = () => new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const cap = s => s ? (s.charAt(0).toUpperCase() + s.slice(1)) : "";
 
   const stoneToLb = (st, lb)=> (st*14) + (lb||0);
   const lbToKg = (lb)=> lb * 0.45359237;
   const inchesToFt = (inch)=> inch/12;
   const ftToM = (ft)=> ft * 0.3048;
+
+  function ensureState(){
+    const active = localStorage.getItem(STORE.active) || "house";
+    localStorage.setItem(STORE.active, active);
+
+    const profiles = getJSON(STORE.profiles, null) || {
+      house: { ...DEFAULT_PROFILE },
+      work:  { ...DEFAULT_PROFILE },
+      gym:   { ...DEFAULT_PROFILE }
+    };
+    setJSON(STORE.profiles, profiles);
+
+    const locks = getJSON(STORE.locks, null) || { house:false, work:false, gym:false };
+    setJSON(STORE.locks, locks);
+
+    const body = getJSON(STORE.body, null) || { ...DEFAULT_BODY };
+    setJSON(STORE.body, body);
+
+    const sess = getJSON(STORE.sess, null) || { flights: 0, savedAt: new Date().toISOString() };
+    setJSON(STORE.sess, sess);
+
+    const hist = getJSON(STORE.hist, null) || [];
+    setJSON(STORE.hist, hist);
+
+    return { active, profiles, locks, body, sess, hist };
+  }
+
+  function activeProfileKey(){
+    return localStorage.getItem(STORE.active) || "house";
+  }
+
+  function loadStateIntoInputs(){
+    const p = activeProfileKey();
+    const profiles = getJSON(STORE.profiles, {});
+    const locks = getJSON(STORE.locks, {house:false,work:false,gym:false});
+    const body = getJSON(STORE.body, { ...DEFAULT_BODY });
+    const sess = getJSON(STORE.sess, { flights: 0 });
+
+    const cfg = profiles[p] || { ...DEFAULT_PROFILE };
+
+    $("stairsOneWay").value = cfg.stairsOneWay ?? DEFAULT_PROFILE.stairsOneWay;
+    $("stairRiseIn").value  = cfg.stairRiseIn ?? DEFAULT_PROFILE.stairRiseIn;
+
+    $("weightSt").value = body.weightSt ?? DEFAULT_BODY.weightSt;
+    $("weightLb").value = body.weightLb ?? DEFAULT_BODY.weightLb;
+    $("heightFt").value = body.heightFt ?? DEFAULT_BODY.heightFt;
+    $("heightIn").value = body.heightIn ?? DEFAULT_BODY.heightIn;
+    $("intensity").value = body.intensity ?? DEFAULT_BODY.intensity;
+    $("stairsPerMin").value = body.stairsPerMin ?? DEFAULT_BODY.stairsPerMin;
+    $("viewMode").value = body.viewMode ?? DEFAULT_BODY.viewMode;
+
+    $("flights").value = sess.flights ?? 0;
+
+    // apply lock state to stair fields
+    const locked = !!locks[p];
+    $("stairsOneWay").disabled = locked;
+    $("stairRiseIn").disabled  = locked;
+  }
+
+  function applyProfileUI(){
+    const p = activeProfileKey();
+    const locks = getJSON(STORE.locks, {house:false,work:false,gym:false});
+    const locked = !!locks[p];
+
+    $("activeBadge").textContent = `Active: ${cap(p)}${locked ? " (Locked)" : ""}`;
+    $("sessionBadge").textContent = `Using: ${cap(p)}${locked ? " (Locked)" : ""}`;
+
+    $("profileHint").innerHTML = locked
+      ? `Active profile: <b>${cap(p)}</b> is <b>locked</b>. Unlock to edit stairs.`
+      : `Active profile: <b>${cap(p)}</b>. Edit stairs + stair height, then save to the active slot.`;
+
+    ["house","work","gym"].forEach(k=>{
+      const chip = $(`chip-${k}`);
+      if (!chip) return;
+      chip.classList.toggle("on", k === p);
+      chip.classList.toggle("locked", !!locks[k]);
+      chip.title = locks[k] ? `${cap(k)} (locked)` : cap(k);
+    });
+  }
 
   function readInputs(){
     const stairsOneWay = clamp(Number($("stairsOneWay").value||0), 1, 500);
@@ -66,7 +157,16 @@
     const flights = clamp(Number($("flights").value||0), 0, 100000);
     const viewMode = $("viewMode").value;
 
-    return { stairsOneWay, stairRiseIn, weightSt, weightLb, heightFt, heightIn, intensityKey, met, stairsPerMin, flights, viewMode };
+    return {
+      profileKey: activeProfileKey(),
+      stairsOneWay, stairRiseIn,
+      weightSt, weightLb,
+      heightFt, heightIn,
+      intensityKey, met,
+      stairsPerMin,
+      flights,
+      viewMode
+    };
   }
 
   function compute(){
@@ -86,68 +186,29 @@
     const kg = lbToKg(totalLb);
 
     const kcal = d.met * kg * hours;
-
     const ascentPerFlightFt = d.stairsOneWay * riseFt;
 
     return { ...d, riseFt, totalSteps, ascentSteps, ascentFt, travelFt, minutes, hours, totalLb, kg, kcal, ascentPerFlightFt };
   }
 
-  function refreshLock(){
-    const locked = localStorage.getItem(STORE.lock) === "1";
-    const badge = $("lockBadge");
-    badge.textContent = locked ? "Locked" : "Not locked";
-    badge.style.background = locked ? "rgba(34,197,94,.14)" : "rgba(127,255,224,.12)";
-    badge.style.borderColor = locked ? "rgba(34,197,94,.28)" : "rgba(127,255,224,.18)";
-
-    $("stairsOneWay").disabled = locked;
-    $("stairRiseIn").disabled = locked;
-  }
-
-  function saveAll(){
-    const r = compute();
-    setJSON(STORE.cfg, { stairsOneWay:r.stairsOneWay, stairRiseIn:r.stairRiseIn });
-
-    setJSON(STORE.sess, {
-      weightSt:r.weightSt, weightLb:r.weightLb,
-      heightFt:r.heightFt, heightIn:r.heightIn,
-      intensity:r.intensityKey,
-      stairsPerMin:r.stairsPerMin,
-      viewMode:r.viewMode,
-      savedAt:new Date().toISOString()
+  function saveBody(){
+    const d = readInputs();
+    setJSON(STORE.body, {
+      weightSt:d.weightSt, weightLb:d.weightLb,
+      heightFt:d.heightFt, heightIn:d.heightIn,
+      intensity:d.intensityKey,
+      stairsPerMin:d.stairsPerMin,
+      viewMode:d.viewMode
     });
-
-    $("lastSaved").textContent = `Saved: ${new Date().toLocaleTimeString()}`;
   }
 
-  function loadAll(){
-    const cfg = getJSON(STORE.cfg, null);
-    if (cfg){
-      $("stairsOneWay").value = cfg.stairsOneWay ?? $("stairsOneWay").value;
-      $("stairRiseIn").value  = cfg.stairRiseIn ?? $("stairRiseIn").value;
-    }
-    const sess = getJSON(STORE.sess, null);
-    if (sess){
-      $("weightSt").value = sess.weightSt ?? $("weightSt").value;
-      $("weightLb").value = sess.weightLb ?? $("weightLb").value;
-      $("heightFt").value = sess.heightFt ?? $("heightFt").value;
-      $("heightIn").value = sess.heightIn ?? $("heightIn").value;
-      $("intensity").value = sess.intensity ?? $("intensity").value;
-      $("stairsPerMin").value = sess.stairsPerMin ?? $("stairsPerMin").value;
-      $("viewMode").value = sess.viewMode ?? $("viewMode").value;
-    }
+  function saveSessionFlights(){
+    const flights = clamp(Number($("flights").value||0), 0, 100000);
+    setJSON(STORE.sess, { flights, savedAt: new Date().toISOString() });
+  }
 
-    // today’s flight counter (so you can keep tapping during day)
-    const day = getJSON(STORE.day, { key: todayKey(), flights: 0 });
-    if (day.key !== todayKey()){
-      setJSON(STORE.day, { key: todayKey(), flights: 0 });
-      $("flights").value = 0;
-    } else {
-      $("flights").value = day.flights || 0;
-    }
-
-    $("sessionDate").textContent = new Date().toLocaleDateString();
-    refreshLock();
-    renderAll();
+  function stampSaved(){
+    $("lastSaved").textContent = `Saved: ${new Date().toLocaleTimeString()}`;
   }
 
   function renderKpis(targetId){
@@ -164,6 +225,11 @@
     })();
 
     $(targetId).innerHTML = `
+      <div class="kpi">
+        <div class="t">Active stairs</div>
+        <div class="v">${cap(r.profileKey)}</div>
+        <div class="s">${fmt0(r.stairsOneWay)} stairs • ${fmt(r.stairRiseIn,1)} in rise</div>
+      </div>
       <div class="kpi">
         <div class="t">Flights</div>
         <div class="v">${fmt0(r.flights)}</div>
@@ -188,11 +254,6 @@
         <div class="t">Time</div>
         <div class="v">${timeStr}</div>
         <div class="s">Estimated</div>
-      </div>
-      <div class="kpi">
-        <div class="t">Ascent per flight</div>
-        <div class="v">${fmt(r.ascentPerFlightFt,2)} ft</div>
-        <div class="s">${fmt(r.stairsOneWay,0)} stairs up</div>
       </div>
     `;
   }
@@ -239,7 +300,6 @@
       bestAscentFt = Math.max(bestAscentFt, s.ascentFt || 0);
     }
 
-    // include current (today) as a “live” best
     const r = compute();
     bestAscentFt = Math.max(bestAscentFt, r.ascentFt);
 
@@ -249,6 +309,7 @@
   function renderAchievements(){
     const st = statsAllTime();
     let done = 0;
+
     const list = ACH.map(a => {
       const ok = !!a.rule(st);
       if (ok) done++;
@@ -268,85 +329,110 @@
   }
 
   function renderAll(){
+    ensureState();
+    applyProfileUI();
+
     const r = compute();
-    $("subtitle").textContent = `Rise: ${fmt(r.stairRiseIn,1)} in • ${fmt0(r.stairsOneWay)} stairs`;
+    $("subtitle").textContent = `Active: ${cap(r.profileKey)} • Rise: ${fmt(r.stairRiseIn,1)} in • ${fmt0(r.stairsOneWay)} stairs`;
 
     renderKpis("kpisInfo");
     renderKpis("kpisSession");
     renderLandmarks();
     renderAchievements();
 
-    // autosave config/session inputs
-    saveAll();
+    saveBody();
+    saveSessionFlights();
+    stampSaved();
   }
 
-  // Navigation (simple)
-  const screens = {
-    info: $("screen-info"),
-    session: $("screen-session"),
-    achievements: $("screen-achievements")
-  };
-
-  function nav(to){
-    for (const k of Object.keys(screens)){
-      screens[k].hidden = (k !== to);
-      const btn = document.querySelector(`[data-nav="${k}"]`);
-      if (btn) btn.classList.toggle("on", k === to);
-    }
-    // bottom nav highlights
-    $("navInfo").classList.toggle("on", to==="info");
-    $("navSession").classList.toggle("on", to==="session");
-    $("navAch").classList.toggle("on", to==="achievements");
-  }
-
-  document.querySelectorAll("[data-nav]").forEach(b=>{
-    b.addEventListener("click", ()=> nav(b.getAttribute("data-nav")));
-  });
-
-  // Lock / unlock
-  $("btnLock").addEventListener("click", () => {
-    localStorage.setItem(STORE.lock, "1");
-    refreshLock();
+  // --- profile actions
+  function setActiveProfile(p){
+    localStorage.setItem(STORE.active, p);
+    loadStateIntoInputs();
     renderAll();
-  });
-  $("btnUnlock").addEventListener("click", () => {
-    localStorage.setItem(STORE.lock, "0");
-    refreshLock();
-  });
+  }
 
-  // Tap flights
-  $("btnAddFlight").addEventListener("click", () => {
+  function saveToSlot(){
+    const p = activeProfileKey();
+    const locks = getJSON(STORE.locks, {house:false,work:false,gym:false});
+    if (locks[p]){
+      alert(`${cap(p)} is locked. Unlock it to save changes.`);
+      return;
+    }
+
+    const profiles = getJSON(STORE.profiles, {house:{},work:{},gym:{}});
+    profiles[p] = {
+      stairsOneWay: clamp(Number($("stairsOneWay").value||0), 1, 500),
+      stairRiseIn:  clamp(Number($("stairRiseIn").value||0), 4, 10)
+    };
+    setJSON(STORE.profiles, profiles);
+    renderAll();
+  }
+
+  function loadFromSlot(){
+    const p = activeProfileKey();
+    const profiles = getJSON(STORE.profiles, {house:{},work:{},gym:{}});
+    const cfg = profiles[p];
+
+    if (!cfg || cfg.stairsOneWay == null){
+      alert(`No saved stairs in ${cap(p)} yet. Enter stairs and tap “Save to active slot”.`);
+      return;
+    }
+
+    $("stairsOneWay").value = cfg.stairsOneWay;
+    $("stairRiseIn").value  = cfg.stairRiseIn;
+    renderAll();
+  }
+
+  function clearSlot(){
+    const p = activeProfileKey();
+    const locks = getJSON(STORE.locks, {house:false,work:false,gym:false});
+    if (locks[p]){
+      alert(`${cap(p)} is locked. Unlock it to clear.`);
+      return;
+    }
+    if (!confirm(`Clear saved stairs for ${cap(p)}?`)) return;
+
+    const profiles = getJSON(STORE.profiles, {house:{},work:{},gym:{}});
+    profiles[p] = { ...DEFAULT_PROFILE };
+    setJSON(STORE.profiles, profiles);
+
+    $("stairsOneWay").value = DEFAULT_PROFILE.stairsOneWay;
+    $("stairRiseIn").value  = DEFAULT_PROFILE.stairRiseIn;
+    renderAll();
+  }
+
+  function lockSlot(on){
+    const p = activeProfileKey();
+    const locks = getJSON(STORE.locks, {house:false,work:false,gym:false});
+    locks[p] = !!on;
+    setJSON(STORE.locks, locks);
+    loadStateIntoInputs();
+    renderAll();
+  }
+
+  // --- flights
+  function addFlight(){
     const prev = clamp(Number($("flights").value||0), 0, 100000);
     localStorage.setItem(STORE.undo, String(prev));
     $("flights").value = prev + 1;
-
-    // save today counter
-    setJSON(STORE.day, { key: todayKey(), flights: Number($("flights").value) });
-
     renderAll();
-  });
+  }
 
-  $("btnUndo").addEventListener("click", () => {
+  function undoFlight(){
     const prev = localStorage.getItem(STORE.undo);
     if (prev === null) return;
     $("flights").value = clamp(Number(prev||0), 0, 100000);
     localStorage.removeItem(STORE.undo);
-    setJSON(STORE.day, { key: todayKey(), flights: Number($("flights").value) });
     renderAll();
-  });
+  }
 
-  // Manual edit flights
-  $("flights").addEventListener("input", () => {
-    setJSON(STORE.day, { key: todayKey(), flights: clamp(Number($("flights").value||0),0,100000) });
-    renderAll();
-  });
-
-  // Finish session -> push into history, reset today flights
-  $("btnFinish").addEventListener("click", () => {
+  function finishSession(){
     const r = compute();
     const hist = getJSON(STORE.hist, []);
     hist.unshift({
       at: new Date().toISOString(),
+      profile: r.profileKey,
       flights: r.flights,
       ascentFt: r.ascentFt,
       travelFt: r.travelFt,
@@ -356,21 +442,21 @@
       pace: r.intensityKey,
       stairsPerMin: r.stairsPerMin
     });
-    setJSON(STORE.hist, hist.slice(0, 200)); // keep it light
+    setJSON(STORE.hist, hist.slice(0, 200));
 
-    // reset today's flights
     $("flights").value = 0;
-    setJSON(STORE.day, { key: todayKey(), flights: 0 });
-    renderAll();
-    nav("achievements");
-  });
+    setJSON(STORE.sess, { flights: 0, savedAt: new Date().toISOString() });
 
-  // Download JSON (current session)
-  $("btnDownload").addEventListener("click", () => {
+    renderAll();
+    document.querySelector("#screen-achievements").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  function downloadJSON(){
     const r = compute();
     const payload = {
-      app: "Boz’s Stairs",
+      app: "Stair Fitness",
       generatedAt: new Date().toISOString(),
+      activeProfile: r.profileKey,
       stairs: { oneWay: r.stairsOneWay, riseIn: r.stairRiseIn },
       body: {
         weight: { st: r.weightSt, lb: r.weightLb, totalLb: r.totalLb, kg: r.kg },
@@ -387,28 +473,30 @@
         stairsPerMin: r.stairsPerMin
       }
     };
+
     const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "boz-stairs-session.json";
+    a.download = "stairs-session.json";
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  });
+  }
 
-  // Copy summary
-  $("btnCopy").addEventListener("click", async () => {
+  async function copySummary(){
     const r = compute();
     const txt =
-`Boz’s Stairs
+`Stair Fitness
+Active: ${cap(r.profileKey)}
 Flights: ${Math.round(r.flights)}
 Stairs moved: ${Math.round(r.totalSteps)}
 Ascent: ${r.ascentFt.toFixed(1)} ft
 Travel: ${r.travelFt.toFixed(1)} ft
 Time: ${r.minutes.toFixed(0)} min
 Calories (est): ${r.kcal.toFixed(0)} kcal`;
+
     try{
       await navigator.clipboard.writeText(txt);
       $("btnCopy").textContent = "Copied ✓";
@@ -416,45 +504,60 @@ Calories (est): ${r.kcal.toFixed(0)} kcal`;
     }catch{
       alert(txt);
     }
-  });
+  }
 
-  // Reset all
-  $("btnResetAll").addEventListener("click", () => {
-    if (!confirm("Reset everything (lock, sessions, achievements progress)?")) return;
+  function resetAll(){
+    if (!confirm("Reset everything (profiles, locks, sessions, achievements progress)?")) return;
     Object.values(STORE).forEach(k => localStorage.removeItem(k));
-    // default values
-    $("stairsOneWay").value = 13;
-    $("stairRiseIn").value = 7.0;
-    $("weightSt").value = 13.4;
-    $("weightLb").value = 0;
-    $("heightFt").value = 5;
-    $("heightIn").value = 10;
-    $("intensity").value = "general";
-    $("stairsPerMin").value = 60;
-    $("flights").value = 0;
-    $("viewMode").value = "ascent";
-    refreshLock();
     renderAll();
-    nav("info");
-  });
+    document.querySelector("#screen-info").scrollIntoView({behavior:"smooth", block:"start"});
+  }
 
-  // Input listeners
-  [
-    "stairsOneWay","stairRiseIn","weightSt","weightLb","heightFt","heightIn",
-    "intensity","stairsPerMin","viewMode"
-  ].forEach(id=>{
-    $(id).addEventListener("input", renderAll);
-    $(id).addEventListener("change", renderAll);
-  });
+  // bottom nav scroll-jumps + active highlight
+  function setupScrollNav(){
+    const navButtons = [
+      { id:"navInfo", sel:"#screen-info" },
+      { id:"navSession", sel:"#screen-session" },
+      { id:"navAch", sel:"#screen-achievements" }
+    ];
 
-  // --- PWA install prompt
+    navButtons.forEach(n=>{
+      const b = $(n.id);
+      if (!b) return;
+      b.addEventListener("click", () => {
+        document.querySelector(n.sel)?.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+
+    const observer = new IntersectionObserver((entries)=>{
+      let best = null;
+      for (const e of entries){
+        if (e.isIntersecting){
+          if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+        }
+      }
+      if (!best) return;
+
+      const id = best.target.id;
+      $("navInfo")?.classList.toggle("on", id === "screen-info");
+      $("navSession")?.classList.toggle("on", id === "screen-session");
+      $("navAch")?.classList.toggle("on", id === "screen-achievements");
+    }, { threshold: [0.2, 0.35, 0.5, 0.65] });
+
+    ["screen-info","screen-session","screen-achievements"].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  }
+
+  // PWA install prompt
   let deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
     $("btnInstall").hidden = false;
   });
-  $("btnInstall").addEventListener("click", async () => {
+  $("btnInstall")?.addEventListener("click", async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
@@ -462,12 +565,53 @@ Calories (est): ${r.kcal.toFixed(0)} kcal`;
     $("btnInstall").hidden = true;
   });
 
-  // --- Service worker
+  // Service worker
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
   }
 
+  function bind(){
+    // profile chips
+    document.querySelectorAll(".chip[data-profile]").forEach(chip=>{
+      chip.addEventListener("click", () => {
+        const p = chip.getAttribute("data-profile");
+        setActiveProfile(p);
+      });
+    });
+
+    $("btnSaveSlot").addEventListener("click", saveToSlot);
+    $("btnLoadSlot").addEventListener("click", loadFromSlot);
+    $("btnClearSlot").addEventListener("click", clearSlot);
+
+    $("btnLockSlot").addEventListener("click", () => lockSlot(true));
+    $("btnUnlockSlot").addEventListener("click", () => lockSlot(false));
+
+    $("btnAddFlight").addEventListener("click", addFlight);
+    $("btnUndo").addEventListener("click", undoFlight);
+
+    $("btnFinish").addEventListener("click", finishSession);
+    $("btnDownload").addEventListener("click", downloadJSON);
+    $("btnCopy").addEventListener("click", copySummary);
+
+    $("btnResetAll").addEventListener("click", resetAll);
+
+    // rerender on input changes
+    [
+      "stairsOneWay","stairRiseIn",
+      "weightSt","weightLb","heightFt","heightIn",
+      "intensity","stairsPerMin","viewMode",
+      "flights"
+    ].forEach(id=>{
+      $(id).addEventListener("input", renderAll);
+      $(id).addEventListener("change", renderAll);
+    });
+
+    setupScrollNav();
+  }
+
   // init
-  loadAll();
-  nav("info");
+  ensureState();
+  bind();
+  loadStateIntoInputs();
+  renderAll();
 })();
