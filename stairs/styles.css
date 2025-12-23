@@ -255,3 +255,29 @@ body{
   border:1px solid rgba(127,255,224,.20);
   background: rgba(127,255,224,.10);
 }
+
+/* --- Profile chips (House/Work/Gym) --- */
+.profileBar{
+  display:flex;
+  gap:10px;
+  padding: 12px 14px 0;
+  flex-wrap:wrap;
+}
+.chip{
+  border-radius:999px;
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  font-weight:900;
+  cursor:pointer;
+}
+.chip.on{
+  color: var(--txt);
+  border:1px solid rgba(127,255,224,.22);
+  background: rgba(127,255,224,.10);
+}
+.chip.locked::after{
+  content:"  🔒";
+  opacity:.85;
+}
