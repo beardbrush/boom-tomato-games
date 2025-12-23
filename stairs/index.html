@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" data-theme="fit">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b1220"/>
+  <title>Boz’s Stairs — Fitness</title>
+
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">⬆︎</div>
+        <div>
+          <div class="title">Boz’s Stairs</div>
+          <div class="subtitle" id="subtitle">Fitness tracker</div>
+        </div>
+      </div>
+
+      <button class="iconBtn" id="btnInstall" title="Install app" aria-label="Install app" hidden>
+        ⤓
+      </button>
+    </header>
+
+    <!-- Screens -->
+    <main class="screenWrap">
+
+      <!-- INFO -->
+      <section class="screen" id="screen-info">
+        <div class="card">
+          <div class="cardHd">
+            <div>
+              <div class="cardTitle">Set up your house</div>
+              <div class="cardSub">Imperial inputs • Lock once as “Boz’s house”</div>
+            </div>
+            <div class="badge" id="lockBadge">Not locked</div>
+          </div>
+
+          <div class="formGrid">
+            <div class="field">
+              <label>Stairs (one way)</label>
+              <input id="stairsOneWay" type="number" min="1" step="1" value="13"/>
+            </div>
+
+            <div class="field">
+              <label>Stair height (inches)</label>
+              <input id="stairRiseIn" type="number" min="4" max="10" step="0.1" value="7.0"/>
+            </div>
+
+            <div class="field">
+              <label>Weight (stone)</label>
+              <input id="weightSt" type="number" min="5" max="40" step="0.1" value="13.4"/>
+            </div>
+
+            <div class="field">
+              <label>+ pounds (optional)</label>
+              <input id="weightLb" type="number" min="0" max="13" step="1" value="0"/>
+            </div>
+
+            <div class="field">
+              <label>Height (feet)</label>
+              <input id="heightFt" type="number" min="3" max="7" step="1" value="5"/>
+            </div>
+
+            <div class="field">
+              <label>+ inches</label>
+              <input id="heightIn" type="number" min="0" max="11" step="1" value="10"/>
+            </div>
+
+            <div class="field">
+              <label>Pace</label>
+              <select id="intensity">
+                <option value="slow">Easy</option>
+                <option value="general" selected>Moderate</option>
+                <option value="fast">Hard</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Stairs / minute</label>
+              <input id="stairsPerMin" type="number" min="10" max="200" step="1" value="60"/>
+            </div>
+          </div>
+
+          <div class="hint">
+            A “flight” = <b>up + down</b>. Tap once each time you do it.
+          </div>
+
+          <div class="btnRow">
+            <button class="btn" id="btnLock">Lock as “Boz’s house”</button>
+            <button class="btn ghost" id="btnUnlock">Unlock</button>
+          </div>
+
+          <div class="btnRow">
+            <button class="btn primary" data-nav="session">Start a session</button>
+            <button class="btn ghost" data-nav="achievements">Achievements</button>
+          </div>
+
+          <div class="tinyRow">
+            <button class="linkDanger" id="btnResetAll">Reset all data</button>
+            <span class="tiny" id="lastSaved"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardHd">
+            <div>
+              <div class="cardTitle">Today’s snapshot</div>
+              <div class="cardSub">Updates as you change settings</div>
+            </div>
+          </div>
+          <div class="kpiGrid" id="kpisInfo"></div>
+        </div>
+      </section>
+
+      <!-- SESSION -->
+      <section class="screen" id="screen-session" hidden>
+        <div class="card">
+          <div class="cardHd">
+            <div>
+              <div class="cardTitle">Session</div>
+              <div class="cardSub">Tap each time you do a full flight</div>
+            </div>
+            <div class="badge soft" id="sessionDate"></div>
+          </div>
+
+          <div class="bigTapGrid">
+            <button class="btn tap" id="btnAddFlight">+1 Flight</button>
+            <button class="btn ghost tap" id="btnUndo">Undo</button>
+          </div>
+
+          <div class="formGrid compact">
+            <div class="field">
+              <label>Flights (up + down)</label>
+              <input id="flights" type="number" min="0" step="1" value="0"/>
+            </div>
+            <div class="field">
+              <label>Show height as</label>
+              <select id="viewMode">
+                <option value="ascent" selected>Ascent (up)</option>
+                <option value="travel">Travel (up+down)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpiGrid" id="kpisSession"></div>
+
+          <div class="btnRow">
+            <button class="btn primary" id="btnFinish">Finish session</button>
+            <button class="btn ghost" data-nav="info">Back to setup</button>
+          </div>
+
+          <div class="tinyRow">
+            <button class="btn ghost small" id="btnDownload">Download JSON</button>
+            <button class="btn ghost small" id="btnCopy">Copy summary</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardHd">
+            <div>
+              <div class="cardTitle">Landmarks</div>
+              <div class="cardSub">Compared to your ascent height</div>
+            </div>
+          </div>
+          <div class="tableWrap">
+            <table class="table" id="landmarks"></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACHIEVEMENTS -->
+      <section class="screen" id="screen-achievements" hidden>
+        <div class="card">
+          <div class="cardHd">
+            <div>
+              <div class="cardTitle">Achievements</div>
+              <div class="cardSub">Earned automatically as you climb</div>
+            </div>
+            <div class="badge soft" id="achCount"></div>
+          </div>
+
+          <div class="achList" id="achList"></div>
+
+          <div class="btnRow">
+            <button class="btn primary" data-nav="session">Go to session</button>
+            <button class="btn ghost" data-nav="info">Back</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="nav">
+      <button class="navBtn" data-nav="info" id="navInfo">Setup</button>
+      <button class="navBtn" data-nav="session" id="navSession">Session</button>
+      <button class="navBtn" data-nav="achievements" id="navAch">Achievements</button>
+    </nav>
+
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
