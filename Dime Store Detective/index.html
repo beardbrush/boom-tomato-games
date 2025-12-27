@@ -102,6 +102,7 @@
     left:40px;
     display:flex;
     gap:8px;
+    align-items:center;
   }
   .small-btn{
     padding:6px 10px;
@@ -119,6 +120,39 @@
   .small-btn:hover{
     opacity:1;
     background:#111827;
+  }
+
+  /* Music controls */
+  #musicToggle{
+    font-size:.9rem;
+    padding:6px 10px;
+  }
+  #musicVolume{
+    -webkit-appearance:none;
+    appearance:none;
+    width:90px;
+    height:4px;
+    border-radius:999px;
+    background:rgba(31,41,55,.8);
+    outline:none;
+    cursor:pointer;
+  }
+  #musicVolume::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 0 2px #020617;
+  }
+  #musicVolume::-moz-range-thumb{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#22c55e;
+    border:none;
+    box-shadow:0 0 0 2px #020617;
   }
 
   /* Question list */
@@ -290,6 +324,8 @@
   <div id="topLeftButtons">
     <button class="small-btn" id="briefBtn">Brief</button>
     <button class="small-btn" id="copBtn">Ask Wren</button>
+    <button class="small-btn" id="musicToggle">♫</button>
+    <input type="range" id="musicVolume" min="0" max="1" step="0.05">
   </div>
 
   <!-- suspect tabs + accuse + next-case in one bar -->
@@ -331,6 +367,76 @@
 </div>
 
 <script>
+/* ================== BACKGROUND MUSIC ================== */
+const MUSIC_VOL_KEY = "dime_music_volume";
+const MUSIC_MUTE_KEY = "dime_music_muted";
+
+const bgMusic = new Audio("2021-09-06_-_Solving_The_Crime_-_David_Fesliyan.mp3");
+bgMusic.loop = true;
+
+const musicToggle = document.getElementById("musicToggle");
+const musicVolume = document.getElementById("musicVolume");
+
+let musicInitialised = false;
+
+function loadMusicSettings(){
+  const savedVol = parseFloat(localStorage.getItem(MUSIC_VOL_KEY));
+  if (!isNaN(savedVol)){
+    bgMusic.volume = savedVol;
+    musicVolume.value = savedVol;
+  } else {
+    bgMusic.volume = 0.5;
+    musicVolume.value = 0.5;
+  }
+
+  const savedMuted = localStorage.getItem(MUSIC_MUTE_KEY);
+  if (savedMuted === "true"){
+    bgMusic.muted = true;
+  } else {
+    bgMusic.muted = false;
+  }
+  updateMusicToggleIcon();
+}
+
+function initMusicPlayback(){
+  if (musicInitialised) return;
+  musicInitialised = true;
+  loadMusicSettings();
+  bgMusic.play().catch(()=> {
+    // autoplay might be blocked; will be retried on next interaction
+  });
+}
+
+function updateMusicToggleIcon(){
+  if (bgMusic.muted || bgMusic.volume === 0){
+    musicToggle.textContent = "♫✕";
+  } else {
+    musicToggle.textContent = "♫";
+  }
+}
+
+musicToggle.addEventListener("click", ()=>{
+  initMusicPlayback();
+  bgMusic.muted = !bgMusic.muted;
+  localStorage.setItem(MUSIC_MUTE_KEY, bgMusic.muted ? "true" : "false");
+  updateMusicToggleIcon();
+});
+
+musicVolume.addEventListener("input", ()=>{
+  initMusicPlayback();
+  const v = parseFloat(musicVolume.value);
+  bgMusic.volume = v;
+  localStorage.setItem(MUSIC_VOL_KEY, String(v));
+  if (v > 0 && bgMusic.muted){
+    bgMusic.muted = false;
+    localStorage.setItem(MUSIC_MUTE_KEY, "false");
+  }
+  updateMusicToggleIcon();
+});
+
+/* also initialise music on first click anywhere */
+document.addEventListener("click", ()=>initMusicPlayback(), { once:true });
+
 /* ================== DETECTIVE SPRITE ================== */
 const detImg = new Image();
 detImg.src = "sprites/detective/Detectiveinterrogationsprite.png";
