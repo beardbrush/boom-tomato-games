@@ -314,6 +314,52 @@
     font-size:.8rem;
     cursor:pointer;
   }
+
+  /* Summary / achievements overlay */
+  #summaryOverlay{
+    position:absolute;
+    inset:0;
+    background:rgba(15,23,42,.9);
+    display:none;
+    justify-content:center;
+    align-items:center;
+  }
+  #summaryOverlay.active{
+    display:flex;
+  }
+  .summary-panel{
+    width:520px;
+    max-width:90%;
+    padding:22px 24px;
+    background:rgba(15,23,42,.98);
+    border-radius:20px;
+    border:1px solid rgba(148,163,184,.9);
+    box-shadow:0 30px 120px rgba(0,0,0,.95);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .summary-title{
+    font-size:.9rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(148,163,184,.9);
+  }
+  .summary-body p{
+    margin-bottom:4px;
+    font-size:.95rem;
+  }
+  .summary-body hr{
+    border:none;
+    border-top:1px solid rgba(51,65,85,.9);
+    margin:8px 0;
+  }
+  .summary-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:6px;
+  }
 </style>
 </head>
 <body>
@@ -361,6 +407,17 @@
       <div class="accuse-row" id="accuseChoices"></div>
       <div class="accuse-footer">
         <button class="ghost-btn" id="cancelAccuse">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary / achievements overlay -->
+  <div id="summaryOverlay">
+    <div class="summary-panel">
+      <div class="summary-title">CASE RUN SUMMARY</div>
+      <div class="summary-body" id="summaryBody"></div>
+      <div class="summary-footer">
+        <button class="small-btn" id="restartRunBtn">Restart Cases</button>
       </div>
     </div>
   </div>
@@ -708,6 +765,9 @@ const nextCaseBtn = document.getElementById("nextCaseBtn");
 const accuseOverlay = document.getElementById("accuseOverlay");
 const accuseChoices = document.getElementById("accuseChoices");
 const cancelAccuse = document.getElementById("cancelAccuse");
+const summaryOverlay = document.getElementById("summaryOverlay");
+const summaryBody = document.getElementById("summaryBody");
+const restartRunBtn = document.getElementById("restartRunBtn");
 
 let suspectTabs = [];
 let typingTimer = null;
@@ -755,6 +815,34 @@ let currentFailureEnding = DEFAULT_CASE.failureEnding;
 let currentCaseIndex = 1;
 const MAX_CASES = 10;
 
+/* ====== RUN STATS ====== */
+let stats = {
+  correct: 0,
+  wrong: 0,
+  totalCases: 0,
+  totalQuestionsAsked: 0,
+  totalQuestionsAvailable: 0,
+  thoroughCases: 0,
+  rushedCases: 0
+};
+let currentCaseQuestionsAsked = 0;
+let currentCaseQuestionsAvailable = 0;
+
+function resetStats(){
+  stats = {
+    correct: 0,
+    wrong: 0,
+    totalCases: 0,
+    totalQuestionsAsked: 0,
+    totalQuestionsAvailable: 0,
+    thoroughCases: 0,
+    rushedCases: 0
+  };
+  currentCaseQuestionsAsked = 0;
+  currentCaseQuestionsAvailable = 0;
+}
+
+/* simple templating for endings */
 function formatEnding(template, { culprit, accused }){
   if (!template) return "";
   return template
@@ -860,6 +948,11 @@ questionButtons.forEach(btn=>{
 
     btn.disabled = true;
     btn.classList.add("used");
+
+    // stats
+    stats.totalQuestionsAsked++;
+    currentCaseQuestionsAsked++;
+
     playAnswer(index);
   });
 });
@@ -1009,24 +1102,86 @@ function resolveAccusation(key){
   const accused = suspects[key];
   const culprit = suspects[culpritKey];
 
-  if (key === culpritKey){
+  stats.totalCases++;
+  const correct = (key === culpritKey);
+  if (correct){
+    stats.correct++;
     speakerLabel.textContent = "CASE CLOSED";
     const templ = currentSuccessEnding || DEFAULT_CASE.successEnding;
     answerEl.textContent = formatEnding(templ, { culprit, accused });
   } else {
+    stats.wrong++;
     speakerLabel.textContent = "CASE PARTIALLY SOLVED";
     const templ = currentFailureEnding || DEFAULT_CASE.failureEnding;
     answerEl.textContent = formatEnding(templ, { culprit, accused });
   }
+
+  // mark thorough vs rushed for this case
+  const denom = currentCaseQuestionsAvailable || 1;
+  const ratio = currentCaseQuestionsAsked / denom;
+  if (ratio >= 0.8){
+    stats.thoroughCases++;
+  } else {
+    stats.rushedCases++;
+  }
 }
+
+/* ====== Summary overlay ====== */
+
+function openSummaryOverlay(){
+  const {
+    correct,
+    wrong,
+    totalCases,
+    totalQuestionsAsked,
+    totalQuestionsAvailable,
+    thoroughCases,
+    rushedCases
+  } = stats;
+
+  const ratio = totalQuestionsAvailable
+    ? Math.round((totalQuestionsAsked / totalQuestionsAvailable) * 100)
+    : 0;
+
+  let styleLine;
+  if (ratio >= 90){
+    styleLine = "You squeezed every clue you could. Slow, methodical, relentless.";
+  } else if (ratio >= 60){
+    styleLine = "You balanced instinct with patience — not every stone turned, but enough to see the pattern.";
+  } else {
+    styleLine = "You worked fast, sometimes too fast. Plenty of clues never made it off the page.";
+  }
+
+  summaryBody.innerHTML = `
+    <p>Cases completed: <strong>${totalCases}</strong></p>
+    <p>Correct accusations: <strong>${correct}</strong></p>
+    <p>Wrong accusations: <strong>${wrong}</strong></p>
+    <p>Questions asked: <strong>${totalQuestionsAsked}</strong> / ${totalQuestionsAvailable}</p>
+    <p>Thorough cases (most clues used): <strong>${thoroughCases}</strong></p>
+    <p>Rushed cases: <strong>${rushedCases}</strong></p>
+    <hr>
+    <p>${styleLine}</p>
+  `;
+
+  summaryOverlay.classList.add("active");
+}
+
+restartRunBtn.addEventListener("click", ()=>{
+  summaryOverlay.classList.remove("active");
+  resetStats();
+  currentCaseIndex = 1;
+  loadCase(currentCaseIndex);
+});
 
 /* ====== Next case & loader ====== */
 
 nextCaseBtn.addEventListener("click", ()=>{
-  currentCaseIndex++;
-  if (currentCaseIndex > MAX_CASES){
-    currentCaseIndex = 1;
+  // after finishing case 10, show summary instead of looping
+  if (currentCaseIndex >= MAX_CASES){
+    openSummaryOverlay();
+    return;
   }
+  currentCaseIndex++;
   loadCase(currentCaseIndex);
 });
 
@@ -1088,7 +1243,13 @@ async function loadCase(index){
     speakerLabel.textContent = `CASE ${data.id || index}`;
     answerEl.textContent = data.title || "New case loaded. Choose a suspect.";
 
+    // stats: questions available for this case
+    currentCaseQuestionsAsked = 0;
+    currentCaseQuestionsAvailable = activeSuspects.length * questionButtons.length;
+    stats.totalQuestionsAvailable += currentCaseQuestionsAvailable;
+
   }catch(err){
+    // fallback to default
     culpritKey = DEFAULT_CASE.culprit;
     currentBrief = DEFAULT_CASE.brief;
     currentWrenHint = DEFAULT_CASE.wrenHint;
@@ -1103,10 +1264,15 @@ async function loadCase(index){
     speakerLabel.textContent = "CASE LOADER";
     answerEl.textContent =
       `Couldn't load ${path}.\n\nUsing built-in default case instead.`;
+
+    currentCaseQuestionsAsked = 0;
+    currentCaseQuestionsAvailable = activeSuspects.length * questionButtons.length;
+    stats.totalQuestionsAvailable += currentCaseQuestionsAvailable;
   }
 }
 
 /* init */
+resetStats();
 activeSuspects = DEFAULT_CASE.suspects.slice();
 renderSuspectTabs();
 setCurrentSuspect("lawson");
@@ -1114,3 +1280,4 @@ loadCase(currentCaseIndex);
 </script>
 </body>
 </html>
+
