@@ -1,0 +1,28 @@
+{
+  "id": 3,
+  "title": "Case 3 – The Workshop Blackout",
+  "culprit": "issac",
+  "brief": "A city-wide surge sends half the district into darkness. In a cramped workshop behind the bar-lined alley, a body lies among scattered tools, generator humming low like it’s trying to stay unnoticed.\n\nOnly three people hover around this patch of concrete:\nISSAC — owns the workshop and knows every fuse by touch.\nDARREN — bar owner next door, loud nights and louder patrons.\nCHRIS — patrol officer assigned to watch the street.\n\nThe lights died for ten minutes.\nIn that darkness, someone walked through an unlocked door.",
+  "wrenHint": "Timelines, detective — they never lie.\n\n• The workshop generator starts *before* the power outage.\n• Issac swears he was caught unaware like everyone else — funny, given the humming engine.\n• Darren’s bar flickered but stayed alive — generators only help if you expect to need one.\n• Chris’s patrol log has a blank lane exactly when the generator kicks.\n\nOnly one man knew when the dark was coming, and he used it like a curtain.",
+  "answers": {
+    "issac": [
+      "I was tuning the generator alone. They need exercise or they seize up. Then the power dies and suddenly my shop is a crime scene. You see conspiracy — I see bad timing.",
+      "He wanted my advice on losses — financial ones. Asked how to make them ‘disappear in the wiring’. I told him to fix his books, not his circuits. He stormed out.",
+      "My prints are on every wrench and hammer here. If one split his skull, that only means we were both in reach of bad decisions."
+    ],
+    "darren": [
+      "Lights dipped, crowd panicked. Someone smashed a glass for dramatic effect. I stayed behind the counter — too many hands near the till to leave it alone.",
+      "He’d nurse a drink, quiet as a confession booth. Never talked profit, never talked trouble. I pour. He pays. No secrets passed between us.",
+      "If my prints wander into the workshop, it's from hauling kegs through Issac's side door. We swap favours, not blows."
+    ],
+    "chris": [
+      "When the lights go out, streets get nervous. I stayed where people could see the badge. Shops do stupid things in the dark — side alleys can wait.",
+      "He carried ledgers like shields. Never smiled, never lingered. Not a man you stop unless you need paperwork.",
+      "Door prints are from last week. Noise complaint — generator rattling windows. I logged it, left. No murder. Just maintenance."
+    ]
+  },
+
+  "successEnding": "{culprit}'s confidence fractures when the power logs hit the table.\n\nA generator warming up minutes before a blackout. Tools scattered like theatre props. A neighbour who stayed lit while the rest of the block drowned in dark.\nIssac planned the outage — knew when the curtain would fall — and used the quiet to end a conversation permanently.\n\nHe doesn't fight the cuffs. Just exhales, like a machine finally powered down.",
+
+  "failureEnding": "You press {accused} until their story buckles.\nThey crack under weight or exhaustion — either way, you walk them to holding.\n\nHours later, Wren calls. Generator timestamps predate the outage. Someone primed the engine, staged the scene, and walked through that door with purpose. All trails point back to {culprit}.\n\nThe wrong suspect sleeps behind bars. Outside, the city lights flicker back to life — but justice stays dim."
+}
