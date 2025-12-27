@@ -60,11 +60,19 @@
     top:32px;
     right:40px;
     display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
+    align-items:center;
+    gap:12px;
     max-width:60%;
   }
+
+  /* inner flex just for the suspect chips */
+  #suspectTabsInner{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:flex-end;
+  }
+
   .suspect-tab{
     padding:6px 12px;
     border-radius:999px;
@@ -174,21 +182,19 @@
     white-space:pre-wrap;
   }
 
-  /* Accuse + Next Case buttons */
+  /* Accuse (top bar) + Next Case buttons */
   #accuseBtn{
-    position:absolute;
-    right:260px;
-    bottom:190px;
-    padding:8px 16px;
+    padding:6px 14px;
     border-radius:999px;
     border:1px solid rgba(248,113,113,.8);
     background:rgba(127,29,29,.9);
     color:#fee2e2;
-    font-size:.85rem;
-    letter-spacing:.08em;
+    font-size:.75rem;
+    letter-spacing:.12em;
     text-transform:uppercase;
     cursor:pointer;
     transition:.15s;
+    white-space:nowrap;
   }
   #accuseBtn:hover:not(:disabled){
     background:#b91c1c;
@@ -288,8 +294,11 @@
     <button class="small-btn" id="copBtn">Ask Wren</button>
   </div>
 
-  <!-- suspect tabs are generated dynamically -->
-  <div id="suspectTabs"></div>
+  <!-- suspect tabs + accuse button in one bar -->
+  <div id="suspectTabs">
+    <div id="suspectTabsInner"></div>
+    <button id="accuseBtn" disabled>Accuse</button>
+  </div>
 
   <div id="questions">
     <button class="question-btn" data-index="0">
@@ -303,7 +312,6 @@
     </button>
   </div>
 
-  <button id="accuseBtn" disabled>Accuse</button>
   <button id="nextCaseBtn">Next Case</button>
 
   <div class="dialogue-box" id="dialogBox">
@@ -594,6 +602,7 @@ const speakerLabel = document.getElementById("speakerLabel");
 const answerEl = document.getElementById("answer");
 const questionButtons = Array.from(document.querySelectorAll(".question-btn"));
 const suspectTabsContainer = document.getElementById("suspectTabs");
+const suspectTabsInner = document.getElementById("suspectTabsInner");
 const briefBtn = document.getElementById("briefBtn");
 const copBtn = document.getElementById("copBtn");
 const accuseBtn = document.getElementById("accuseBtn");
@@ -824,7 +833,7 @@ function setCurrentSuspect(key){
 
 /* build suspect tabs for the *current case* only */
 function renderSuspectTabs(){
-  suspectTabsContainer.innerHTML = "";
+  suspectTabsInner.innerHTML = "";
   suspectTabs = [];
 
   activeSuspects.forEach(key=>{
@@ -841,7 +850,7 @@ function renderSuspectTabs(){
         setCurrentSuspect(key);
       }
     });
-    suspectTabsContainer.appendChild(btn);
+    suspectTabsInner.appendChild(btn);
     suspectTabs.push(btn);
   });
 }
