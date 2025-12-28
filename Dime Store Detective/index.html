@@ -56,8 +56,14 @@
 
   /* Top controls */
   #suspectTabs{
-    /* tabs hidden – navigation is via Directory only */
-    display:none;
+    position:absolute;
+    top:32px;
+    right:160px;
+    display:none; /* HIDDEN so players only use Directory */
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    max-width:50%;
   }
   .suspect-tab{
     padding:6px 12px;
@@ -363,6 +369,24 @@
     margin-top:2px;
   }
 
+  .directory-status{
+    margin-top:4px;
+    font-size:.7rem;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:rgba(148,163,184,.9);
+  }
+  .directory-status-pill{
+    padding:2px 8px;
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,.5);
+    font-size:.66rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    background:rgba(15,23,42,.9);
+  }
+
   .directory-footer-row{
     margin-top:4px;
     display:flex;
@@ -396,7 +420,7 @@
     <button class="small-btn" id="directoryBtn">Directory</button>
   </div>
 
-  <!-- suspect tabs are generated dynamically (now hidden by CSS) -->
+  <!-- suspect tabs (now hidden via CSS but kept for future if needed) -->
   <div id="suspectTabs"></div>
 
   <div id="questions">
@@ -547,7 +571,7 @@ const suspects = {
     talkFrames: 8,
     scale: 1.0,
     defaultAnswers: [
-      "Night shift again. I pushed the crates to the service lift like I always do.",
+      "Night shift, same as always. Unloaded two crates, trolleyed them to the service lift like I always do.",
       "He was just the name on the manifest.",
       "Those prints? I hauled that crate with both hands."
     ]
@@ -658,7 +682,7 @@ const suspects = {
 
 const suspectKeys = Object.keys(suspects);
 
-/* current answers per case */
+/* add currentAnswers by default */
 for (const key in suspects){
   suspects[key].currentAnswers = suspects[key].defaultAnswers.slice();
 }
@@ -761,7 +785,7 @@ const directoryOverlay = document.getElementById("directoryOverlay");
 const directoryClose   = document.getElementById("directoryClose");
 const directoryGrid    = document.getElementById("directoryGrid");
 
-let suspectTabs = []; // buttons, rebuilt per case
+let suspectTabs = []; // buttons, built if we ever re-enable them
 
 let typingTimer = null;
 let typingText = "";
@@ -809,6 +833,35 @@ let currentSuccessEnding = DEFAULT_CASE.successEnding;
 let currentFailureEnding = DEFAULT_CASE.failureEnding;
 let currentCaseIndex    = 1;
 const MAX_CASES         = 10;
+
+/* ========== CHARACTERS.JSON LOADER ========== */
+
+async function loadCharactersMeta(){
+  try{
+    const res = await fetch("characters.json");
+    if (!res.ok) throw new Error(res.statusText);
+    const data = await res.json();
+
+    const chars = data.characters || data;
+
+    for (const key in chars){
+      if (!suspects[key]) continue;
+      const c = chars[key];
+      const s = suspects[key];
+
+      if (c.name)  s.displayName = c.name;
+      if (c.role)  s.job = c.role;
+      if (c.status) s.status = c.status;
+      if (c.arc)   s.arc = c.arc;
+      if (Array.isArray(c.links))   s.links = c.links;
+      if (Array.isArray(c.motives)) s.motives = c.motives;
+      // location & tagline stay from this file for now unless you later add them to characters.json
+    }
+    console.log("characters.json loaded");
+  }catch(err){
+    console.warn("characters.json not loaded, using built-in meta only.", err);
+  }
+}
 
 /* simple templating for endings */
 function formatEnding(template, { culprit, accused }){
@@ -983,7 +1036,7 @@ function setCurrentSuspect(key){
   });
 }
 
-/* build suspect tabs for the *current case* only */
+/* build suspect tabs for the *current case* only (even though hidden for now) */
 function renderSuspectTabs(){
   suspectTabsContainer.innerHTML = "";
   suspectTabs = [];
@@ -1008,6 +1061,25 @@ function renderSuspectTabs(){
 }
 
 /* ====== DIRECTORY RENDERING ====== */
+
+function statusLabelFromCode(code){
+  if (!code) return "Status unknown";
+
+  if (code.startsWith("jailed_after_")) return "In custody";
+  if (code.startsWith("fled_after_"))   return "Missing / fled";
+  if (code === "mastermind")            return "Person of interest";
+  if (code === "free")                  return "Active in city";
+  return code.replace(/_/g," ");
+}
+
+function statusIconFromCode(code){
+  if (!code) return "⚪";
+  if (code.startsWith("jailed_after_")) return "🔒";
+  if (code.startsWith("fled_after_"))   return "✈";
+  if (code === "mastermind")            return "🎭";
+  if (code === "free")                  return "⚪";
+  return "•";
+}
 
 function renderDirectory(){
   directoryGrid.innerHTML = "";
@@ -1045,7 +1117,20 @@ function renderDirectory(){
 
     const tagEl = document.createElement("div");
     tagEl.className = "directory-tagline";
-    tagEl.textContent = person.tagline || "";
+    tagEl.textContent = person.tagline || person.arc || "";
+
+    const statusWrap = document.createElement("div");
+    statusWrap.className = "directory-status";
+
+    const statusIcon = document.createElement("span");
+    statusIcon.textContent = statusIconFromCode(person.status);
+
+    const statusPill = document.createElement("span");
+    statusPill.className = "directory-status-pill";
+    statusPill.textContent = statusLabelFromCode(person.status);
+
+    statusWrap.appendChild(statusIcon);
+    statusWrap.appendChild(statusPill);
 
     const footerRow = document.createElement("div");
     footerRow.className = "directory-footer-row";
@@ -1064,7 +1149,8 @@ function renderDirectory(){
     main.appendChild(nameEl);
     if (person.job) main.appendChild(jobEl);
     if (person.location) main.appendChild(locEl);
-    if (person.tagline) main.appendChild(tagEl);
+    if (person.tagline || person.arc) main.appendChild(tagEl);
+    main.appendChild(statusWrap);
     main.appendChild(footerRow);
 
     card.appendChild(avatar);
@@ -1256,12 +1342,16 @@ async function loadCase(index){
   }
 }
 
-/* init */
-activeSuspects  = DEFAULT_CASE.suspects.slice();
-directoryPeople = DEFAULT_CASE.directory.slice();
-renderSuspectTabs();
-setCurrentSuspect("lawson");
-loadCase(currentCaseIndex); // try to load case1.json on start
+/* ====== INIT ====== */
+
+(async function init(){
+  await loadCharactersMeta();          // pull in roles/status/arc from characters.json
+  activeSuspects  = DEFAULT_CASE.suspects.slice();
+  directoryPeople = DEFAULT_CASE.directory.slice();
+  renderSuspectTabs();
+  setCurrentSuspect("lawson");
+  loadCase(currentCaseIndex);          // try to load case1.json on start
+})();
 </script>
 </body>
 </html>
