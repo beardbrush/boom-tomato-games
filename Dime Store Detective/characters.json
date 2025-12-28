@@ -9,13 +9,14 @@
       "arc": "Keeps the machine running; cracks by Case 9."
     },
     "zoe": {
-      "name": "ZOE",
-      "role": "Café Owner",
-      "status": "free",
-      "links": ["lawson","veronica","darren","chris"],
-      "motives": ["Survival","Small business","Debt pressure"],
-      "arc": "Witness often, later threatened; potential hospital victim."
-    },
+  "name": "ZOE",
+  "role": "Café Owner",
+  "status": "free",
+  "links": ["lawson","veronica","darren","chris"],
+  "motives": ["Survival","Small business","Debt pressure"],
+  "arc": "Witness often; injured and hospitalised in mid-arc but makes a full recovery. Becomes a hopeful ally."
+}
+
     "lindsay": {
       "name": "LINDSAY",
       "role": "Gallery Curator",
@@ -81,3 +82,4 @@
     }
   }
 }
+
