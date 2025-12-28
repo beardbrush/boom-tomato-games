@@ -56,23 +56,9 @@
 
   /* Top controls */
   #suspectTabs{
-    position:absolute;
-    top:32px;
-    right:40px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    max-width:60%;
+    /* tabs hidden – navigation is via Directory only */
+    display:none;
   }
-
-  /* inner flex just for the suspect chips */
-  #suspectTabsInner{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    justify-content:flex-end;
-  }
-
   .suspect-tab{
     padding:6px 12px;
     border-radius:999px;
@@ -120,39 +106,6 @@
   .small-btn:hover{
     opacity:1;
     background:#111827;
-  }
-
-  /* Music controls */
-  #musicToggle{
-    font-size:.9rem;
-    padding:6px 10px;
-  }
-  #musicVolume{
-    -webkit-appearance:none;
-    appearance:none;
-    width:90px;
-    height:4px;
-    border-radius:999px;
-    background:rgba(31,41,55,.8);
-    outline:none;
-    cursor:pointer;
-  }
-  #musicVolume::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#22c55e;
-    box-shadow:0 0 0 2px #020617;
-  }
-  #musicVolume::-moz-range-thumb{
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#22c55e;
-    border:none;
-    box-shadow:0 0 0 2px #020617;
   }
 
   /* Question list */
@@ -216,19 +169,21 @@
     white-space:pre-wrap;
   }
 
-  /* Accuse + Next Case pills in top bar */
+  /* Accuse + Next Case buttons */
   #accuseBtn{
-    padding:6px 14px;
+    position:absolute;
+    top:28px;
+    right:40px;
+    padding:8px 16px;
     border-radius:999px;
     border:1px solid rgba(248,113,113,.8);
     background:rgba(127,29,29,.9);
     color:#fee2e2;
-    font-size:.75rem;
-    letter-spacing:.12em;
+    font-size:.8rem;
+    letter-spacing:.08em;
     text-transform:uppercase;
     cursor:pointer;
     transition:.15s;
-    white-space:nowrap;
   }
   #accuseBtn:hover:not(:disabled){
     background:#b91c1c;
@@ -239,17 +194,19 @@
   }
 
   #nextCaseBtn{
-    padding:6px 14px;
+    position:absolute;
+    top:70px;
+    right:40px;
+    padding:8px 14px;
     border-radius:999px;
     border:1px solid rgba(52,211,153,.8);
     background:rgba(6,95,70,.95);
     color:#ecfdf5;
-    font-size:.75rem;
-    letter-spacing:.12em;
+    font-size:.8rem;
+    letter-spacing:.08em;
     text-transform:uppercase;
     cursor:pointer;
     transition:.15s;
-    white-space:nowrap;
     display:none;
   }
   #nextCaseBtn:hover{
@@ -264,6 +221,7 @@
     display:none;
     justify-content:center;
     align-items:center;
+    z-index:20;
   }
   #accuseOverlay.active{
     display:flex;
@@ -315,51 +273,116 @@
     cursor:pointer;
   }
 
-  /* Summary / achievements overlay */
-  #summaryOverlay{
+  /* ================= DIRECTORY OVERLAY ================= */
+
+  #directoryOverlay{
     position:absolute;
     inset:0;
-    background:rgba(15,23,42,.9);
+    background:linear-gradient(to bottom, rgba(15,23,42,.96), rgba(15,23,42,.92));
     display:none;
-    justify-content:center;
-    align-items:center;
-  }
-  #summaryOverlay.active{
-    display:flex;
-  }
-  .summary-panel{
-    width:520px;
-    max-width:90%;
-    padding:22px 24px;
-    background:rgba(15,23,42,.98);
-    border-radius:20px;
-    border:1px solid rgba(148,163,184,.9);
-    box-shadow:0 30px 120px rgba(0,0,0,.95);
-    display:flex;
     flex-direction:column;
-    gap:14px;
+    padding:28px 40px;
+    z-index:15;
   }
-  .summary-title{
+  #directoryOverlay.active{
+    display:flex;
+  }
+
+  .directory-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
+  }
+  .directory-title{
     font-size:.9rem;
     letter-spacing:.18em;
     text-transform:uppercase;
-    color:rgba(148,163,184,.9);
+    color:rgba(148,163,184,.95);
   }
-  .summary-body p{
-    margin-bottom:4px;
-    font-size:.95rem;
-  }
-  .summary-body hr{
+  .directory-close{
+    background:transparent;
     border:none;
-    border-top:1px solid rgba(51,65,85,.9);
-    margin:8px 0;
+    color:rgba(148,163,184,.85);
+    font-size:.8rem;
+    cursor:pointer;
   }
-  .summary-footer{
+
+  .directory-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px 18px;
+    overflow-y:auto;
+  }
+
+  .directory-card{
+    display:flex;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(51,65,85,.9);
+    background:radial-gradient(circle at 0 0, rgba(148,163,184,.12), rgba(15,23,42,.98));
+  }
+
+  .directory-avatar{
+    width:40px;
+    height:40px;
+    border-radius:8px;
+    background:rgba(15,23,42,.9);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.75rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    border:1px solid rgba(148,163,184,.5);
+  }
+
+  .directory-main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .directory-name{
+    font-size:.82rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .directory-job{
+    font-size:.76rem;
+    color:rgba(148,163,184,.95);
+  }
+  .directory-loc{
+    font-size:.72rem;
+    color:rgba(148,163,184,.8);
+  }
+  .directory-tagline{
+    font-size:.75rem;
+    color:rgba(209,213,219,.95);
+    margin-top:2px;
+  }
+
+  .directory-footer-row{
+    margin-top:4px;
     display:flex;
     justify-content:flex-end;
-    gap:8px;
-    margin-top:6px;
   }
+  .directory-interview{
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,.7);
+    background:#020617;
+    color:#e5e7eb;
+    font-size:.7rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .directory-interview:hover{
+    background:#111827;
+  }
+
 </style>
 </head>
 <body>
@@ -370,16 +393,11 @@
   <div id="topLeftButtons">
     <button class="small-btn" id="briefBtn">Brief</button>
     <button class="small-btn" id="copBtn">Ask Wren</button>
-    <button class="small-btn" id="musicToggle">♫</button>
-    <input type="range" id="musicVolume" min="0" max="1" step="0.05">
+    <button class="small-btn" id="directoryBtn">Directory</button>
   </div>
 
-  <!-- suspect tabs + accuse + next-case in one bar -->
-  <div id="suspectTabs">
-    <div id="suspectTabsInner"></div>
-    <button id="accuseBtn" disabled>Accuse</button>
-    <button id="nextCaseBtn">Next Case</button>
-  </div>
+  <!-- suspect tabs are generated dynamically (now hidden by CSS) -->
+  <div id="suspectTabs"></div>
 
   <div id="questions">
     <button class="question-btn" data-index="0">
@@ -392,6 +410,9 @@
       Why are your fingerprints at the scene?
     </button>
   </div>
+
+  <button id="accuseBtn" disabled>Accuse</button>
+  <button id="nextCaseBtn">Next Case</button>
 
   <div class="dialogue-box" id="dialogBox">
     <div class="dialogue-label" id="speakerLabel">MR LAWSON</div>
@@ -411,89 +432,20 @@
     </div>
   </div>
 
-  <!-- Summary / achievements overlay -->
-  <div id="summaryOverlay">
-    <div class="summary-panel">
-      <div class="summary-title">CASE RUN SUMMARY</div>
-      <div class="summary-body" id="summaryBody"></div>
-      <div class="summary-footer">
-        <button class="small-btn" id="restartRunBtn">Restart Cases</button>
-      </div>
+  <!-- Directory overlay -->
+  <div id="directoryOverlay">
+    <div class="directory-header">
+      <div class="directory-title">CITY DIRECTORY – CURRENT CASE</div>
+      <button class="directory-close" id="directoryClose">Close</button>
+    </div>
+    <div class="directory-grid" id="directoryGrid">
+      <!-- entries populated via JS -->
     </div>
   </div>
+
 </div>
 
 <script>
-/* ================== BACKGROUND MUSIC ================== */
-const MUSIC_VOL_KEY = "dime_music_volume";
-const MUSIC_MUTE_KEY = "dime_music_muted";
-
-const bgMusic = new Audio("2021-09-06_-_Solving_The_Crime_-_David_Fesliyan.mp3");
-bgMusic.loop = true;
-
-const musicToggle = document.getElementById("musicToggle");
-const musicVolume = document.getElementById("musicVolume");
-
-let musicInitialised = false;
-
-function loadMusicSettings(){
-  const savedVol = parseFloat(localStorage.getItem(MUSIC_VOL_KEY));
-  if (!isNaN(savedVol)){
-    bgMusic.volume = savedVol;
-    musicVolume.value = savedVol;
-  } else {
-    bgMusic.volume = 0.5;
-    musicVolume.value = 0.5;
-  }
-
-  const savedMuted = localStorage.getItem(MUSIC_MUTE_KEY);
-  if (savedMuted === "true"){
-    bgMusic.muted = true;
-  } else {
-    bgMusic.muted = false;
-  }
-  updateMusicToggleIcon();
-}
-
-function initMusicPlayback(){
-  if (musicInitialised) return;
-  musicInitialised = true;
-  loadMusicSettings();
-  bgMusic.play().catch(()=> {
-    // autoplay might be blocked; will be retried on next interaction
-  });
-}
-
-function updateMusicToggleIcon(){
-  if (bgMusic.muted || bgMusic.volume === 0){
-    musicToggle.textContent = "♫✕";
-  } else {
-    musicToggle.textContent = "♫";
-  }
-}
-
-musicToggle.addEventListener("click", ()=>{
-  initMusicPlayback();
-  bgMusic.muted = !bgMusic.muted;
-  localStorage.setItem(MUSIC_MUTE_KEY, bgMusic.muted ? "true" : "false");
-  updateMusicToggleIcon();
-});
-
-musicVolume.addEventListener("input", ()=>{
-  initMusicPlayback();
-  const v = parseFloat(musicVolume.value);
-  bgMusic.volume = v;
-  localStorage.setItem(MUSIC_VOL_KEY, String(v));
-  if (v > 0 && bgMusic.muted){
-    bgMusic.muted = false;
-    localStorage.setItem(MUSIC_MUTE_KEY, "false");
-  }
-  updateMusicToggleIcon();
-});
-
-/* also initialise music on first click anywhere */
-document.addEventListener("click", ()=>initMusicPlayback(), { once:true });
-
 /* ================== DETECTIVE SPRITE ================== */
 const detImg = new Image();
 detImg.src = "sprites/detective/Detectiveinterrogationsprite.png";
@@ -512,11 +464,15 @@ detCanvas.height = DET_FRAME_H;
 let detFrame = 0;
 let detLast = 0;
 
-/* ================== MASTER SUSPECT DATA ================== */
+/* ================== MASTER CITY ROSTER ================== */
+/* sprite paths are relative to this HTML file */
 const suspects = {
   lawson: {
     key: "lawson",
     displayName: "MR LAWSON",
+    job: "Corporate Lawyer",
+    location: "Riverside Offices, 12th Floor",
+    tagline: "Keeps bad numbers looking respectable.",
     idleSrc: "sprites/suspects/mr_lawson_idle.png",
     talkSrc: "sprites/suspects/mr_lawson_talk.png",
     idleFrames: 13,
@@ -531,6 +487,9 @@ const suspects = {
   zoe: {
     key: "zoe",
     displayName: "ZOE",
+    job: "Café Owner & Barista",
+    location: "Ground-Floor Café, Tower Lobby",
+    tagline: "Knows every coffee order and half the city’s gossip.",
     idleSrc: "sprites/suspects/zoe_idle.png",
     talkSrc: "sprites/suspects/zoe_idle.png",
     idleFrames: 8,
@@ -545,6 +504,9 @@ const suspects = {
   lindsay: {
     key: "lindsay",
     displayName: "LINDSAY",
+    job: "Gallery Curator",
+    location: "Lindsay & Co. Modern Gallery",
+    tagline: "Hangs other people’s fortunes on the wall.",
     idleSrc: "sprites/suspects/lindsay_idle.png",
     talkSrc: "sprites/suspects/lindsay_idle.png",
     idleFrames: 8,
@@ -559,6 +521,9 @@ const suspects = {
   carol: {
     key: "carol",
     displayName: "CAROL",
+    job: "Records Clerk",
+    location: "Municipal Archives, Basement Level",
+    tagline: "Guardian of paperwork the city wishes it had lost.",
     idleSrc: "sprites/suspects/carol_idle.png",
     talkSrc: "sprites/suspects/carol_idle.png",
     idleFrames: 8,
@@ -573,6 +538,9 @@ const suspects = {
   ben: {
     key: "ben",
     displayName: "BEN",
+    job: "Night-Shift Porter",
+    location: "Tower Loading Bay",
+    tagline: "Moves crates, hears secrets, gets ignored.",
     idleSrc: "sprites/suspects/ben_idle.png",
     talkSrc: "sprites/suspects/ben_idle.png",
     idleFrames: 8,
@@ -587,6 +555,9 @@ const suspects = {
   veronica: {
     key: "veronica",
     displayName: "VERONICA",
+    job: "Performance Artist",
+    location: "Warehouse Studios by the River",
+    tagline: "Lives for the spotlight, kills for a headline.",
     idleSrc: "sprites/suspects/veronica_idle.png",
     talkSrc: "sprites/suspects/veronica_idle.png",
     idleFrames: 8,
@@ -601,6 +572,9 @@ const suspects = {
   issac: {
     key: "issac",
     displayName: "ISSAC",
+    job: "Electrical Engineer",
+    location: "Back-Alley Workshop, Dockside",
+    tagline: "Keeps the city’s lights on and its secrets humming.",
     idleSrc: "sprites/suspects/issac_idle.png",
     talkSrc: "sprites/suspects/issac_idle.png",
     idleFrames: 8,
@@ -615,6 +589,9 @@ const suspects = {
   darren: {
     key: "darren",
     displayName: "DARREN",
+    job: "Bar Owner",
+    location: "Darren’s Bar – Alley Off 5th",
+    tagline: "Pours drinks, hears confessions, remembers tabs.",
     idleSrc: "sprites/suspects/darren_idle.png",
     talkSrc: "sprites/suspects/darren_idle.png",
     idleFrames: 8,
@@ -629,6 +606,9 @@ const suspects = {
   chris: {
     key: "chris",
     displayName: "CHRIS",
+    job: "Beat Cop",
+    location: "Precinct 4, River District",
+    tagline: "Walks the same streets every night, sees who repeats.",
     idleSrc: "sprites/suspects/chris_idle.png",
     talkSrc: "sprites/suspects/chris_idle.png",
     idleFrames: 8,
@@ -643,6 +623,9 @@ const suspects = {
   peter: {
     key: "peter",
     displayName: "PETER",
+    job: "Maintenance Technician",
+    location: "City Infrastructure Dept.",
+    tagline: "Knows every boiler and back door in the district.",
     idleSrc: "sprites/suspects/peter_idle.png",
     talkSrc: "sprites/suspects/peter_idle.png",
     idleFrames: 8,
@@ -657,6 +640,9 @@ const suspects = {
   emma: {
     key: "emma",
     displayName: "EMMA",
+    job: "Forensic Accountant",
+    location: "Small Office Above The Bank",
+    tagline: "Makes crooked ledgers look straight—until they crack.",
     idleSrc: "sprites/suspects/emma_idle.png",
     talkSrc: "sprites/suspects/emma_idle.png",
     idleFrames: 8,
@@ -670,6 +656,9 @@ const suspects = {
   }
 };
 
+const suspectKeys = Object.keys(suspects);
+
+/* current answers per case */
 for (const key in suspects){
   suspects[key].currentAnswers = suspects[key].defaultAnswers.slice();
 }
@@ -747,29 +736,33 @@ let viewMode = "suspect";
 /* current suspect & state */
 let currentSuspectKey = "lawson";
 const suspectState = {
-  state: "idle",
+  state: "idle",   // 'idle' or 'talk'
   frame: 0,
   last: 0
 };
 
 /* ================== TEXT & UI ================== */
 
-const speakerLabel = document.getElementById("speakerLabel");
-const answerEl = document.getElementById("answer");
+const speakerLabel   = document.getElementById("speakerLabel");
+const answerEl       = document.getElementById("answer");
 const questionButtons = Array.from(document.querySelectorAll(".question-btn"));
-const suspectTabsInner = document.getElementById("suspectTabsInner");
-const briefBtn = document.getElementById("briefBtn");
-const copBtn = document.getElementById("copBtn");
-const accuseBtn = document.getElementById("accuseBtn");
-const nextCaseBtn = document.getElementById("nextCaseBtn");
-const accuseOverlay = document.getElementById("accuseOverlay");
-const accuseChoices = document.getElementById("accuseChoices");
-const cancelAccuse = document.getElementById("cancelAccuse");
-const summaryOverlay = document.getElementById("summaryOverlay");
-const summaryBody = document.getElementById("summaryBody");
-const restartRunBtn = document.getElementById("restartRunBtn");
+const suspectTabsContainer = document.getElementById("suspectTabs");
+const briefBtn       = document.getElementById("briefBtn");
+const copBtn         = document.getElementById("copBtn");
+const accuseBtn      = document.getElementById("accuseBtn");
+const nextCaseBtn    = document.getElementById("nextCaseBtn");
+const accuseOverlay  = document.getElementById("accuseOverlay");
+const accuseChoices  = document.getElementById("accuseChoices");
+const cancelAccuse   = document.getElementById("cancelAccuse");
 
-let suspectTabs = [];
+/* Directory UI */
+const directoryBtn    = document.getElementById("directoryBtn");
+const directoryOverlay = document.getElementById("directoryOverlay");
+const directoryClose   = document.getElementById("directoryClose");
+const directoryGrid    = document.getElementById("directoryGrid");
+
+let suspectTabs = []; // buttons, rebuilt per case
+
 let typingTimer = null;
 let typingText = "";
 let typingIndex = 0;
@@ -795,6 +788,7 @@ const DEFAULT_CASE = {
     "• Zoe and Lindsay both have ‘work’ reasons to be there, but only one of them had control over security.\n\n" +
     "My money? Follow whoever had access to both the gallery storage and the office locks.",
   suspects: ["lawson", "zoe", "lindsay"],
+  directory: ["lawson","zoe","lindsay"],
   answers: {},
   successEnding:
     "{culprit} folds as you lay out the contradictions.\n\n" +
@@ -806,41 +800,15 @@ const DEFAULT_CASE = {
     "You got someone into cuffs, but not the right one. This city’s not done with you."
 };
 
-let currentBrief = DEFAULT_CASE.brief;
-let currentWrenHint = DEFAULT_CASE.wrenHint;
-let culpritKey = DEFAULT_CASE.culprit;
-let activeSuspects = DEFAULT_CASE.suspects.slice();
+let currentBrief        = DEFAULT_CASE.brief;
+let currentWrenHint     = DEFAULT_CASE.wrenHint;
+let culpritKey          = DEFAULT_CASE.culprit;
+let activeSuspects      = DEFAULT_CASE.suspects.slice();
+let directoryPeople     = DEFAULT_CASE.directory.slice();
 let currentSuccessEnding = DEFAULT_CASE.successEnding;
 let currentFailureEnding = DEFAULT_CASE.failureEnding;
-let currentCaseIndex = 1;
-const MAX_CASES = 10;
-
-/* ====== RUN STATS ====== */
-let stats = {
-  correct: 0,
-  wrong: 0,
-  totalCases: 0,
-  totalQuestionsAsked: 0,
-  totalQuestionsAvailable: 0,
-  thoroughCases: 0,
-  rushedCases: 0
-};
-let currentCaseQuestionsAsked = 0;
-let currentCaseQuestionsAvailable = 0;
-
-function resetStats(){
-  stats = {
-    correct: 0,
-    wrong: 0,
-    totalCases: 0,
-    totalQuestionsAsked: 0,
-    totalQuestionsAvailable: 0,
-    thoroughCases: 0,
-    rushedCases: 0
-  };
-  currentCaseQuestionsAsked = 0;
-  currentCaseQuestionsAvailable = 0;
-}
+let currentCaseIndex    = 1;
+const MAX_CASES         = 10;
 
 /* simple templating for endings */
 function formatEnding(template, { culprit, accused }){
@@ -874,6 +842,7 @@ function drawDetective(t){
   );
 }
 
+/* Draw either suspect or Wren, depending on viewMode */
 function drawRightSide(t){
   if (viewMode === "wren"){
     if (!wrenImg.complete || !wrenImg.width) return;
@@ -948,11 +917,6 @@ questionButtons.forEach(btn=>{
 
     btn.disabled = true;
     btn.classList.add("used");
-
-    // stats
-    stats.totalQuestionsAsked++;
-    currentCaseQuestionsAsked++;
-
     playAnswer(index);
   });
 });
@@ -1019,8 +983,9 @@ function setCurrentSuspect(key){
   });
 }
 
+/* build suspect tabs for the *current case* only */
 function renderSuspectTabs(){
-  suspectTabsInner.innerHTML = "";
+  suspectTabsContainer.innerHTML = "";
   suspectTabs = [];
 
   activeSuspects.forEach(key=>{
@@ -1037,10 +1002,85 @@ function renderSuspectTabs(){
         setCurrentSuspect(key);
       }
     });
-    suspectTabsInner.appendChild(btn);
+    suspectTabsContainer.appendChild(btn);
     suspectTabs.push(btn);
   });
 }
+
+/* ====== DIRECTORY RENDERING ====== */
+
+function renderDirectory(){
+  directoryGrid.innerHTML = "";
+  directoryPeople.forEach(key=>{
+    const person = suspects[key];
+    if (!person) return;
+
+    const card = document.createElement("div");
+    card.className = "directory-card";
+
+    const initials = person.displayName
+      .split(" ")
+      .map(w => w[0])
+      .join("")
+      .slice(0,3);
+
+    const avatar = document.createElement("div");
+    avatar.className = "directory-avatar";
+    avatar.textContent = initials;
+
+    const main = document.createElement("div");
+    main.className = "directory-main";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "directory-name";
+    nameEl.textContent = person.displayName;
+
+    const jobEl = document.createElement("div");
+    jobEl.className = "directory-job";
+    jobEl.textContent = person.job || "";
+
+    const locEl = document.createElement("div");
+    locEl.className = "directory-loc";
+    locEl.textContent = person.location || "";
+
+    const tagEl = document.createElement("div");
+    tagEl.className = "directory-tagline";
+    tagEl.textContent = person.tagline || "";
+
+    const footerRow = document.createElement("div");
+    footerRow.className = "directory-footer-row";
+
+    const btn = document.createElement("button");
+    btn.className = "directory-interview";
+    btn.textContent = "Interview";
+    btn.addEventListener("click", ()=>{
+      directoryOverlay.classList.remove("active");
+      resetQuestions();
+      setCurrentSuspect(key);
+    });
+
+    footerRow.appendChild(btn);
+
+    main.appendChild(nameEl);
+    if (person.job) main.appendChild(jobEl);
+    if (person.location) main.appendChild(locEl);
+    if (person.tagline) main.appendChild(tagEl);
+    main.appendChild(footerRow);
+
+    card.appendChild(avatar);
+    card.appendChild(main);
+    directoryGrid.appendChild(card);
+  });
+}
+
+directoryBtn.addEventListener("click", ()=>{
+  renderDirectory();
+  directoryOverlay.classList.add("active");
+});
+
+directoryClose.addEventListener("click", ()=>{
+  directoryOverlay.classList.remove("active");
+});
 
 /* ====== Brief & Wren hint ====== */
 
@@ -1102,90 +1142,29 @@ function resolveAccusation(key){
   const accused = suspects[key];
   const culprit = suspects[culpritKey];
 
-  stats.totalCases++;
-  const correct = (key === culpritKey);
-  if (correct){
-    stats.correct++;
+  if (key === culpritKey){
     speakerLabel.textContent = "CASE CLOSED";
     const templ = currentSuccessEnding || DEFAULT_CASE.successEnding;
     answerEl.textContent = formatEnding(templ, { culprit, accused });
   } else {
-    stats.wrong++;
     speakerLabel.textContent = "CASE PARTIALLY SOLVED";
     const templ = currentFailureEnding || DEFAULT_CASE.failureEnding;
     answerEl.textContent = formatEnding(templ, { culprit, accused });
   }
-
-  // mark thorough vs rushed for this case
-  const denom = currentCaseQuestionsAvailable || 1;
-  const ratio = currentCaseQuestionsAsked / denom;
-  if (ratio >= 0.8){
-    stats.thoroughCases++;
-  } else {
-    stats.rushedCases++;
-  }
 }
-
-/* ====== Summary overlay ====== */
-
-function openSummaryOverlay(){
-  const {
-    correct,
-    wrong,
-    totalCases,
-    totalQuestionsAsked,
-    totalQuestionsAvailable,
-    thoroughCases,
-    rushedCases
-  } = stats;
-
-  const ratio = totalQuestionsAvailable
-    ? Math.round((totalQuestionsAsked / totalQuestionsAvailable) * 100)
-    : 0;
-
-  let styleLine;
-  if (ratio >= 90){
-    styleLine = "You squeezed every clue you could. Slow, methodical, relentless.";
-  } else if (ratio >= 60){
-    styleLine = "You balanced instinct with patience — not every stone turned, but enough to see the pattern.";
-  } else {
-    styleLine = "You worked fast, sometimes too fast. Plenty of clues never made it off the page.";
-  }
-
-  summaryBody.innerHTML = `
-    <p>Cases completed: <strong>${totalCases}</strong></p>
-    <p>Correct accusations: <strong>${correct}</strong></p>
-    <p>Wrong accusations: <strong>${wrong}</strong></p>
-    <p>Questions asked: <strong>${totalQuestionsAsked}</strong> / ${totalQuestionsAvailable}</p>
-    <p>Thorough cases (most clues used): <strong>${thoroughCases}</strong></p>
-    <p>Rushed cases: <strong>${rushedCases}</strong></p>
-    <hr>
-    <p>${styleLine}</p>
-  `;
-
-  summaryOverlay.classList.add("active");
-}
-
-restartRunBtn.addEventListener("click", ()=>{
-  summaryOverlay.classList.remove("active");
-  resetStats();
-  currentCaseIndex = 1;
-  loadCase(currentCaseIndex);
-});
 
 /* ====== Next case & loader ====== */
 
 nextCaseBtn.addEventListener("click", ()=>{
-  // after finishing case 10, show summary instead of looping
-  if (currentCaseIndex >= MAX_CASES){
-    openSummaryOverlay();
-    return;
-  }
   currentCaseIndex++;
+  if (currentCaseIndex > MAX_CASES){
+    currentCaseIndex = 1;
+  }
   loadCase(currentCaseIndex);
 });
 
 function applyCaseToSuspects(caseData){
+  // reset to defaults then override with case-specific answers
   for (const key in suspects){
     suspects[key].currentAnswers = suspects[key].defaultAnswers.slice();
   }
@@ -1198,7 +1177,9 @@ function applyCaseToSuspects(caseData){
   }
 }
 
+/* Decide who is active in this case */
 function inferActiveSuspects(caseData){
+  // If case explicitly defines suspects, prefer that.
   if (Array.isArray(caseData.suspects) && caseData.suspects.length){
     return caseData.suspects.filter(k => suspects[k]);
   }
@@ -1215,6 +1196,15 @@ function inferActiveSuspects(caseData){
   return Array.from(inferred);
 }
 
+/* Decide who appears in the directory */
+function inferDirectory(caseData, active){
+  if (Array.isArray(caseData.directory) && caseData.directory.length){
+    return caseData.directory.filter(k => suspects[k]);
+  }
+  // Fallback: same as active suspects for now.
+  return active.slice();
+}
+
 async function loadCase(index){
   caseClosed = false;
   anyQuestionAsked = false;
@@ -1229,55 +1219,49 @@ async function loadCase(index){
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
 
-    culpritKey = data.culprit || DEFAULT_CASE.culprit;
-    currentBrief = data.brief || DEFAULT_CASE.brief;
-    currentWrenHint = data.wrenHint || DEFAULT_CASE.wrenHint;
+    culpritKey          = data.culprit || DEFAULT_CASE.culprit;
+    currentBrief        = data.brief || DEFAULT_CASE.brief;
+    currentWrenHint     = data.wrenHint || DEFAULT_CASE.wrenHint;
     currentSuccessEnding = data.successEnding || DEFAULT_CASE.successEnding;
     currentFailureEnding = data.failureEnding || DEFAULT_CASE.failureEnding;
 
     applyCaseToSuspects(data);
-    activeSuspects = inferActiveSuspects(data);
+    activeSuspects  = inferActiveSuspects(data);
+    directoryPeople = inferDirectory(data, activeSuspects);
+
     renderSuspectTabs();
     setCurrentSuspect(activeSuspects[0] || "lawson");
 
     speakerLabel.textContent = `CASE ${data.id || index}`;
     answerEl.textContent = data.title || "New case loaded. Choose a suspect.";
 
-    // stats: questions available for this case
-    currentCaseQuestionsAsked = 0;
-    currentCaseQuestionsAvailable = activeSuspects.length * questionButtons.length;
-    stats.totalQuestionsAvailable += currentCaseQuestionsAvailable;
-
   }catch(err){
     // fallback to default
-    culpritKey = DEFAULT_CASE.culprit;
-    currentBrief = DEFAULT_CASE.brief;
-    currentWrenHint = DEFAULT_CASE.wrenHint;
+    culpritKey          = DEFAULT_CASE.culprit;
+    currentBrief        = DEFAULT_CASE.brief;
+    currentWrenHint     = DEFAULT_CASE.wrenHint;
     currentSuccessEnding = DEFAULT_CASE.successEnding;
     currentFailureEnding = DEFAULT_CASE.failureEnding;
 
     applyCaseToSuspects(DEFAULT_CASE);
-    activeSuspects = DEFAULT_CASE.suspects.slice();
+    activeSuspects  = DEFAULT_CASE.suspects.slice();
+    directoryPeople = DEFAULT_CASE.directory.slice();
+
     renderSuspectTabs();
     setCurrentSuspect(activeSuspects[0]);
 
     speakerLabel.textContent = "CASE LOADER";
     answerEl.textContent =
       `Couldn't load ${path}.\n\nUsing built-in default case instead.`;
-
-    currentCaseQuestionsAsked = 0;
-    currentCaseQuestionsAvailable = activeSuspects.length * questionButtons.length;
-    stats.totalQuestionsAvailable += currentCaseQuestionsAvailable;
   }
 }
 
 /* init */
-resetStats();
-activeSuspects = DEFAULT_CASE.suspects.slice();
+activeSuspects  = DEFAULT_CASE.suspects.slice();
+directoryPeople = DEFAULT_CASE.directory.slice();
 renderSuspectTabs();
 setCurrentSuspect("lawson");
-loadCase(currentCaseIndex);
+loadCase(currentCaseIndex); // try to load case1.json on start
 </script>
 </body>
 </html>
-
