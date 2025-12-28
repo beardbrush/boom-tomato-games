@@ -2,8 +2,14 @@
   "id": 3,
   "title": "Case 3 – The Workshop Blackout",
   "culprit": "issac",
+
+  "suspects": ["issac", "darren", "chris"],
+  "directory": ["lawson","zoe","lindsay","carol","ben","veronica","issac","darren","chris","peter","emma"],
+
   "brief": "A city-wide surge sends half the district into darkness. In a cramped workshop behind the bar-lined alley, a body lies among scattered tools, generator humming low like it’s trying to stay unnoticed.\n\nOnly three people hover around this patch of concrete:\nISSAC — owns the workshop and knows every fuse by touch.\nDARREN — bar owner next door, loud nights and louder patrons.\nCHRIS — patrol officer assigned to watch the street.\n\nThe lights died for ten minutes.\nIn that darkness, someone walked through an unlocked door.",
+
   "wrenHint": "Timelines, detective — they never lie.\n\n• The workshop generator starts *before* the power outage.\n• Issac swears he was caught unaware like everyone else — funny, given the humming engine.\n• Darren’s bar flickered but stayed alive — generators only help if you expect to need one.\n• Chris’s patrol log has a blank lane exactly when the generator kicks.\n\nOnly one man knew when the dark was coming, and he used it like a curtain.",
+
   "answers": {
     "issac": [
       "I was tuning the generator alone. They need exercise or they seize up. Then the power dies and suddenly my shop is a crime scene. You see conspiracy — I see bad timing.",
