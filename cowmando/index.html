@@ -59,7 +59,6 @@ const snd = {
 };
 snd.engine.loop = true;
 snd.engine.volume = 0.35;
-
 let engineStarted = false;
 
 function playSound(audio){
@@ -69,31 +68,27 @@ function playSound(audio){
 }
 
 // ---- SPRITE META ----
-// ---- SPRITE META ----
 const sprites = {
   plane:{
     img:planeImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-        
-    // ↓ Smaller plane ↓
-    scale:0.13     // was 0.16
+    // smaller plane
+    scale:0.13
   },
   cow:{
     img:cowImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-        
-    // ↓ Bigger cows ↓
-    scale:1.35     // was 1.15
+    // bigger cows
+    scale:1.35
   },
   bossCow:{
     img:cowImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-        
-    // ↓ Bigger boss ↓
-    scale:2.2      // was 1.9
+    // bigger boss
+    scale:2.2
   },
   blueBomb:{
     img:blueBombImg, frames:2,
@@ -108,7 +103,6 @@ const sprites = {
     scale:0.70
   }
 };
-
 
 // ---- INPUT ----
 const keys = {};
@@ -192,7 +186,6 @@ function reset(){
   plane.bt = 0;
   plane.facing = 1;
 
-  // reset engine (will actually play on first key press)
   snd.engine.pause();
   snd.engine.currentTime = 0;
   engineStarted = false;
@@ -205,12 +198,21 @@ function spawnCow(){
   const c = sprites.cow;
   const w = c.fw*c.scale;
   const h = c.fh*c.scale;
+
+  const fromLeft = Math.random() < 0.5;
+  const dir = fromLeft ? 1 : -1;
+  const x = fromLeft ? -w : canvas.width + w;
+  const y = canvas.height - h - 14;
+
   cows.push({
-    x: canvas.width + w,
-    y: canvas.height - h - 14,
+    x,
+    y,
+    dir,           // -1 = moving left, 1 = moving right
     speed: 55 + Math.random()*45,
     ft:0, frame:0,
-    shoot:1 + Math.random()*1.4
+    shoot:1 + Math.random()*1.4,
+    hp:1,          // 1 hit to start
+    upgraded:false // becomes true after first successful cross
   });
 }
 
@@ -221,10 +223,12 @@ function spawnBossCow(){
   boss = {
     x:canvas.width + w,
     y:canvas.height - h - 30,
+    dir:-1,          // moving left initially
     speed:25,
     ft:0, frame:0,
     fire:0.8,
-    hp:10
+    hp:10,
+    upgraded:false
   };
   playSound(snd.moo); // dramatic moo on arrival
 }
@@ -323,17 +327,46 @@ function update(dt){
 
   for(let i=cows.length-1;i>=0;i--){
     const c = cows[i];
-    c.x -= c.speed*dt;
+    const cw = sprites.cow.fw*sprites.cow.scale;
+
+    // move according to direction
+    c.x += c.speed * dt * c.dir;
+
     c.ft += dt;
     if(c.ft>0.13){ c.ft=0; c.frame=(c.frame+1)%sprites.cow.frames; }
 
     c.shoot -= dt;
     if(c.shoot<=0){
-      fireRocketFrom(c.x + 40, c.y);
+      // fire from front depending on direction
+      const frontX = c.dir < 0 ? c.x + cw*0.25 : c.x + cw*0.75;
+      fireRocketFrom(frontX, c.y);
       c.shoot = 1 + Math.random()*1.3;
     }
 
-    if(c.x < -120) cows.splice(i,1);
+    // crossing screen: if it goes fully off one side
+    if(c.dir < 0 && c.x < -cw){
+      if(!c.upgraded){
+        // upgrade to 2-hit, faster, reverse direction, re-enter
+        c.upgraded = true;
+        c.hp = 2;
+        c.speed *= 1.15;
+        c.dir = 1;
+        c.x = -cw + 10;
+      }else{
+        // already upgraded once, remove if it leaves again
+        cows.splice(i,1);
+      }
+    }else if(c.dir > 0 && c.x > canvas.width + cw){
+      if(!c.upgraded){
+        c.upgraded = true;
+        c.hp = 2;
+        c.speed *= 1.15;
+        c.dir = -1;
+        c.x = canvas.width + cw - 10;
+      }else{
+        cows.splice(i,1);
+      }
+    }
   }
 
   // boss cow logic
@@ -342,18 +375,45 @@ function update(dt){
     const bw = s.fw*s.scale;
     const bh = s.fh*s.scale;
 
-    boss.x -= boss.speed*dt;
+    // move
+    boss.x += boss.speed * dt * boss.dir;
     boss.ft += dt;
     if(boss.ft>0.12){ boss.ft=0; boss.frame=(boss.frame+1)%s.frames; }
 
     boss.fire -= dt;
     if(boss.fire<=0){
       fireRocketFrom(boss.x + bw*0.25, boss.y + 10);
-      fireRocketFrom(boss.x + bw*0.7,  boss.y + 10);
+      fireRocketFrom(boss.x + bw*0.75, boss.y + 10);
       boss.fire = 0.7;
     }
 
-    if(boss.x < -bw-50) boss.x = -bw-50;
+    // detect full cross and upgrade once
+    if(!boss.upgraded){
+      if(boss.dir < 0 && boss.x < -bw){
+        // crossed from right to left
+        boss.upgraded = true;
+        sprites.bossCow.scale *= 2;  // double size
+        boss.hp *= 2;                // double health
+        boss.dir = 1;                // go back the other way
+        boss.x = -bw + 10;           // re-enter from left
+      }else if(boss.dir > 0 && boss.x > canvas.width + bw){
+        // if we ever spawn boss going right first (safety)
+        boss.upgraded = true;
+        sprites.bossCow.scale *= 2;
+        boss.hp *= 2;
+        boss.dir = -1;
+        boss.x = canvas.width + bw - 10;
+      }
+    }else{
+      // after upgrade, just bounce at edges (no more size/health changes)
+      if(boss.dir < 0 && boss.x < -bw){
+        boss.dir = 1;
+        boss.x = -bw + 10;
+      }else if(boss.dir > 0 && boss.x > canvas.width + bw){
+        boss.dir = -1;
+        boss.x = canvas.width + bw - 10;
+      }
+    }
   }
 
   // rockets
@@ -383,8 +443,13 @@ function update(dt){
         addExplosion(c.x+cw/2, c.y+ch/2, 0.9);
         playSound(snd.moo);
         playSound(snd.explosion);
-        cows.splice(j,1);
-        score += 100;
+        c.hp--;
+        if(c.hp <= 0){
+          cows.splice(j,1);
+          score += c.upgraded ? 200 : 100; // upgraded cows worth more
+        }else{
+          score += 50; // chip damage reward
+        }
         hitSomething = true;
         break;
       }
@@ -507,6 +572,7 @@ function render(){
 
   bombs.forEach(b=> drawSprite(sprites.blueBomb, b.f, b.x, b.y));
 
+  // rockets rotated 180 so they fire upwards
   rockets.forEach(r=> drawSprite(sprites.greenRocket, r.f, r.x, r.y, false, true));
 
   explosions.forEach(e=>{
@@ -540,4 +606,3 @@ function loop(t){
 </script>
 </body>
 </html>
-
