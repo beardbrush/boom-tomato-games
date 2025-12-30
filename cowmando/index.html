@@ -215,7 +215,7 @@ function reset(){
   engineStarted = false;
 
   document.getElementById("centerMsg").textContent =
-    "WASD / Arrows = fly\nSPACE = drop blue bombs (3-shot clip)\nJ / F / K or TAP = machine gun (shots forward)\nAvoid green rockets and white homing missiles!";
+    "WASD / Arrows = fly (stay above the grass!)\nSPACE = drop blue bombs (3-shot clip)\nJ / F / K or TAP = machine gun (shots forward)\nAvoid green rockets and white homing missiles!";
 }
 
 function spawnCow(){
@@ -351,8 +351,12 @@ function update(dt){
   const p = sprites.plane;
   const pw = p.fw*p.scale;
   const ph = p.fh*p.scale;
+
+  // ground line
+  const groundY = canvas.height * 0.88;
+  const maxY = groundY - ph;        // do not go into grass
   plane.x = Math.max(0, Math.min(canvas.width-pw, plane.x));
-  plane.y = Math.max(0, Math.min(canvas.height-ph*0.9, plane.y));
+  plane.y = Math.max(0, Math.min(maxY, plane.y));
 
   // engine volume based on speed
   if(engineStarted){
@@ -520,16 +524,15 @@ function update(dt){
     if(r.y < -80) rockets.splice(i,1);
   }
 
-  // white boss missiles (homing horizontally)
+  // white boss missiles (homing horizontally towards plane)
   for(let i=bossMissiles.length-1;i>=0;i--){
     const m = bossMissiles[i];
     m.y += m.vy*dt;
 
-    // homing horizontally towards plane
     const planeCenterX = plane.x + pw/2;
     const dx = planeCenterX - m.x;
-    const maxStep = 220 * dt;
-    let step = dx * 0.6 * dt;
+    const maxStep = 260 * dt;       // stronger homing
+    let step = dx * 0.8 * dt;       // more aggressive
     if(step > maxStep) step = maxStep;
     if(step < -maxStep) step = -maxStep;
     m.x += step;
@@ -749,11 +752,56 @@ function render(){
     drawCloud(c);
   });
 
+  // ground strip
+  const groundY = canvas.height*0.88;
   ctx.fillStyle = "#62d255";
-  ctx.fillRect(0, canvas.height*0.88, canvas.width, canvas.height);
+  ctx.fillRect(0, groundY, canvas.width, canvas.height-groundY);
+
+  const p = sprites.plane;
+  const pw = p.fw*p.scale;
+  const ph = p.fh*p.scale;
 
   // plane
   drawSprite(sprites.plane, plane.frame, plane.x, plane.y, plane.facing===-1, false);
+
+  // LOCK-ON reticle if any boss missiles are active
+  if(bossMissiles.length > 0){
+    const cx = plane.x + pw/2;
+    const cy = plane.y + ph*0.4;
+    ctx.save();
+    ctx.strokeStyle = "#ff3355";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 30, 0, Math.PI*2);
+    ctx.stroke();
+
+    // corner brackets
+    const r = 30;
+    const s = 10;
+    ctx.beginPath();
+    // top
+    ctx.moveTo(cx - s, cy - r);
+    ctx.lineTo(cx - s*2, cy - r);
+    ctx.moveTo(cx + s, cy - r);
+    ctx.lineTo(cx + s*2, cy - r);
+    // bottom
+    ctx.moveTo(cx - s, cy + r);
+    ctx.lineTo(cx - s*2, cy + r);
+    ctx.moveTo(cx + s, cy + r);
+    ctx.lineTo(cx + s*2, cy + r);
+    // left
+    ctx.moveTo(cx - r, cy - s);
+    ctx.lineTo(cx - r, cy - s*2);
+    ctx.moveTo(cx - r, cy + s);
+    ctx.lineTo(cx - r, cy + s*2);
+    // right
+    ctx.moveTo(cx + r, cy - s);
+    ctx.lineTo(cx + r, cy - s*2);
+    ctx.moveTo(cx + r, cy + s);
+    ctx.lineTo(cx + r, cy + s*2);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // cows — flip if dir > 0 (moving right)
   cows.forEach(c=>{
