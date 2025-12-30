@@ -142,7 +142,7 @@ let lives = 3;
 const plane = {
   x:0,y:0,vx:0,vy:0,
   speed:300,
-  facing:1,
+  facing:1,           // 1 = right, -1 = left
   frame:0, ft:0,
   bombCD:0.22, bt:0,
   gunCD:0.10, gunTimer:0
@@ -204,7 +204,7 @@ function reset(){
   engineStarted = false;
 
   document.getElementById("centerMsg").textContent =
-    "WASD / Arrows to fly\nSPACE = drop blue bombs\nJ / F / K or TAP = machine gun (white shots straight up)";
+    "WASD / Arrows = fly\nSPACE = drop blue bombs\nJ / F / K or TAP = machine gun (white shots forward)";
 }
 
 function spawnCow(){
@@ -275,10 +275,18 @@ function fireBullet(){
   const p = sprites.plane;
   const w = p.fw*p.scale;
   const h = p.fh*p.scale;
+
+  // nose position based on facing
+  const noseX = plane.facing === 1
+    ? plane.x + w * 0.9   // near right end
+    : plane.x + w * 0.1;  // near left end
+
+  const noseY = plane.y + h * 0.45; // roughly middle vertically
+
   bullets.push({
-    x: plane.x + w*0.5,     // roughly center top of plane
-    y: plane.y + h*0.1,
-    vy: -520,               // straight up
+    x: noseX,
+    y: noseY,
+    vx: plane.facing * 550, // forward along facing
     radius: 4
   });
 }
@@ -288,8 +296,7 @@ function fireRocketFrom(x,y){
     x,
     y,
     vy:-260,
-    ft:0, f:0,
-    homing:true
+    ft:0, f:0
   });
 }
 
@@ -330,7 +337,7 @@ function update(dt){
   plane.ft += dt;
   if(plane.ft > 0.10){
     plane.ft = 0;
-    plane.frame = (plane.frame+1) % p.frames;
+    plane.frame = (plane.frame+1)%p.frames;
   }
 
   // bombs (SPACE)
@@ -357,11 +364,11 @@ function update(dt){
     if(b.y > canvas.height+50) bombs.splice(i,1);
   }
 
-  // bullets update (straight up)
+  // bullets update (forward)
   for(let i=bullets.length-1;i>=0;i--){
     const bl = bullets[i];
-    bl.y += bl.vy*dt;
-    if(bl.y < -40) bullets.splice(i,1);
+    bl.x += bl.vx*dt;
+    if(bl.x < -40 || bl.x > canvas.width+40) bullets.splice(i,1);
   }
 
   // cows
@@ -445,7 +452,6 @@ function update(dt){
         boss.x = canvas.width + bwCurrent - 10;
       }
     }else{
-      // after upgrade, just bounce edges
       if(boss.dir < 0 && boss.x < -bwCurrent){
         boss.dir = 1;
         boss.x = -bwCurrent + 10;
@@ -456,20 +462,10 @@ function update(dt){
     }
   }
 
-  // rockets: ALL homing missiles now
+  // rockets: straight up
   for(let i=rockets.length-1;i>=0;i--){
     const r = rockets[i];
     r.y += r.vy*dt;
-
-    // homing horizontally towards plane center
-    const planeCenterX = plane.x + pw/2;
-    const dx = planeCenterX - r.x;
-    const maxStep = 180 * dt;
-    let step = dx * 0.6 * dt;
-    if(step > maxStep) step = maxStep;
-    if(step < -maxStep) step = -maxStep;
-    r.x += step;
-
     r.ft += dt;
     if(r.ft>0.08){ r.ft=0; r.f=(r.f+1)%sprites.greenRocket.frames; }
     if(r.y < -80) rockets.splice(i,1);
@@ -492,7 +488,7 @@ function update(dt){
         addExplosion(c.x+cw/2, c.y+ch/2, 0.9);
         playSound(snd.moo);
         playSound(snd.explosion);
-        c.hp -= 2; // bombs hit harder
+        c.hp -= 2;
         if(c.hp <= 0){
           cows.splice(j,1);
           score += c.upgraded ? 250 : 150;
@@ -665,20 +661,27 @@ function render(){
   ctx.fillStyle = "#62d255";
   ctx.fillRect(0, canvas.height*0.88, canvas.width, canvas.height);
 
+  // plane
   drawSprite(sprites.plane, plane.frame, plane.x, plane.y, plane.facing===-1, false);
 
-  cows.forEach(c=> drawSprite(sprites.cow, c.frame, c.x, c.y));
+  // cows — flip if dir > 0 (moving right) so they always face walking direction
+  cows.forEach(c=>{
+    const flip = c.dir > 0;   // sprite faces left by default
+    drawSprite(sprites.cow, c.frame, c.x, c.y, flip, false);
+  });
 
+  // boss cow — also flip based on dir
   if(boss){
-    drawSprite(sprites.bossCow, boss.frame, boss.x, boss.y);
+    const bossFlip = boss.dir > 0;
+    drawSprite(sprites.bossCow, boss.frame, boss.x, boss.y, bossFlip, false);
   }
 
   bombs.forEach(b=> drawSprite(sprites.blueBomb, b.f, b.x, b.y));
 
-  // rockets rotated 180 so they "shoot up", but homing horizontally
+  // rockets straight up (rotated 180)
   rockets.forEach(r=> drawSprite(sprites.greenRocket, r.f, r.x, r.y, false, true));
 
-  // bullets (white dots straight up)
+  // bullets (white dots forward)
   ctx.fillStyle = "#fffb";
   bullets.forEach(bl=>{
     ctx.beginPath();
