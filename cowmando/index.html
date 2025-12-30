@@ -104,6 +104,8 @@ const sprites = {
 
 // ---- INPUT ----
 const keys = {};
+let mouseDown = false;
+
 addEventListener("keydown", e=>{
   keys[e.key.toLowerCase()] = 1;
 
@@ -121,6 +123,16 @@ addEventListener("keydown", e=>{
 });
 addEventListener("keyup", e=>{ keys[e.key.toLowerCase()] = 0; });
 
+canvas.addEventListener("pointerdown", e=>{
+  mouseDown = true;
+});
+canvas.addEventListener("pointerup", e=>{
+  mouseDown = false;
+});
+canvas.addEventListener("pointerleave", e=>{
+  mouseDown = false;
+});
+
 // ---- GAME STATE ----
 let last = 0;
 let gameOver = false;
@@ -133,7 +145,7 @@ const plane = {
   facing:1,
   frame:0, ft:0,
   bombCD:0.22, bt:0,
-  gunCD:0.14, gunTimer:0
+  gunCD:0.10, gunTimer:0
 };
 
 const cows = [];
@@ -192,7 +204,7 @@ function reset(){
   engineStarted = false;
 
   document.getElementById("centerMsg").textContent =
-    "WASD / Arrows to fly\nSPACE = bombs  •  J = gun\nAvoid wiggly & homing rockets!";
+    "WASD / Arrows to fly\nSPACE = drop blue bombs\nJ / F / K or TAP = machine gun (white shots straight up)";
 }
 
 function spawnCow(){
@@ -213,8 +225,7 @@ function spawnCow(){
     ft:0, frame:0,
     shoot:1 + Math.random()*1.4,
     hp:1,
-    upgraded:false,
-    homingShooter: Math.random() < 0.35 // some cows fire homing rockets
+    upgraded:false
   });
 }
 
@@ -265,23 +276,20 @@ function fireBullet(){
   const w = p.fw*p.scale;
   const h = p.fh*p.scale;
   bullets.push({
-    x: plane.x + w*0.8,
-    y: plane.y + h*0.45,
-    vx: 480,
+    x: plane.x + w*0.5,     // roughly center top of plane
+    y: plane.y + h*0.1,
+    vy: -520,               // straight up
     radius: 4
   });
 }
 
-function fireRocketFrom(x,y,isHoming){
+function fireRocketFrom(x,y){
   rockets.push({
     x,
     y,
     vy:-260,
-    vx:0,
     ft:0, f:0,
-    wiggle: !isHoming,
-    phase: 0,
-    homing: !!isHoming
+    homing:true
   });
 }
 
@@ -325,16 +333,17 @@ function update(dt){
     plane.frame = (plane.frame+1) % p.frames;
   }
 
-  // bombs
+  // bombs (SPACE)
   plane.bt -= dt;
   if((keys[" "] || keys["space"]) && plane.bt <= 0){
     dropBomb();
     plane.bt = plane.bombCD;
   }
 
-  // gun bullets (J key)
+  // gun (J/F/K or tap)
   plane.gunTimer -= dt;
-  if(keys["j"] && plane.gunTimer <= 0){
+  const gunPressed = keys["j"] || keys["f"] || keys["k"] || mouseDown;
+  if(gunPressed && plane.gunTimer <= 0){
     fireBullet();
     plane.gunTimer = plane.gunCD;
   }
@@ -348,11 +357,11 @@ function update(dt){
     if(b.y > canvas.height+50) bombs.splice(i,1);
   }
 
-  // bullets update
+  // bullets update (straight up)
   for(let i=bullets.length-1;i>=0;i--){
     const bl = bullets[i];
-    bl.x += bl.vx*dt;
-    if(bl.x > canvas.width + 40) bullets.splice(i,1);
+    bl.y += bl.vy*dt;
+    if(bl.y < -40) bullets.splice(i,1);
   }
 
   // cows
@@ -367,7 +376,6 @@ function update(dt){
     const c = cows[i];
     const cw = sprites.cow.fw*sprites.cow.scale;
 
-    // move according to direction
     c.x += c.speed * dt * c.dir;
 
     c.ft += dt;
@@ -376,11 +384,11 @@ function update(dt){
     c.shoot -= dt;
     if(c.shoot<=0){
       const frontX = c.dir < 0 ? c.x + cw*0.25 : c.x + cw*0.75;
-      fireRocketFrom(frontX, c.y, c.homingShooter);
+      fireRocketFrom(frontX, c.y);
       c.shoot = 1 + Math.random()*1.3;
     }
 
-    // crossing: upgrade once
+    // crossing: upgrade once to 2-hit cow
     if(c.dir < 0 && c.x < -cw){
       if(!c.upgraded){
         c.upgraded = true;
@@ -416,12 +424,11 @@ function update(dt){
 
     boss.fire -= dt;
     if(boss.fire<=0){
-      fireRocketFrom(boss.x + bw*0.25, boss.y + 10, false);
-      fireRocketFrom(boss.x + bw*0.75, boss.y + 10, true); // one homing from boss
+      fireRocketFrom(boss.x + bw*0.25, boss.y + 10);
+      fireRocketFrom(boss.x + bw*0.75, boss.y + 10);
       boss.fire = 0.7;
     }
 
-    // upgrade once after crossing
     const bwCurrent = s.fw*s.scale;
     if(!boss.upgraded){
       if(boss.dir < 0 && boss.x < -bwCurrent){
@@ -449,27 +456,19 @@ function update(dt){
     }
   }
 
-  // rockets update: wiggle / homing
+  // rockets: ALL homing missiles now
   for(let i=rockets.length-1;i>=0;i--){
     const r = rockets[i];
     r.y += r.vy*dt;
 
-    // wiggly pattern
-    if(r.wiggle){
-      r.phase += dt * 8;
-      const amp = 70;
-      r.x += Math.sin(r.phase) * amp * dt;
-    }
-
-    // homing horizontally toward plane
-    if(r.homing){
-      const planeCenterX = plane.x + pw/2;
-      const dx = planeCenterX - r.x;
-      const maxHoriz = 140;
-      const adjust = dx * 0.8 * dt;
-      const clamped = Math.max(-maxHoriz*dt, Math.min(maxHoriz*dt, adjust));
-      r.x += clamped;
-    }
+    // homing horizontally towards plane center
+    const planeCenterX = plane.x + pw/2;
+    const dx = planeCenterX - r.x;
+    const maxStep = 180 * dt;
+    let step = dx * 0.6 * dt;
+    if(step > maxStep) step = maxStep;
+    if(step < -maxStep) step = -maxStep;
+    r.x += step;
 
     r.ft += dt;
     if(r.ft>0.08){ r.ft=0; r.f=(r.f+1)%sprites.greenRocket.frames; }
@@ -676,10 +675,10 @@ function render(){
 
   bombs.forEach(b=> drawSprite(sprites.blueBomb, b.f, b.x, b.y));
 
-  // rockets rotated 180 so they "shoot up"
+  // rockets rotated 180 so they "shoot up", but homing horizontally
   rockets.forEach(r=> drawSprite(sprites.greenRocket, r.f, r.x, r.y, false, true));
 
-  // bullets
+  // bullets (white dots straight up)
   ctx.fillStyle = "#fffb";
   bullets.forEach(bl=>{
     ctx.beginPath();
@@ -687,6 +686,7 @@ function render(){
     ctx.fill();
   });
 
+  // explosions
   explosions.forEach(e=>{
     const t = e.t / e.ttl;
     const r = e.maxR * t;
