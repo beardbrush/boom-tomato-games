@@ -69,24 +69,31 @@ function playSound(audio){
 }
 
 // ---- SPRITE META ----
+// ---- SPRITE META ----
 const sprites = {
   plane:{
     img:planeImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-    scale:0.16     // smaller plane
+        
+    // ↓ Smaller plane ↓
+    scale:0.13     // was 0.16
   },
   cow:{
     img:cowImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-    scale:1.15
+        
+    // ↓ Bigger cows ↓
+    scale:1.35     // was 1.15
   },
   bossCow:{
     img:cowImg, frames:4,
     get fw(){ return this.img.width/4; },
     get fh(){ return this.img.height; },
-    scale:1.9      // big boss cow
+        
+    // ↓ Bigger boss ↓
+    scale:2.2      // was 1.9
   },
   blueBomb:{
     img:blueBombImg, frames:2,
@@ -101,6 +108,7 @@ const sprites = {
     scale:0.70
   }
 };
+
 
 // ---- INPUT ----
 const keys = {};
@@ -532,3 +540,4 @@ function loop(t){
 </script>
 </body>
 </html>
+
