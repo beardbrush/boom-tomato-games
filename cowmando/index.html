@@ -43,19 +43,20 @@ function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
 addEventListener("resize", resize); resize();
 
 // ---- SPRITES ----
-const planeImg  = new Image(); planeImg.src  = "RedBarontriplane-Sheet.gif";
-const blueBombImg  = new Image(); blueBombImg.src  = "BlueBombBetterSpinv4-Sheet.gif";
-const greenBombImg = new Image(); greenBombImg.src = "GreenBombBetterSpinv4-Sheet.gif";
-const cowImg   = new Image(); cowImg.src   = "CowMando.png";
+const planeImg      = new Image(); planeImg.src      = "RedBarontriplane-Sheet.gif";
+const blueBombImg   = new Image(); blueBombImg.src   = "BlueBombBetterSpinv4-Sheet.gif";
+const greenBombImg  = new Image(); greenBombImg.src  = "GreenBombBetterSpinv4-Sheet.gif";
+const whiteBombImg  = new Image(); whiteBombImg.src  = "WhiteGreyBombBetterSpinv4-Sheet.gif";
+const cowImg        = new Image(); cowImg.src        = "CowMando.png";
 
-const assets = [planeImg, blueBombImg, greenBombImg, cowImg];
+const assets = [planeImg, blueBombImg, greenBombImg, whiteBombImg, cowImg];
 let loaded = 0;
 assets.forEach(i => i.onload = () => { if(++loaded === assets.length) start(); });
 
 // ---- SOUND SYSTEM ----
 const snd = {
-  engine: new Audio("sounds/plane_engine_loop.wav"),
-  moo: new Audio("sounds/moo.wav"),
+  engine:    new Audio("sounds/plane_engine_loop.wav"),
+  moo:       new Audio("sounds/moo.wav"),
   explosion: new Audio("sounds/explosion.wav")
 };
 snd.engine.loop = true;
@@ -99,6 +100,12 @@ const sprites = {
     get fw(){ return this.img.width/2; },
     get fh(){ return this.img.height; },
     scale:0.70
+  },
+  whiteMissile:{
+    img:whiteBombImg, frames:2,
+    get fw(){ return this.img.width/2; },
+    get fh(){ return this.img.height; },
+    scale:0.80
   }
 };
 
@@ -123,15 +130,9 @@ addEventListener("keydown", e=>{
 });
 addEventListener("keyup", e=>{ keys[e.key.toLowerCase()] = 0; });
 
-canvas.addEventListener("pointerdown", e=>{
-  mouseDown = true;
-});
-canvas.addEventListener("pointerup", e=>{
-  mouseDown = false;
-});
-canvas.addEventListener("pointerleave", e=>{
-  mouseDown = false;
-});
+canvas.addEventListener("pointerdown", ()=>{ mouseDown = true; });
+canvas.addEventListener("pointerup",   ()=>{ mouseDown = false; });
+canvas.addEventListener("pointerleave",()=>{ mouseDown = false; });
 
 // ---- GAME STATE ----
 let last = 0;
@@ -145,17 +146,23 @@ const plane = {
   facing:1,           // 1 = right, -1 = left
   frame:0, ft:0,
   bombCD:0.22, bt:0,
-  gunCD:0.10, gunTimer:0
+  gunCD:0.10, gunTimer:0,
+  clipSize:3,
+  clip:3,
+  reloadDelay:1.0,
+  reload:0
 };
 
 const cows = [];
-const bombs = [];
-const rockets = [];
-const bullets = [];
+const bombs = [];        // blue bombs
+const rockets = [];      // green rockets from regular cows
+const bullets = [];      // plane gun bullets
+const bossMissiles = []; // white homing missiles from boss
+const muzzleFlashes = [];
 const explosions = [];
 
 let cowTimer = 1;
-let cowRate = 2.4;
+let cowRate  = 2.4;
 
 // boss cow
 let boss = null;
@@ -184,9 +191,11 @@ function reset(){
   gameOver = false;
   score = 0;
   lives = 3;
-  cows.length = bombs.length = rockets.length = bullets.length = explosions.length = 0;
+  cows.length = bombs.length = rockets.length =
+    bullets.length = bossMissiles.length =
+    muzzleFlashes.length = explosions.length = 0;
   cowTimer = 1;
-  cowRate = 2.4;
+  cowRate  = 2.4;
   boss = null;
   bossAppeared = false;
 
@@ -198,13 +207,15 @@ function reset(){
   plane.bt = 0;
   plane.gunTimer = 0;
   plane.facing = 1;
+  plane.clip = plane.clipSize;
+  plane.reload = 0;
 
   snd.engine.pause();
   snd.engine.currentTime = 0;
   engineStarted = false;
 
   document.getElementById("centerMsg").textContent =
-    "WASD / Arrows = fly\nSPACE = drop blue bombs\nJ / F / K or TAP = machine gun (white shots forward)";
+    "WASD / Arrows = fly\nSPACE = drop blue bombs (3-shot clip)\nJ / F / K or TAP = machine gun (shots forward)\nAvoid green rockets and white homing missiles!";
 }
 
 function spawnCow(){
@@ -239,7 +250,7 @@ function spawnBossCow(){
     dir:-1,
     speed:25,
     ft:0, frame:0,
-    fire:0.8,
+    fire:0.9,
     hp:10,
     upgraded:false
   };
@@ -266,7 +277,7 @@ function dropBomb(){
   bombs.push({
     x:plane.x + w*front - bw/2,
     y:plane.y + h*0.3,
-    vy:240,
+    vy:260,
     ft:0, f:0
   });
 }
@@ -276,23 +287,38 @@ function fireBullet(){
   const w = p.fw*p.scale;
   const h = p.fh*p.scale;
 
-  // nose position based on facing
   const noseX = plane.facing === 1
-    ? plane.x + w * 0.9   // near right end
-    : plane.x + w * 0.1;  // near left end
-
-  const noseY = plane.y + h * 0.45; // roughly middle vertically
+    ? plane.x + w * 0.9
+    : plane.x + w * 0.1;
+  const noseY = plane.y + h * 0.45;
 
   bullets.push({
     x: noseX,
     y: noseY,
-    vx: plane.facing * 550, // forward along facing
+    vx: plane.facing * 550,
     radius: 4
+  });
+
+  // muzzle flash
+  muzzleFlashes.push({
+    x:noseX,
+    y:noseY,
+    t:0,
+    ttl:0.08
   });
 }
 
 function fireRocketFrom(x,y){
   rockets.push({
+    x,
+    y,
+    vy:-260,
+    ft:0, f:0
+  });
+}
+
+function fireBossMissileFrom(x,y){
+  bossMissiles.push({
     x,
     y,
     vy:-260,
@@ -340,11 +366,26 @@ function update(dt){
     plane.frame = (plane.frame+1)%p.frames;
   }
 
-  // bombs (SPACE)
+  // bomb reload logic
+  if(plane.reload > 0){
+    plane.reload -= dt;
+    if(plane.reload <= 0 && plane.clip === 0){
+      plane.clip = plane.clipSize;
+    }
+  }
+
+  // bombs (SPACE) with clip
   plane.bt -= dt;
-  if((keys[" "] || keys["space"]) && plane.bt <= 0){
+  if((keys[" "] || keys["space"]) &&
+     plane.bt <= 0 &&
+     plane.clip > 0 &&
+     plane.reload <= 0){
     dropBomb();
     plane.bt = plane.bombCD;
+    plane.clip--;
+    if(plane.clip === 0){
+      plane.reload = plane.reloadDelay;
+    }
   }
 
   // gun (J/F/K or tap)
@@ -369,6 +410,13 @@ function update(dt){
     const bl = bullets[i];
     bl.x += bl.vx*dt;
     if(bl.x < -40 || bl.x > canvas.width+40) bullets.splice(i,1);
+  }
+
+  // muzzle flashes
+  for(let i=muzzleFlashes.length-1;i>=0;i--){
+    const m = muzzleFlashes[i];
+    m.t += dt;
+    if(m.t > m.ttl) muzzleFlashes.splice(i,1);
   }
 
   // cows
@@ -431,9 +479,10 @@ function update(dt){
 
     boss.fire -= dt;
     if(boss.fire<=0){
-      fireRocketFrom(boss.x + bw*0.25, boss.y + 10);
-      fireRocketFrom(boss.x + bw*0.75, boss.y + 10);
-      boss.fire = 0.7;
+      // boss fires white homing missiles
+      fireBossMissileFrom(boss.x + bw*0.3, boss.y + 10);
+      fireBossMissileFrom(boss.x + bw*0.7, boss.y + 10);
+      boss.fire = 0.9;
     }
 
     const bwCurrent = s.fw*s.scale;
@@ -462,13 +511,32 @@ function update(dt){
     }
   }
 
-  // rockets: straight up
+  // green rockets (straight up)
   for(let i=rockets.length-1;i>=0;i--){
     const r = rockets[i];
     r.y += r.vy*dt;
     r.ft += dt;
     if(r.ft>0.08){ r.ft=0; r.f=(r.f+1)%sprites.greenRocket.frames; }
     if(r.y < -80) rockets.splice(i,1);
+  }
+
+  // white boss missiles (homing horizontally)
+  for(let i=bossMissiles.length-1;i>=0;i--){
+    const m = bossMissiles[i];
+    m.y += m.vy*dt;
+
+    // homing horizontally towards plane
+    const planeCenterX = plane.x + pw/2;
+    const dx = planeCenterX - m.x;
+    const maxStep = 220 * dt;
+    let step = dx * 0.6 * dt;
+    if(step > maxStep) step = maxStep;
+    if(step < -maxStep) step = -maxStep;
+    m.x += step;
+
+    m.ft += dt;
+    if(m.ft>0.08){ m.ft=0; m.f=(m.f+1)%sprites.whiteMissile.frames; }
+    if(m.y < -80) bossMissiles.splice(i,1);
   }
 
   // ---- collisions: bombs vs cows/boss ----
@@ -592,11 +660,25 @@ function update(dt){
       playSound(snd.explosion);
       lives--;
       if(lives<=0){
-        gameOver = true;
-        snd.engine.pause();
-        engineStarted = false;
-        document.getElementById("centerMsg").textContent =
-          "YOU WERE MILKED BY THE COWMANDOS 💥\nScore: "+score+"\nPress SPACE to play again";
+        endGame();
+      }
+    }
+  }
+
+  // ---- boss missiles vs plane ----
+  for(let i=bossMissiles.length-1;i>=0;i--){
+    const m = bossMissiles[i];
+    const mw = sprites.whiteMissile.fw*sprites.whiteMissile.scale;
+    const mh = sprites.whiteMissile.fh*sprites.whiteMissile.scale;
+    const pRect = { x:plane.x, y:plane.y, w:pw*0.7, h:ph*0.5 };
+
+    if(overlap(pRect.x,pRect.y,pRect.w,pRect.h,m.x-mw/2,m.y,mw,mh)){
+      bossMissiles.splice(i,1);
+      addExplosion(plane.x+pw/2, plane.y+ph/2, 1.4);
+      playSound(snd.explosion);
+      lives--;
+      if(lives<=0){
+        endGame();
       }
     }
   }
@@ -608,8 +690,17 @@ function update(dt){
     if(e.t > e.ttl) explosions.splice(i,1);
   }
 
-  document.getElementById("hud").textContent = `Score: ${score}  Lives: ${lives}`;
+  document.getElementById("hud").textContent =
+    `Score: ${score}  Lives: ${lives}  Bombs: ${plane.clip}/${plane.clipSize}`;
   if(!gameOver) document.getElementById("centerMsg").textContent = "";
+}
+
+function endGame(){
+  gameOver = true;
+  snd.engine.pause();
+  engineStarted = false;
+  document.getElementById("centerMsg").textContent =
+    "YOU WERE MILKED BY THE COWMANDOS 💥\nScore: "+score+"\nPress SPACE to play again";
 }
 
 function overlap(ax,ay,aw,ah,bx,by,bw,bh){
@@ -664,9 +755,9 @@ function render(){
   // plane
   drawSprite(sprites.plane, plane.frame, plane.x, plane.y, plane.facing===-1, false);
 
-  // cows — flip if dir > 0 (moving right) so they always face walking direction
+  // cows — flip if dir > 0 (moving right)
   cows.forEach(c=>{
-    const flip = c.dir > 0;   // sprite faces left by default
+    const flip = c.dir > 0;
     drawSprite(sprites.cow, c.frame, c.x, c.y, flip, false);
   });
 
@@ -676,10 +767,14 @@ function render(){
     drawSprite(sprites.bossCow, boss.frame, boss.x, boss.y, bossFlip, false);
   }
 
+  // blue bombs
   bombs.forEach(b=> drawSprite(sprites.blueBomb, b.f, b.x, b.y));
 
-  // rockets straight up (rotated 180)
+  // green rockets
   rockets.forEach(r=> drawSprite(sprites.greenRocket, r.f, r.x, r.y, false, true));
+
+  // white homing missiles
+  bossMissiles.forEach(m=> drawSprite(sprites.whiteMissile, m.f, m.x, m.y, false, true));
 
   // bullets (white dots forward)
   ctx.fillStyle = "#fffb";
@@ -687,6 +782,20 @@ function render(){
     ctx.beginPath();
     ctx.arc(bl.x, bl.y, bl.radius, 0, Math.PI*2);
     ctx.fill();
+  });
+
+  // muzzle flashes
+  muzzleFlashes.forEach(m=>{
+    const t = m.t / m.ttl;
+    const alpha = 1 - t;
+    const size = 10 * (1 - t);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#ffd966";
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, size, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
   });
 
   // explosions
