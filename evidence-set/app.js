@@ -62,7 +62,7 @@ const CaseTitles = [
   "The Ledger of Proof",
 ];
 
-const LawsonLines = {
+const WrenLines = {
   start: [
     "“There’s a specific set of evidence that fits this case. Find it.”",
     "“Build your set carefully. The board doesn’t lie — people do.”",
@@ -355,10 +355,10 @@ function endCase(won){
   $("#endRow").hidden = false;
 
   if (won){
-    setSpeech(pick(LawsonLines.win));
+    setSpeech(pick(WrenLines.win));
     setStatus("Case closed. You found the correct evidence set.");
   } else {
-    setSpeech(pick(LawsonLines.lose));
+    setSpeech(pick(WrenLines.lose));
     setStatus("No more attempts. The correct set remains undiscovered.");
   }
 
@@ -395,7 +395,7 @@ function reveal(){
   State.done = true;
   State.won = false;
   $("#endRow").hidden = false;
-  setSpeech(pick(LawsonLines.reveal));
+  setSpeech(pick(WrenLines.reveal));
   setStatus(`REVEALED SET: ${formatSecret(State.secret)} (case ended)`);
   updateMeta();
   updateSubmitEnabled();
@@ -404,7 +404,7 @@ function reveal(){
 
 function hint(){
   if (State.done) return;
-  setSpeech(pick(LawsonLines.hint));
+  setSpeech(pick(WrenLines.hint));
 }
 
 function applySettingsUI(){
@@ -431,7 +431,7 @@ function newCase(){
   $("#endRow").hidden = true;
   $("#caseTitle").textContent = pick(CaseTitles);
 
-  setSpeech(pick(LawsonLines.start));
+  setSpeech(pick(WrenLines.start));
   setStatus("Build your first evidence set.");
 
   updateMeta();
@@ -560,7 +560,7 @@ function boot(){
       ? (State.won ? "Case closed. (restored)" : `Case failed. Answer was: ${formatSecret(State.secret)} (restored)`)
       : "Investigation restored. Continue your next attempt."
     );
-    setSpeech(State.done ? (State.won ? pick(LawsonLines.win) : pick(LawsonLines.lose)) : pick(LawsonLines.start));
+    setSpeech(State.done ? (State.won ? pick(WrenLines.win) : pick(WrenLines.lose)) : pick(WrenLines.start));
     $("#endRow").hidden = !State.done;
 
     updateMeta();
@@ -573,3 +573,4 @@ function boot(){
 }
 
 boot();
+
