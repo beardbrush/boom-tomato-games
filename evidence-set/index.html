@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Evidence Set — Boom Tomato</title>
+  <meta name="description" content="Find the correct set of evidence clues with Detective Lawson. A mobile-friendly Mastermind puzzle by Boom Tomato Games." />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1120" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">🕵️</div>
+        <div class="brandText">
+          <div class="title">Evidence Set</div>
+          <div class="subtitle">A Detective’s Notebook puzzle</div>
+        </div>
+      </div>
+
+      <div class="topActions">
+        <button class="btn ghost" id="btnHelp" type="button" aria-expanded="false" aria-controls="howToPanel">How to play</button>
+        <button class="btn ghost" id="btnInstall" type="button" hidden>Install</button>
+        <button class="btn" id="btnNewCase" type="button">New case</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="panel left">
+        <div class="caseCard">
+          <div class="caseHeader">
+            <div class="caseBadge" id="caseBadge">CASE FILE</div>
+            <div class="caseMeta">
+              <div class="caseTitle" id="caseTitle">The Missing Evidence Set</div>
+              <div class="caseLine">
+                <span class="pill" id="pillAttempts">10 tries</span>
+                <span class="pill" id="pillCode">4 clues</span>
+                <span class="pill" id="pillDupes">duplicates: ON</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detective">
+            <div class="wrenSprite" aria-hidden="true">
+              <div class="wrenFrame" aria-hidden="true"></div>
+            </div>
+
+            <div class="speech">
+              <div class="speechName">Detective Lawson</div>
+              <p class="speechText" id="speechText">“There’s a specific set of evidence that fits this case. Find it.”</p>
+              <div class="speechControls">
+                <button class="btn small ghost" id="btnHint" type="button">Hint</button>
+                <button class="btn small ghost" id="btnReveal" type="button">Reveal</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings">
+            <div class="settingsRow">
+              <label class="label">Set size</label>
+              <div class="seg" role="group" aria-label="Set size">
+                <button class="segBtn" data-len="3" type="button">3</button>
+                <button class="segBtn active" data-len="4" type="button">4</button>
+                <button class="segBtn" data-len="5" type="button">5</button>
+              </div>
+            </div>
+
+            <div class="settingsRow">
+              <label class="label">Attempts</label>
+              <div class="seg" role="group" aria-label="Attempts">
+                <button class="segBtn" data-attempts="8" type="button">8</button>
+                <button class="segBtn active" data-attempts="10" type="button">10</button>
+                <button class="segBtn" data-attempts="12" type="button">12</button>
+              </div>
+            </div>
+
+            <div class="settingsRow">
+              <label class="label">Duplicates</label>
+              <button class="toggle" id="toggleDupes" type="button" aria-pressed="true">
+                <span class="toggleKnob" aria-hidden="true"></span>
+                <span class="toggleText" id="toggleDupesText">ON</span>
+              </button>
+            </div>
+
+            <div class="settingsRow">
+              <label class="label">Daily case</label>
+              <button class="toggle" id="toggleDaily" type="button" aria-pressed="false">
+                <span class="toggleKnob" aria-hidden="true"></span>
+                <span class="toggleText" id="toggleDailyText">OFF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="paletteCard">
+          <div class="paletteHeader">
+            <div class="h2">Clue binder</div>
+            <div class="legend">
+              <span class="dotLegend"><span class="peg small correct"></span> right clue, right slot</span>
+              <span class="dotLegend"><span class="peg small partial"></span> right clue, wrong slot</span>
+            </div>
+          </div>
+
+          <div class="palette" id="palette" aria-label="Clue palette"></div>
+
+          <div class="composer">
+            <div class="composerTop">
+              <div class="h3">Your evidence set</div>
+              <div class="composerActions">
+                <button class="btn small ghost" id="btnUndo" type="button">Undo</button>
+                <button class="btn small ghost" id="btnClear" type="button">Clear</button>
+              </div>
+            </div>
+
+            <div class="guessSlots" id="guessSlots" aria-label="Current evidence slots"></div>
+
+            <div class="submitRow">
+              <button class="btn wide" id="btnSubmit" type="button" disabled>Submit set</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel right">
+        <div class="howToCard" id="howToPanel" hidden>
+          <div class="howToHead">
+            <div class="h2">How to play</div>
+            <button class="iconBtn" id="btnHideHelp" type="button" aria-label="Hide">✕</button>
+          </div>
+          <div class="howToBody">
+            <p>
+              The case has a hidden <strong>set of clues</strong> in a specific order.
+              Build an evidence set from the binder and submit it.
+            </p>
+            <ul>
+              <li><strong>Right clue, right slot</strong> = exact match (filled mark).</li>
+              <li><strong>Right clue, wrong slot</strong> = partial match (hollow mark).</li>
+            </ul>
+            <p>Crack the set within your attempts and the case is closed.</p>
+          </div>
+          <div class="howToFoot">
+            <button class="btn" id="btnGotIt" type="button">Got it</button>
+          </div>
+        </div>
+
+        <div class="boardCard">
+          <div class="boardHeader">
+            <div class="h2">Case board</div>
+            <div class="boardMeta" id="boardMeta">Attempt 1 of 10</div>
+          </div>
+
+          <div class="board" id="board" aria-label="Attempt history"></div>
+
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+
+          <div class="endRow" id="endRow" hidden>
+            <button class="btn" id="btnPlayAgain" type="button">Play again</button>
+            <button class="btn ghost" id="btnCopyResult" type="button">Copy result</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footLeft">© Boom Tomato Games</div>
+      <div class="footRight">Tip: tap clues to build your set, then Submit.</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
