@@ -21,12 +21,6 @@
       "That briefcase lived in my strong room until he wanted it closer. My prints mean I handled it professionally — before he changed the lock behind my back."
     ]
   },
-
-  "successEnding": "{culprit} sinks into the chair as the timeline unravels.\n\n" +
-                   "The access logs, the fresh lock on the briefcase, the quiet gallery transfer — everything points one way. Profit, prestige, and one late-night opportunity were all {culprit} needed.\n\n" +
-                   "The arrest is silent. Outside, the city hums unaware. Tomorrow, headlines will say justice was served.",
-
-  "failureEnding": "You press {accused} hard — too hard — until the story seems to click. They break, or pretend to, and the cuffs close around the wrong wrists.\n\n" +
-                   "An hour later, Wren calls. Access logs don’t lie. Gallery records, lock history, and one overlooked card swipe all lead back to {culprit} instead.\n\n" +
-                   "A mistake in the dark. Someone innocent sleeps in a cell while the real hand walks free into the city night."
+  "successEnding": "{culprit} sinks into the chair as the timeline unravels.\n\nThe access logs, the fresh lock on the briefcase, the quiet gallery transfer — everything points one way. Profit, prestige, and one late-night opportunity were all {culprit} needed.\n\nThe arrest is silent. Outside, the city hums unaware. Tomorrow, headlines will say justice was served.",
+  "failureEnding": "You press {accused} hard — too hard — until the story seems to click. They break, or pretend to, and the cuffs close around the wrong wrists.\n\nAn hour later, Wren calls. Access logs don’t lie. Gallery records, lock history, and one overlooked card swipe all lead back to {culprit} instead.\n\nA mistake in the dark. Someone innocent sleeps in a cell while the real hand walks free into the city night."
 }
