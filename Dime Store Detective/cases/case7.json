@@ -1,0 +1,28 @@
+{
+  "id": 7,
+  "title": "Case 7 – The Missing Ledger",
+  "culprit": "peter",
+  "brief": "An accountant disappears into the basement boiler rooms and never walks back up. His briefcase held a ledger — names, bribes, debts, the city's bloodstream of favours.\nOnly three workers signed into that concrete maze:\n\nBEN — crate carrier, muscle for the depot.\nISSAC — technician with a key to every power box.\nPETER — riverwalk engineer, first signature of the night.\n\nThe boilers kept hissing. The accountant never resurfaced.\nThe ledger left with someone else.",
+  "wrenHint": "Paper trails never lie — only the people holding them do.\n\n• Peter signs in twice: one crisp entry, one smeared like a rush exit.\n• Ben claims the crate was empty — yet sweated hauling it downstairs.\n• Issac’s toolkit is dusty, untouched, like he arrived and thought better.\n\nSomeone used 'maintenance' as cover to disappear a man… and a book worth fortunes.",
+  "answers": {
+    "ben": [
+      "I carried the crate like the manifest told me to. Empty as my wallet. Heavy only because the stairwell is narrow and I'm built for loading bays, not ladders.",
+      "The accountant yelled at me once about boxes blocking his hall. Thin man. Loud voice. Not someone you remember fondly.",
+      "If you find my prints on the crate or briefcase, it's from pushing them aside to get the cart through. Secrets aren’t my business — freight is."
+    ],
+    "issac": [
+      "Lights were dead when I arrived. No hum from the transformers, no glow from the boiler gauges. Working in pitch black is for thrill-seekers, not licensed engineers.",
+      "We argued once over numbers — he wanted me to 'adjust' readings to make inefficiencies vanish. I told him electricity isn't magic. He preferred someone who’d fake sparks.",
+      "Fingerprints on the panel? That proves I opened it. Nothing more. I left the job half-done and half-paid. The ledger was his mess, not mine."
+    ],
+    "peter": [
+      "Boilers run hot that night. I took my readings, wrote them down, and planned to return later. Nothing unusual — routine work.",
+      "He hired me privately before. Wanted 'efficiency' without paperwork. I smelled trouble. Ledger like that — it tracks who owes who, and who needs to vanish.",
+      "He handed me the briefcase to move away from the heat — leather cracks near steam. I set it down. After that… well, someone must've wanted the book more than breath."
+    ]
+  },
+
+  "successEnding": "{culprit} folds when you show the second signature.\n\nTwo sign-ins, one exit. A heavy 'empty' crate, perfect size for a briefcase and a frightened accountant. The smeared log — signed in haste. Peter knew the ledger burned hotter than any boiler.\nHe walked out calm and lighter by one book.\n\nWhen cuffs close, he whispers, 'Everyone pays eventually'.",
+  
+  "failureEnding": "You pin it on {accused} — the crate boy, the technician, any man near the steam.\nThey crack under pressure, or give up fighting it.\n\nThen Wren calls. Smudged signature, false maintenance request, crate weight mismatch — every line leads back to {culprit}.\n\nThe ledger resurfaces weeks later in whispers and bribes, pages torn, names missing.\nJustice heats slow — but the wrong man cools in a cell."
+}

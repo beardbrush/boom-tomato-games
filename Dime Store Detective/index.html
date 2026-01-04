@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Dime Store Detective</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app">
+    <div class="game" id="gameRoot">
+      <canvas id="detective"></canvas>
+      <canvas id="suspect"></canvas>
+
+      <div id="topLeftButtons">
+        <button class="small-btn" id="briefBtn" type="button">Brief</button>
+        <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
+        <button class="small-btn" id="directoryBtn" type="button">Directory</button>
+      </div>
+
+      <div id="topRightButtons">
+        <button class="small-btn" id="audioBtn" type="button" aria-pressed="false" title="Toggle audio">
+          🔇 Audio
+        </button>
+      </div>
+
+      <!-- kept for future, currently hidden by CSS -->
+      <div id="suspectTabs"></div>
+
+      <div id="questions" role="group" aria-label="Questions">
+        <button class="question-btn" data-index="0" type="button">Where were you last night?</button>
+        <button class="question-btn" data-index="1" type="button">Did you know the victim?</button>
+        <button class="question-btn" data-index="2" type="button">Why are your fingerprints at the scene?</button>
+      </div>
+
+      <button id="accuseBtn" type="button" disabled>Accuse</button>
+      <button id="nextCaseBtn" type="button">Next Case</button>
+
+      <div class="dialogue-box" id="dialogBox">
+        <div class="dialogue-label" id="speakerLabel">DIME STORE DETECTIVE</div>
+        <div class="dialogue-text" id="answer">Loading case…</div>
+      </div>
+
+      <!-- Accuse overlay -->
+      <div id="accuseOverlay" aria-hidden="true">
+        <div class="accuse-panel" role="dialog" aria-modal="true" aria-label="Accuse suspect">
+          <div class="accuse-title">WHO DO YOU ACCUSE?</div>
+          <div class="accuse-row" id="accuseChoices"></div>
+          <div class="accuse-footer">
+            <button class="ghost-btn" id="cancelAccuse" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Directory overlay -->
+      <div id="directoryOverlay" aria-hidden="true">
+        <div class="directory-header">
+          <div class="directory-title">CITY DIRECTORY – CURRENT CASE</div>
+          <button class="directory-close" id="directoryClose" type="button">Close</button>
+        </div>
+        <div class="directory-grid" id="directoryGrid"></div>
+      </div>
+
+      <!-- toast / status -->
+      <div id="toast" class="toast" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script defer src="app.js"></script>
+</body>
+</html>
