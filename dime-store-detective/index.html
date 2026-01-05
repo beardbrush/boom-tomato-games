@@ -1,4 +1,3 @@
-<!-- index.html (Dime Store Detective) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,7 +13,6 @@
 
   <!-- iOS install helpers -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 
@@ -23,9 +21,9 @@
     <canvas id="detective"></canvas>
     <canvas id="suspect"></canvas>
 
-    <!-- ✅ NEW: single top bar that wraps nicely on mobile -->
+    <!-- ✅ FIXED: one unified top bar (wraps cleanly on mobile) -->
     <div id="topBar" role="toolbar" aria-label="Top controls">
-      <div class="topGroup" id="topLeftButtons">
+      <div class="topGroup topLeft">
         <button class="small-btn" id="briefBtn" type="button">Brief</button>
         <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
         <button class="small-btn" id="directoryBtn" type="button">Directory</button>
@@ -33,12 +31,11 @@
 
       <div class="topGroup topRight">
         <button class="small-btn" id="downloadBtn" type="button" hidden>Download</button>
-        <button class="small-btn" id="audioBtn" type="button">🔇 Audio</button>
+        <button class="small-btn" id="audioBtn" type="button" aria-pressed="false">🔇 Audio</button>
         <button class="small-btn danger" id="accuseBtn" type="button" disabled>Accuse</button>
       </div>
     </div>
 
-    <!-- kept (still hidden in CSS) -->
     <div id="suspectTabs"></div>
 
     <div id="questions">
@@ -47,7 +44,6 @@
       <button class="question-btn" data-index="2" type="button">Why are your fingerprints at the scene?</button>
     </div>
 
-    <!-- shown only when case ends -->
     <button id="nextCaseBtn" type="button">Next Case</button>
 
     <div class="dialogue-box" id="dialogBox">
@@ -56,13 +52,13 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast">
+    <div id="toast" aria-live="polite">
       <span id="toastText">Notice</span>
       <button id="toastRetry" type="button" style="display:none;">Retry</button>
     </div>
 
     <!-- Accuse overlay -->
-    <div id="accuseOverlay">
+    <div id="accuseOverlay" aria-hidden="true">
       <div class="accuse-panel">
         <div class="accuse-title">WHO DO YOU ACCUSE?</div>
         <div class="accuse-row" id="accuseChoices"></div>
@@ -73,7 +69,7 @@
     </div>
 
     <!-- Directory overlay -->
-    <div id="directoryOverlay">
+    <div id="directoryOverlay" aria-hidden="true">
       <div class="directory-header">
         <div class="directory-title">CITY DIRECTORY – CURRENT CASE</div>
         <button class="directory-close" id="directoryClose" type="button">Close</button>
