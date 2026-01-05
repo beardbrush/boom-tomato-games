@@ -34,7 +34,10 @@
 
       <div class="topActions" role="toolbar" aria-label="Top actions">
         <button class="btn ghost" id="btnHelp" type="button" aria-expanded="false" aria-controls="howToPanel">How to play</button>
-        <button class="btn ghost" id="btnInstall" type="button" hidden>Install</button>
+
+        <!-- ✅ Download/Install button (always visible) -->
+        <button class="btn ghost" id="btnInstall" type="button">Download</button>
+
         <button class="btn" id="btnNewCase" type="button">New case</button>
       </div>
     </header>
@@ -181,7 +184,6 @@
     </footer>
   </div>
 
-  <!-- ✅ defer prevents DOM timing issues and helps mobile reliability -->
   <script src="app.js" defer></script>
 </body>
 </html>
