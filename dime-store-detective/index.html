@@ -1,3 +1,4 @@
+<!-- index.html (Dime Store Detective) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -21,21 +22,25 @@
     <canvas id="detective"></canvas>
     <canvas id="suspect"></canvas>
 
-    <!-- ✅ FIXED: one unified top bar (wraps cleanly on mobile) -->
-    <div id="topBar" role="toolbar" aria-label="Top controls">
-      <div class="topGroup topLeft">
+    <!-- TOP BAR (mobile-safe) -->
+    <div id="topbar">
+      <div class="topbar-left">
         <button class="small-btn" id="briefBtn" type="button">Brief</button>
         <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
-        <button class="small-btn" id="directoryBtn" type="button">Directory</button>
       </div>
 
-      <div class="topGroup topRight">
-        <button class="small-btn" id="downloadBtn" type="button" hidden>Download</button>
-        <button class="small-btn" id="audioBtn" type="button" aria-pressed="false">🔇 Audio</button>
-        <button class="small-btn danger" id="accuseBtn" type="button" disabled>Accuse</button>
+      <div class="topbar-right">
+        <button class="small-btn more-btn" id="moreBtn" type="button" aria-expanded="false" aria-controls="moreMenu">⋯</button>
       </div>
     </div>
 
+    <!-- MORE MENU (AUDIO + DIRECTORY; scalable) -->
+    <div id="moreMenu" aria-hidden="true">
+      <button class="menu-btn" id="audioBtn" type="button">🔇 Audio</button>
+      <button class="menu-btn" id="directoryBtn" type="button">Directory</button>
+    </div>
+
+    <!-- (Tabs kept but still hidden by CSS, as before) -->
     <div id="suspectTabs"></div>
 
     <div id="questions">
@@ -44,7 +49,11 @@
       <button class="question-btn" data-index="2" type="button">Why are your fingerprints at the scene?</button>
     </div>
 
-    <button id="nextCaseBtn" type="button">Next Case</button>
+    <!-- BIG ACCUSE (bottom; premium + readable) -->
+    <div id="bottomBar">
+      <button id="accuseBtn" type="button" disabled>Accuse</button>
+      <button id="nextCaseBtn" type="button">Next Case</button>
+    </div>
 
     <div class="dialogue-box" id="dialogBox">
       <div class="dialogue-label" id="speakerLabel">DIME STORE DETECTIVE</div>
@@ -52,13 +61,13 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" aria-live="polite">
+    <div id="toast">
       <span id="toastText">Notice</span>
       <button id="toastRetry" type="button" style="display:none;">Retry</button>
     </div>
 
     <!-- Accuse overlay -->
-    <div id="accuseOverlay" aria-hidden="true">
+    <div id="accuseOverlay">
       <div class="accuse-panel">
         <div class="accuse-title">WHO DO YOU ACCUSE?</div>
         <div class="accuse-row" id="accuseChoices"></div>
@@ -69,7 +78,7 @@
     </div>
 
     <!-- Directory overlay -->
-    <div id="directoryOverlay" aria-hidden="true">
+    <div id="directoryOverlay">
       <div class="directory-header">
         <div class="directory-title">CITY DIRECTORY – CURRENT CASE</div>
         <button class="directory-close" id="directoryClose" type="button">Close</button>
@@ -80,6 +89,7 @@
 
   <script src="app.js" defer></script>
 
+  <!-- Optional SW (offline/PWA) -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
