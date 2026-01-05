@@ -1,4 +1,7 @@
-/* app.js — Dime Store Detective (hybrid topbar + desktop-only detective slide-in) */
+/* app.js — Dime Store Detective (hybrid topbar + desktop-only detective slide-in)
+   ✅ Suspect tabs removed everywhere (Directory-only selection)
+   ✅ Mobile: detective slide-in disabled via CSS + isMobileLayout guard
+*/
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
@@ -9,7 +12,6 @@ function urlFor(rel){
 
 /* ================== RESPONSIVE RULES ================== */
 function isMobileLayout(){
-  // “Mobile” here means: narrow OR coarse pointer (touch-first devices)
   return window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
 }
 
@@ -33,13 +35,10 @@ if (moreBtn && moreMenu){
     e.stopPropagation();
     toggleMoreMenu();
   });
-  // click outside closes
   document.addEventListener("click", ()=> closeMoreMenu());
-  // ESC closes
   document.addEventListener("keydown", (e)=>{
     if (e.key === "Escape") closeMoreMenu();
   });
-  // clicks inside shouldn’t bubble to document close immediately
   moreMenu.addEventListener("click", (e)=> e.stopPropagation());
 }
 
@@ -86,7 +85,6 @@ async function unlockAudioOnce(){
   if (AudioState.unlocked) return;
   AudioState.unlocked = true;
 
-  // iOS “unlock” trick
   try{
     music.muted = true;
     await music.play();
@@ -144,8 +142,6 @@ audioBtn.addEventListener("click", async ()=>{
   playClick();
   if (AudioState.enabled) startMusicIfEnabled();
   else stopMusic();
-
-  // nice: close menu after choosing
   closeMoreMenu();
 });
 
@@ -436,7 +432,6 @@ const suspectState = { state:"idle", frame:0, last:0 };
 const speakerLabel = $("#speakerLabel");
 const answerEl = $("#answer");
 const questionButtons = $$(".question-btn");
-const suspectTabsContainer = $("#suspectTabs");
 
 const briefBtn = $("#briefBtn");
 const copBtn = $("#copBtn");
@@ -543,7 +538,6 @@ function mainLoop(timestamp){
 requestAnimationFrame(mainLoop);
 
 function drawDetective(t){
-  // Canvas may be hidden on mobile by CSS, but drawing is harmless.
   if (!detImg.complete) return;
   if (!detLast) detLast = t;
   if (t - detLast >= 1000 / DET_FPS){
@@ -624,20 +618,18 @@ questionButtons.forEach(btn=>{
 
     await unlockAudioOnce();
     playClick();
-
     closeMoreMenu();
 
     viewMode = "suspect";
     anyQuestionAsked = true;
     accuseBtn.disabled = false;
 
-    // ✅ Desktop-only: detective slides in when asking
+    // Desktop-only: detective slides in when asking
     if (!isMobileLayout()){
       if (!detCanvas.classList.contains("visible")){
         detCanvas.classList.add("visible");
       }
     } else {
-      // Make sure it never shows if layout changes while playing
       detCanvas.classList.remove("visible");
     }
 
@@ -705,36 +697,6 @@ function setCurrentSuspect(key){
   suspectState.state = "idle";
   suspectState.frame = 0;
   suspectState.last = 0;
-}
-
-/* build suspect tabs (hidden right now, but stays correct) */
-let suspectTabs = [];
-function renderSuspectTabs(){
-  suspectTabsContainer.innerHTML = "";
-  suspectTabs = [];
-  activeSuspects.forEach(key=>{
-    const s = suspects[key];
-    if (!s) return;
-
-    const btn = document.createElement("button");
-    btn.className = "suspect-tab";
-    btn.dataset.suspect = key;
-    btn.textContent = s.displayName;
-
-    btn.addEventListener("click", async ()=>{
-      if (caseClosed) return;
-      await unlockAudioOnce();
-      playClick();
-      closeMoreMenu();
-      if (key !== currentSuspectKey){
-        resetQuestions();
-        setCurrentSuspect(key);
-      }
-    });
-
-    suspectTabsContainer.appendChild(btn);
-    suspectTabs.push(btn);
-  });
 }
 
 /* ====== DIRECTORY ====== */
@@ -857,14 +819,13 @@ directoryClose.addEventListener("click", async ()=>{
   directoryOverlay.setAttribute("aria-hidden", "true");
 });
 
-/* ====== Brief & Wren hint (FAIL-SAFE) ====== */
+/* ====== Brief & Wren hint ====== */
 briefBtn.addEventListener("click", async ()=>{
   if (caseClosed) return;
   await unlockAudioOnce();
   playClick();
   closeMoreMenu();
 
-  // Brief is pure text; keep current viewMode as suspect so portrait remains stable
   viewMode = "suspect";
   speakerLabel.textContent = "CASE BRIEF";
 
@@ -988,30 +949,23 @@ function applyCaseToSuspects(caseData){
   }
 }
 
-/* Decide who is active in this case */
 function inferActiveSuspects(caseData){
   if (Array.isArray(caseData.suspects) && caseData.suspects.length){
     return caseData.suspects.filter(k => suspects[k]);
   }
-
   const inferred = new Set();
-
   if (caseData.culprit && suspects[caseData.culprit]) inferred.add(caseData.culprit);
-
   if (caseData.answers){
     Object.keys(caseData.answers).forEach(k=>{
       if (suspects[k]) inferred.add(k);
     });
   }
-
   if (!inferred.size){
     DEFAULT_CASE.suspects.forEach(k=>inferred.add(k));
   }
-
   return Array.from(inferred);
 }
 
-/* Decide who appears in the directory */
 function inferDirectory(caseData, active){
   if (Array.isArray(caseData.directory) && caseData.directory.length){
     return caseData.directory.filter(k => suspects[k]);
@@ -1019,16 +973,12 @@ function inferDirectory(caseData, active){
   return active.slice();
 }
 
-/* ✅ SAFER CASE LOADER: detects HTML returned instead of JSON */
 async function loadCase(index){
   caseClosed = false;
   anyQuestionAsked = false;
   accuseBtn.disabled = true;
   nextCaseBtn.style.display = "none";
-
-  // On new case: never show detective on mobile; keep it reset on desktop too
   detCanvas.classList.remove("visible");
-
   resetQuestions();
 
   const path = `cases/case${index}.json`;
@@ -1043,8 +993,8 @@ async function loadCase(index){
 
     const ct = (res.headers.get("content-type") || "").toLowerCase();
     const raw = await res.text();
-
     const trimmed = raw.trim();
+
     const looksLikeHtml = trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
     const looksJson = trimmed.startsWith("{") || trimmed.startsWith("[");
 
@@ -1064,11 +1014,10 @@ async function loadCase(index){
     activeSuspects  = inferActiveSuspects(data);
     directoryPeople = inferDirectory(data, activeSuspects);
 
-    renderSuspectTabs();
     setCurrentSuspect(activeSuspects[0] || "lawson");
 
     speakerLabel.textContent = `CASE ${data.id || index}`;
-    answerEl.textContent = data.title || "New case loaded. Choose a suspect.";
+    answerEl.textContent = data.title || "New case loaded. Choose a question.";
 
     toast(`Loaded Case ${data.id || index}`);
   }catch(err){
@@ -1084,8 +1033,7 @@ async function loadCase(index){
     activeSuspects  = DEFAULT_CASE.suspects.slice();
     directoryPeople = DEFAULT_CASE.directory.slice();
 
-    renderSuspectTabs();
-    setCurrentSuspect(activeSuspects[0]);
+    setCurrentSuspect(activeSuspects[0] || "lawson");
 
     speakerLabel.textContent = `CASE ${index}`;
     answerEl.textContent =
@@ -1101,7 +1049,7 @@ async function loadCase(index){
 
 /* ====== INIT ====== */
 (async function init(){
-  // Service worker (PWA)
+  // ✅ Only register SW here (remove duplicate in index.html)
   if ("serviceWorker" in navigator){
     window.addEventListener("load", ()=>{
       navigator.serviceWorker.register(urlFor("sw.js")).catch(()=>{});
@@ -1113,13 +1061,9 @@ async function loadCase(index){
   activeSuspects  = DEFAULT_CASE.suspects.slice();
   directoryPeople = DEFAULT_CASE.directory.slice();
 
-  renderSuspectTabs();
   setCurrentSuspect("lawson");
-
   loadCase(currentCaseIndex);
 
-  // If layout changes (rotate / resize), enforce the rule:
-  // detective slide-in is desktop-only.
   window.addEventListener("resize", ()=>{
     if (isMobileLayout()){
       detCanvas.classList.remove("visible");
