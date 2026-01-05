@@ -1,488 +1,101 @@
-/* style.css (Dime Store Detective) */
-*{margin:0;padding:0;box-sizing:border-box;}
+<!-- index.html (Dime Store Detective) -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Detective Interrogation – Dime Store Detective</title>
 
-html, body{ height:100%; }
+  <link rel="stylesheet" href="style.css" />
 
-body{
-  min-height:100vh;
-  min-height:100svh;
-  background:#050814;
-  color:#e5e7eb;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#050814" />
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  <!-- iOS install helpers -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
 
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-           env(safe-area-inset-bottom) env(safe-area-inset-left);
+<body>
+  <div class="game" id="gameRoot">
+    <canvas id="detective"></canvas>
+    <canvas id="suspect"></canvas>
 
-  overflow:hidden;
-}
+    <!-- TOP BAR (mobile-safe) -->
+    <div id="topbar">
+      <div class="topbar-left">
+        <button class="small-btn" id="briefBtn" type="button">Brief</button>
+        <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
+      </div>
 
-/* Main game card: responsive */
-.game{
-  position:relative;
+      <div class="topbar-right">
+        <button class="small-btn more-btn" id="moreBtn" type="button" aria-expanded="false" aria-controls="moreMenu">⋯</button>
+      </div>
+    </div>
 
-  width:min(1100px, calc(100vw - 24px));
-  height:min(650px, calc(100svh - 24px));
+    <!-- MORE MENU (AUDIO + DIRECTORY; scalable) -->
+    <div id="moreMenu" aria-hidden="true">
+      <button class="menu-btn" id="audioBtn" type="button">🔇 Audio</button>
+      <button class="menu-btn" id="directoryBtn" type="button">Directory</button>
+    </div>
 
-  background:radial-gradient(circle at 20% 10%, #1f2937 0, #020617 55%);
-  box-shadow:0 40px 120px rgba(0,0,0,.9);
-  border-radius:18px;
-  border:1px solid rgba(148,163,184,.35);
-  margin:auto;
-}
+    <!-- (Tabs kept but still hidden by CSS, as before) -->
+    <div id="suspectTabs"></div>
 
-/* Detective canvas (left) */
-#detective{
-  position:absolute;
-  top:160px;
-  left:-360px; /* off-screen start */
-  width:300px;
-  height:400px;
-  image-rendering:pixelated;
-  transition:left .7s ease-out, opacity .7s ease-out;
-  filter:drop-shadow(0 0 24px #000a);
-  opacity:0;
-}
-#detective.visible{
-  left:60px;
-  opacity:1;
-}
+    <div id="questions">
+      <button class="question-btn" data-index="0" type="button">Where were you last night?</button>
+      <button class="question-btn" data-index="1" type="button">Did you know the victim?</button>
+      <button class="question-btn" data-index="2" type="button">Why are your fingerprints at the scene?</button>
+    </div>
 
-/* Right-side canvas (suspect OR Wren) */
-#suspect{
-  position:absolute;
-  top:90px;              /* leave space for top bar */
-  right:40px;
-  image-rendering:pixelated;
-  filter:drop-shadow(0 0 24px #000a);
-}
+    <!-- BIG ACCUSE (bottom; premium + readable) -->
+    <div id="bottomBar">
+      <button id="accuseBtn" type="button" disabled>Accuse</button>
+      <button id="nextCaseBtn" type="button">Next Case</button>
+    </div>
 
-/* Top controls (tabs kept) */
-#suspectTabs{
-  position:absolute;
-  top:32px;
-  right:160px;
-  display:none; /* hidden so players only use Directory */
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  max-width:50%;
-}
+    <div class="dialogue-box" id="dialogBox">
+      <div class="dialogue-label" id="speakerLabel">DIME STORE DETECTIVE</div>
+      <div class="dialogue-text" id="answer">Loading case…</div>
+    </div>
 
-.suspect-tab{
-  padding:6px 12px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.6);
-  background:rgba(15,23,42,.9);
-  color:#e5e7eb;
-  font-size:.8rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  opacity:.6;
-  transition:.15s;
-}
-.suspect-tab:hover{ opacity:.9; background:#111827; }
-.suspect-tab.active{
-  opacity:1;
-  background:#1e293b;
-  border-color:rgba(148,163,184,.9);
-}
+    <!-- Toast -->
+    <div id="toast">
+      <span id="toastText">Notice</span>
+      <button id="toastRetry" type="button" style="display:none;">Retry</button>
+    </div>
 
-/* ✅ REAL TOP BAR (replaces jumbled absolute buttons) */
-#topBar{
-  position:absolute;
-  top: calc(16px + env(safe-area-inset-top));
-  left: calc(16px + env(safe-area-inset-left));
-  right: calc(16px + env(safe-area-inset-right));
-  z-index:20;
+    <!-- Accuse overlay -->
+    <div id="accuseOverlay">
+      <div class="accuse-panel">
+        <div class="accuse-title">WHO DO YOU ACCUSE?</div>
+        <div class="accuse-row" id="accuseChoices"></div>
+        <div class="accuse-footer">
+          <button class="ghost-btn" id="cancelAccuse" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
 
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-}
+    <!-- Directory overlay -->
+    <div id="directoryOverlay">
+      <div class="directory-header">
+        <div class="directory-title">CITY DIRECTORY – CURRENT CASE</div>
+        <button class="directory-close" id="directoryClose" type="button">Close</button>
+      </div>
+      <div class="directory-grid" id="directoryGrid"></div>
+    </div>
+  </div>
 
-.topGroup{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-  min-width:0;
-}
-.topRight{
-  margin-left:auto;
-  justify-content:flex-end;
-}
+  <script src="app.js" defer></script>
 
-/* Unified button style */
-.small-btn{
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.6);
-  background:rgba(15,23,42,.9);
-  color:#e5e7eb;
-  font-size:.78rem;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  cursor:pointer;
-  opacity:.92;
-  transition:.15s;
-  touch-action:manipulation;
-  white-space:nowrap;
-}
-.small-btn:hover{ opacity:1; background:#111827; }
-.small-btn:disabled{ opacity:.4; cursor:default; }
-
-.small-btn.danger{
-  border-color: rgba(248,113,113,.8);
-  background: rgba(127,29,29,.9);
-  color:#fee2e2;
-}
-.small-btn.danger:hover:not(:disabled){ background:#b91c1c; }
-
-/* Question list */
-#questions{
-  position:absolute;
-  left:260px;
-  right:400px;
-  bottom:220px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  z-index:4;
-}
-
-.question-btn{
-  padding:9px 12px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.45);
-  background:rgba(15,23,42,.9);
-  color:#e5e7eb;
-  text-align:left;
-  font-size:.95rem;
-  cursor:pointer;
-  backdrop-filter:blur(10px);
-  transition:background .15s, transform .05s;
-  touch-action:manipulation;
-}
-.question-btn:hover:not(.used):not(:disabled){
-  background:#111827;
-  transform:translateY(-1px);
-}
-.question-btn.used,
-.question-btn:disabled{
-  opacity:.35;
-  cursor:default;
-}
-
-/* Dialogue box */
-.dialogue-box{
-  position:absolute;
-  left:220px;
-  right:220px;
-  bottom:40px;
-  min-height:110px;
-  padding:14px 18px;
-  background:rgba(15,23,42,.92);
-  border-radius:14px;
-  border:1px solid rgba(51,65,85,.8);
-  backdrop-filter:blur(16px);
-  box-shadow:0 18px 60px rgba(0,0,0,.8);
-  font-size:1.02rem;
-  line-height:1.4rem;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  z-index:4;
-}
-
-.dialogue-label{
-  font-size:.8rem;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:rgba(148,163,184,.9);
-}
-.dialogue-text{ white-space:pre-wrap; }
-
-/* Next case button */
-#nextCaseBtn{
-  position:absolute;
-  top: calc(64px + env(safe-area-inset-top));
-  right: calc(16px + env(safe-area-inset-right));
-  padding:8px 14px;
-  border-radius:999px;
-  border:1px solid rgba(52,211,153,.8);
-  background:rgba(6,95,70,.95);
-  color:#ecfdf5;
-  font-size:.8rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  transition:.15s;
-  display:none;
-  z-index:6;
-  touch-action:manipulation;
-}
-#nextCaseBtn:hover{ background:#047857; }
-
-/* Accuse overlay */
-#accuseOverlay{
-  position:absolute;
-  inset:0;
-  background:rgba(15,23,42,.85);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:20;
-}
-#accuseOverlay.active{ display:flex; }
-
-.accuse-panel{
-  width:min(420px, calc(100vw - 28px));
-  padding:18px 20px;
-  background:rgba(15,23,42,.98);
-  border-radius:18px;
-  border:1px solid rgba(148,163,184,.8);
-  box-shadow:0 24px 100px rgba(0,0,0,.9);
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.accuse-title{
-  font-size:.9rem;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  color:rgba(148,163,184,.9);
-}
-.accuse-row{ display:flex; flex-direction:column; gap:8px; }
-
-.accuse-btn{
-  padding:8px 12px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.7);
-  background:#020617;
-  color:#e5e7eb;
-  text-align:left;
-  cursor:pointer;
-  transition:.15s;
-  touch-action:manipulation;
-}
-.accuse-btn:hover{ background:#111827; }
-
-.accuse-footer{ display:flex; justify-content:flex-end; }
-
-.ghost-btn{
-  background:transparent;
-  border:none;
-  color:rgba(148,163,184,.85);
-  font-size:.8rem;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-
-/* Directory overlay */
-#directoryOverlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to bottom, rgba(15,23,42,.96), rgba(15,23,42,.92));
-  display:none;
-  flex-direction:column;
-  padding:28px 40px;
-  z-index:15;
-}
-#directoryOverlay.active{ display:flex; }
-
-.directory-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:16px;
-}
-.directory-title{
-  font-size:.9rem;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  color:rgba(148,163,184,.95);
-}
-.directory-close{
-  background:transparent;
-  border:none;
-  color:rgba(148,163,184,.85);
-  font-size:.8rem;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-
-.directory-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px 18px;
-  overflow-y:auto;
-  padding-bottom:12px;
-}
-
-.directory-card{
-  display:flex;
-  gap:10px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(51,65,85,.9);
-  background:radial-gradient(circle at 0 0, rgba(148,163,184,.12), rgba(15,23,42,.98));
-}
-
-.directory-avatar{
-  width:40px;
-  height:40px;
-  border-radius:8px;
-  background:rgba(15,23,42,.9);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:.75rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  border:1px solid rgba(148,163,184,.5);
-}
-
-.directory-main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.directory-name{
-  font-size:.82rem;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-}
-.directory-job{
-  font-size:.76rem;
-  color:rgba(148,163,184,.95);
-}
-.directory-loc{
-  font-size:.72rem;
-  color:rgba(148,163,184,.8);
-}
-.directory-tagline{
-  font-size:.75rem;
-  color:rgba(209,213,219,.95);
-  margin-top:2px;
-}
-
-.directory-status{
-  margin-top:4px;
-  font-size:.7rem;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  color:rgba(148,163,184,.9);
-}
-.directory-status-pill{
-  padding:2px 8px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.5);
-  font-size:.66rem;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  background:rgba(15,23,42,.9);
-}
-
-.directory-footer-row{
-  margin-top:4px;
-  display:flex;
-  justify-content:flex-end;
-}
-
-.directory-interview{
-  padding:4px 10px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.7);
-  background:#020617;
-  color:#e5e7eb;
-  font-size:.7rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-.directory-interview:hover{ background:#111827; }
-
-/* Toast */
-#toast{
-  position:absolute;
-  top: calc(92px + env(safe-area-inset-top));
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(2,6,23,.92);
-  border:1px solid rgba(148,163,184,.45);
-  color:#e5e7eb;
-  padding:10px 12px;
-  border-radius:999px;
-  font-size:.78rem;
-  letter-spacing:.06em;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .2s, transform .2s;
-  z-index:50;
-  backdrop-filter:blur(10px);
-}
-#toast.show{
-  opacity:1;
-  pointer-events:auto;
-  transform:translateX(-50%) translateY(2px);
-}
-#toast button{
-  pointer-events:auto;
-  border:1px solid rgba(148,163,184,.45);
-  background:rgba(15,23,42,.9);
-  color:#e5e7eb;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:.72rem;
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-#toast button:hover{ background:#111827; }
-
-/* Mobile tightening */
-@media (max-width: 820px){
-  #questions{ left:18px; right:18px; bottom:200px; }
-  .dialogue-box{ left:18px; right:18px; bottom:18px; }
-  #suspect{ right:16px; top:80px; }
-
-  #topBar{
-    top: calc(10px + env(safe-area-inset-top));
-    left: calc(10px + env(safe-area-inset-left));
-    right: calc(10px + env(safe-area-inset-right));
-    gap:8px;
-  }
-
-  #nextCaseBtn{
-    right: calc(10px + env(safe-area-inset-right));
-    top: calc(70px + env(safe-area-inset-top));
-  }
-
-  #detective{ display:none; } /* saves space on small screens */
-}
-
-/* Extra-small phones */
-@media (max-width: 420px){
-  .small-btn{
-    font-size:.72rem;
-    padding:6px 9px;
-  }
-  #topBar{ gap:6px; }
-  .topGroup{ gap:6px; }
-}
+  <!-- Optional SW (offline/PWA) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
