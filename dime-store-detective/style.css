@@ -1,3 +1,4 @@
+/* style.css (Dime Store Detective) */
 *{margin:0;padding:0;box-sizing:border-box;}
 
 html, body{
@@ -61,7 +62,7 @@ body{
   filter:drop-shadow(0 0 24px #000a);
 }
 
-/* Top controls */
+/* Top controls (tabs kept) */
 #suspectTabs{
   position:absolute;
   top:32px;
@@ -93,14 +94,32 @@ body{
   border-color:rgba(148,163,184,.9);
 }
 
-#topLeftButtons{
+/* ✅ NEW: unified top bar that wraps on mobile */
+#topBar{
   position:absolute;
   top:32px;
   left:40px;
+  right:40px;
+  z-index:6;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:0;
+}
+
+.topGroup{
   display:flex;
   gap:8px;
   align-items:center;
-  z-index:5;
+  flex-wrap:wrap;
+  min-width:0;
+}
+.topRight{
+  justify-content:flex-end;
+  margin-left:auto;
 }
 
 .small-btn{
@@ -113,11 +132,20 @@ body{
   letter-spacing:.06em;
   text-transform:uppercase;
   cursor:pointer;
-  opacity:.8;
+  opacity:.86;
   transition:.15s;
   touch-action:manipulation;
+  white-space:nowrap;
 }
 .small-btn:hover{ opacity:1; background:#111827; }
+.small-btn:disabled{ opacity:.4; cursor:default; }
+
+.small-btn.danger{
+  border-color: rgba(248,113,113,.8);
+  background: rgba(127,29,29,.9);
+  color:#fee2e2;
+}
+.small-btn.danger:hover:not(:disabled){ background:#b91c1c; }
 
 /* Question list */
 #questions{
@@ -183,49 +211,10 @@ body{
 }
 .dialogue-text{ white-space:pre-wrap; }
 
-/* Buttons right */
-#audioBtn{
-  position:absolute;
-  top:28px;
-  right:140px;
-  padding:8px 12px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.6);
-  background:rgba(15,23,42,.9);
-  color:#e5e7eb;
-  font-size:.8rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  transition:.15s;
-  z-index:6;
-  touch-action:manipulation;
-}
-#audioBtn:hover{ background:#111827; }
-
-#accuseBtn{
-  position:absolute;
-  top:28px;
-  right:40px;
-  padding:8px 16px;
-  border-radius:999px;
-  border:1px solid rgba(248,113,113,.8);
-  background:rgba(127,29,29,.9);
-  color:#fee2e2;
-  font-size:.8rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  transition:.15s;
-  z-index:6;
-  touch-action:manipulation;
-}
-#accuseBtn:hover:not(:disabled){ background:#b91c1c; }
-#accuseBtn:disabled{ opacity:.4; cursor:default; }
-
+/* Next case button (kept absolute, shown only when needed) */
 #nextCaseBtn{
   position:absolute;
-  top:70px;
+  top:84px;
   right:40px;
   padding:8px 14px;
   border-radius:999px;
@@ -474,10 +463,29 @@ body{
   #questions{ left:18px; right:18px; bottom:200px; }
   .dialogue-box{ left:18px; right:18px; bottom:18px; }
   #suspect{ right:16px; top:70px; }
-  #topLeftButtons{ left:16px; top:16px; }
-  #accuseBtn{ right:16px; top:16px; }
-  #audioBtn{ right:120px; top:16px; }
-  #nextCaseBtn{ right:16px; top:58px; }
+
+  /* ✅ top bar becomes tighter and uses safe area */
+  #topBar{
+    top:16px;
+    left:16px;
+    right:16px;
+    gap:8px;
+  }
+
+  /* prefer right group to sit under if needed */
+  .topRight{ margin-left:0; }
+
+  #nextCaseBtn{ right:16px; top:92px; }
 
   #detective{ display:none; } /* saves space on small screens */
+}
+
+/* Extra-small phones: make buttons slightly smaller so they don't collide */
+@media (max-width: 420px){
+  .small-btn{
+    font-size:.72rem;
+    padding:6px 9px;
+  }
+  #topBar{ gap:6px; }
+  .topGroup{ gap:6px; }
 }
