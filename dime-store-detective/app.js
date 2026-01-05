@@ -1,3 +1,4 @@
+// app.js (Dime Store Detective)
 /* Dime Store Detective — split-file build (mobile friendly + PWA-ready) */
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -27,6 +28,72 @@ function toast(msg, { retry=false, onRetry=null } = {}){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 2600);
 }
+
+/* ================== DOWNLOAD / INSTALL (PWA) ================== */
+const downloadBtn = $("#downloadBtn");
+let deferredInstallPrompt = null;
+
+function isIos(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isStandalone(){
+  // iOS: navigator.standalone, others: display-mode
+  return (window.navigator.standalone === true) || window.matchMedia?.("(display-mode: standalone)")?.matches;
+}
+
+function setupDownloadButton(){
+  if (!downloadBtn) return;
+
+  // Hide if already installed
+  if (isStandalone()){
+    downloadBtn.hidden = true;
+    return;
+  }
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    downloadBtn.hidden = false;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    downloadBtn.hidden = true;
+    toast("Installed. You can launch it from your home screen.");
+  });
+
+  downloadBtn.addEventListener("click", async () => {
+    await unlockAudioOnce();
+    playClick();
+
+    // Chrome/Android/desktop PWA prompt
+    if (deferredInstallPrompt){
+      downloadBtn.disabled = true;
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch {}
+      deferredInstallPrompt = null;
+      downloadBtn.disabled = false;
+      downloadBtn.hidden = true;
+      return;
+    }
+
+    // iOS fallback instructions
+    if (isIos()){
+      toast("On iPhone: Share → Add to Home Screen to install.");
+      return;
+    }
+
+    // generic fallback
+    toast("Install isn’t available on this browser. Try Chrome.");
+  });
+
+  // If iOS, show button as “Download” anyway (no native prompt)
+  if (isIos() && !isStandalone()){
+    downloadBtn.hidden = false;
+  }
+}
+
+setupDownloadButton();
 
 /* ================== AUDIO ================== */
 const audioBtn = $("#audioBtn");
