@@ -5,35 +5,62 @@ const STORAGE_KEY = "btg_evidence_set_v1";
 const HELP_SEEN_KEY = "btg_evidence_set_help_seen_v1";
 
 /* -----------------------------
-   PWA INSTALL (Add to Home Screen)
+   PWA DOWNLOAD (Install / Add to Home Screen)
    ----------------------------- */
 let deferredInstallPrompt = null;
+
+function isIos(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isInStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
 
 function setupInstallUI(){
   const btn = $("#btnInstall");
   if (!btn) return;
 
+  // Always visible as "Download"
+  btn.hidden = false;
+  btn.textContent = "Download";
+  btn.disabled = false;
+
+  // If already installed, reflect it
+  if (isInStandalone()){
+    btn.textContent = "Downloaded";
+    btn.disabled = true;
+    return;
+  }
+
+  // Chrome/Edge/Android: capture the real install prompt
   window.addEventListener("beforeinstallprompt", (e) => {
-    // prevent mini-infobar
     e.preventDefault();
     deferredInstallPrompt = e;
-    btn.hidden = false;
+  });
+
+  // If installation succeeds
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    btn.textContent = "Downloaded";
+    btn.disabled = true;
   });
 
   btn.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
-    btn.disabled = true;
-    deferredInstallPrompt.prompt();
-    try { await deferredInstallPrompt.userChoice; } catch {}
-    deferredInstallPrompt = null;
-    btn.hidden = true;
-    btn.disabled = false;
-  });
+    // If the browser supports native install prompt, use it
+    if (deferredInstallPrompt){
+      btn.disabled = true;
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch {}
+      deferredInstallPrompt = null;
+      btn.disabled = false;
+      return;
+    }
 
-  // If already installed, hide the button
-  window.addEventListener("appinstalled", () => {
-    deferredInstallPrompt = null;
-    btn.hidden = true;
+    // Otherwise show instructions (iOS Safari, unsupported browsers)
+    const msg = isIos()
+      ? "To download on iPhone: tap Share (⬆️) then “Add to Home Screen”."
+      : "To download: open your browser menu and tap “Install app” / “Add to Home screen”.";
+    setStatus(msg);
   });
 }
 
@@ -573,4 +600,3 @@ function boot(){
 }
 
 boot();
-
