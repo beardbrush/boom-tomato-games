@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Detective Interrogation – Dime Store Detective</title>
 
-  <!-- IMPORTANT: keep this relative, since you're inside /dime-store-detective/ -->
   <link rel="stylesheet" href="style.css" />
 
   <!-- PWA -->
@@ -25,22 +24,22 @@
       <div class="topbar-left">
         <button class="small-btn" id="briefBtn" type="button">Brief</button>
         <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
+        <button class="small-btn" id="directoryBtn" type="button">Directory</button>
       </div>
 
       <div class="topbar-right">
-        <button class="small-btn more-btn" id="moreBtn" type="button" aria-expanded="false" aria-controls="moreMenu">⋯</button>
+        <button class="small-btn more-btn" id="moreBtn" type="button"
+          aria-expanded="false" aria-controls="moreMenu">⋯</button>
       </div>
     </div>
 
-    <!-- MORE MENU -->
+    <!-- MORE MENU (AUDIO only now) -->
     <div id="moreMenu" aria-hidden="true">
       <button class="menu-btn" id="audioBtn" type="button">🔇 Audio</button>
-      <button class="menu-btn" id="directoryBtn" type="button">Directory</button>
     </div>
 
     <!-- STAGE (portraits) -->
     <div id="stage">
-      <!-- detective canvas exists but is desktop-only via CSS -->
       <canvas id="detective"></canvas>
       <canvas id="suspect"></canvas>
     </div>
