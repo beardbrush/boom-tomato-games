@@ -1,3 +1,4 @@
+<!-- index.html (Dime Store Detective) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -5,7 +6,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Detective Interrogation – Dime Store Detective</title>
 
-  <!-- Use your external CSS -->
   <link rel="stylesheet" href="style.css" />
 
   <!-- PWA -->
@@ -14,6 +14,7 @@
 
   <!-- iOS install helpers -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 
@@ -22,12 +23,22 @@
     <canvas id="detective"></canvas>
     <canvas id="suspect"></canvas>
 
-    <div id="topLeftButtons">
-      <button class="small-btn" id="briefBtn" type="button">Brief</button>
-      <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
-      <button class="small-btn" id="directoryBtn" type="button">Directory</button>
+    <!-- ✅ NEW: single top bar that wraps nicely on mobile -->
+    <div id="topBar" role="toolbar" aria-label="Top controls">
+      <div class="topGroup" id="topLeftButtons">
+        <button class="small-btn" id="briefBtn" type="button">Brief</button>
+        <button class="small-btn" id="copBtn" type="button">Ask Wren</button>
+        <button class="small-btn" id="directoryBtn" type="button">Directory</button>
+      </div>
+
+      <div class="topGroup topRight">
+        <button class="small-btn" id="downloadBtn" type="button" hidden>Download</button>
+        <button class="small-btn" id="audioBtn" type="button">🔇 Audio</button>
+        <button class="small-btn danger" id="accuseBtn" type="button" disabled>Accuse</button>
+      </div>
     </div>
 
+    <!-- kept (still hidden in CSS) -->
     <div id="suspectTabs"></div>
 
     <div id="questions">
@@ -36,8 +47,7 @@
       <button class="question-btn" data-index="2" type="button">Why are your fingerprints at the scene?</button>
     </div>
 
-    <button id="audioBtn" type="button">🔇 Audio</button>
-    <button id="accuseBtn" type="button" disabled>Accuse</button>
+    <!-- shown only when case ends -->
     <button id="nextCaseBtn" type="button">Next Case</button>
 
     <div class="dialogue-box" id="dialogBox">
@@ -72,10 +82,8 @@
     </div>
   </div>
 
-  <!-- ✅ NON-NEGOTIABLE: defer so DOM exists before app.js runs -->
   <script src="app.js" defer></script>
 
-  <!-- Optional SW (keep if you want offline/PWA) -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
@@ -85,4 +93,3 @@
   </script>
 </body>
 </html>
-
