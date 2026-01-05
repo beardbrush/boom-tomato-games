@@ -1,4 +1,3 @@
-// app.js (Dime Store Detective)
 /* Dime Store Detective — split-file build (mobile friendly + PWA-ready) */
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -33,23 +32,10 @@ function toast(msg, { retry=false, onRetry=null } = {}){
 const downloadBtn = $("#downloadBtn");
 let deferredInstallPrompt = null;
 
-function isIos(){
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-function isStandalone(){
-  // iOS: navigator.standalone, others: display-mode
-  return (window.navigator.standalone === true) || window.matchMedia?.("(display-mode: standalone)")?.matches;
-}
-
 function setupDownloadButton(){
   if (!downloadBtn) return;
 
-  // Hide if already installed
-  if (isStandalone()){
-    downloadBtn.hidden = true;
-    return;
-  }
-
+  // Android/Chromium: capture install prompt
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
@@ -59,38 +45,37 @@ function setupDownloadButton(){
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
     downloadBtn.hidden = true;
-    toast("Installed. You can launch it from your home screen.");
+    toast("Installed.");
   });
 
   downloadBtn.addEventListener("click", async () => {
-    await unlockAudioOnce();
-    playClick();
+    // iOS Safari has no beforeinstallprompt
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
 
-    // Chrome/Android/desktop PWA prompt
-    if (deferredInstallPrompt){
-      downloadBtn.disabled = true;
+    if (isStandalone){
+      toast("Already installed.");
+      return;
+    }
+
+    if (!deferredInstallPrompt){
+      if (isIos){
+        toast("On iPhone: Share → Add to Home Screen");
+      } else {
+        toast("Install not available yet (use browser menu).");
+      }
+      return;
+    }
+
+    downloadBtn.disabled = true;
+    try{
       deferredInstallPrompt.prompt();
-      try { await deferredInstallPrompt.userChoice; } catch {}
-      deferredInstallPrompt = null;
-      downloadBtn.disabled = false;
-      downloadBtn.hidden = true;
-      return;
-    }
-
-    // iOS fallback instructions
-    if (isIos()){
-      toast("On iPhone: Share → Add to Home Screen to install.");
-      return;
-    }
-
-    // generic fallback
-    toast("Install isn’t available on this browser. Try Chrome.");
+      await deferredInstallPrompt.userChoice;
+    }catch(_){}
+    deferredInstallPrompt = null;
+    downloadBtn.hidden = true;
+    downloadBtn.disabled = false;
   });
-
-  // If iOS, show button as “Download” anyway (no native prompt)
-  if (isIos() && !isStandalone()){
-    downloadBtn.hidden = false;
-  }
 }
 
 setupDownloadButton();
