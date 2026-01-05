@@ -489,3 +489,54 @@ body{
   #topBar{ gap:6px; }
   .topGroup{ gap:6px; }
 }
+/* ================================
+   MOBILE TOP BAR FIX (FINAL)
+   ================================ */
+
+/* Replace absolute chaos with a real mobile-safe header */
+#topBar{
+  position:absolute;
+  top: env(safe-area-inset-top);
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
+
+  padding: 10px 12px;
+
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  justify-content:space-between;
+
+  z-index:20;
+}
+
+/* Button groups wrap instead of overlapping */
+.topGroup{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+/* Right buttons drop under left if needed */
+.topRight{
+  margin-left:auto;
+}
+
+/* Make buttons slightly smaller on phones */
+@media (max-width: 480px){
+  .small-btn{
+    font-size:.7rem;
+    padding:6px 8px;
+  }
+}
+
+/* Push game content DOWN so it doesn't sit under buttons */
+#questions{
+  margin-top:64px;
+}
+
+.dialogue-box{
+  margin-top:64px;
+}
+
