@@ -1,10 +1,46 @@
-/* Dime Store Detective — split-file build (mobile friendly + PWA-ready) */
+/* app.js — Dime Store Detective (hybrid topbar + desktop-only detective slide-in) */
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
 function urlFor(rel){
   return new URL(rel, window.location.href).toString();
+}
+
+/* ================== RESPONSIVE RULES ================== */
+function isMobileLayout(){
+  // “Mobile” here means: narrow OR coarse pointer (touch-first devices)
+  return window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
+}
+
+/* ================== TOP MENU (⋯) ================== */
+const moreBtn = $("#moreBtn");
+const moreMenu = $("#moreMenu");
+
+function closeMoreMenu(){
+  if (!moreMenu) return;
+  moreMenu.classList.remove("open");
+  moreMenu.setAttribute("aria-hidden", "true");
+  if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
+}
+function toggleMoreMenu(){
+  const open = moreMenu.classList.toggle("open");
+  moreMenu.setAttribute("aria-hidden", String(!open));
+  moreBtn.setAttribute("aria-expanded", String(open));
+}
+if (moreBtn && moreMenu){
+  moreBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    toggleMoreMenu();
+  });
+  // click outside closes
+  document.addEventListener("click", ()=> closeMoreMenu());
+  // ESC closes
+  document.addEventListener("keydown", (e)=>{
+    if (e.key === "Escape") closeMoreMenu();
+  });
+  // clicks inside shouldn’t bubble to document close immediately
+  moreMenu.addEventListener("click", (e)=> e.stopPropagation());
 }
 
 /* ================== TOAST ================== */
@@ -27,58 +63,6 @@ function toast(msg, { retry=false, onRetry=null } = {}){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 2600);
 }
-
-/* ================== DOWNLOAD / INSTALL (PWA) ================== */
-const downloadBtn = $("#downloadBtn");
-let deferredInstallPrompt = null;
-
-function setupDownloadButton(){
-  if (!downloadBtn) return;
-
-  // Android/Chromium: capture install prompt
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    downloadBtn.hidden = false;
-  });
-
-  window.addEventListener("appinstalled", () => {
-    deferredInstallPrompt = null;
-    downloadBtn.hidden = true;
-    toast("Installed.");
-  });
-
-  downloadBtn.addEventListener("click", async () => {
-    // iOS Safari has no beforeinstallprompt
-    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
-
-    if (isStandalone){
-      toast("Already installed.");
-      return;
-    }
-
-    if (!deferredInstallPrompt){
-      if (isIos){
-        toast("On iPhone: Share → Add to Home Screen");
-      } else {
-        toast("Install not available yet (use browser menu).");
-      }
-      return;
-    }
-
-    downloadBtn.disabled = true;
-    try{
-      deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
-    }catch(_){}
-    deferredInstallPrompt = null;
-    downloadBtn.hidden = true;
-    downloadBtn.disabled = false;
-  });
-}
-
-setupDownloadButton();
 
 /* ================== AUDIO ================== */
 const audioBtn = $("#audioBtn");
@@ -160,12 +144,15 @@ audioBtn.addEventListener("click", async ()=>{
   playClick();
   if (AudioState.enabled) startMusicIfEnabled();
   else stopMusic();
+
+  // nice: close menu after choosing
+  closeMoreMenu();
 });
 
 window.addEventListener("pointerdown", ()=>{ unlockAudioOnce(); }, { once:true, passive:true });
 setAudioUI();
 
-/* ================== DETECTIVE SPRITE ================== */
+/* ================== DETECTIVE SPRITE (DESKTOP ONLY SLIDE-IN) ================== */
 const detImg = new Image();
 detImg.src = urlFor("sprites/detective/Detectiveinterrogationsprite.png");
 const DET_FRAMES = 4;
@@ -556,6 +543,7 @@ function mainLoop(timestamp){
 requestAnimationFrame(mainLoop);
 
 function drawDetective(t){
+  // Canvas may be hidden on mobile by CSS, but drawing is harmless.
   if (!detImg.complete) return;
   if (!detLast) detLast = t;
   if (t - detLast >= 1000 / DET_FPS){
@@ -637,12 +625,20 @@ questionButtons.forEach(btn=>{
     await unlockAudioOnce();
     playClick();
 
+    closeMoreMenu();
+
     viewMode = "suspect";
     anyQuestionAsked = true;
     accuseBtn.disabled = false;
 
-    if (!detCanvas.classList.contains("visible")){
-      detCanvas.classList.add("visible");
+    // ✅ Desktop-only: detective slides in when asking
+    if (!isMobileLayout()){
+      if (!detCanvas.classList.contains("visible")){
+        detCanvas.classList.add("visible");
+      }
+    } else {
+      // Make sure it never shows if layout changes while playing
+      detCanvas.classList.remove("visible");
     }
 
     btn.disabled = true;
@@ -729,6 +725,7 @@ function renderSuspectTabs(){
       if (caseClosed) return;
       await unlockAudioOnce();
       playClick();
+      closeMoreMenu();
       if (key !== currentSuspectKey){
         resetQuestions();
         setCurrentSuspect(key);
@@ -847,6 +844,7 @@ function renderDirectory(){
 directoryBtn.addEventListener("click", async ()=>{
   await unlockAudioOnce();
   playClick();
+  closeMoreMenu();
   renderDirectory();
   directoryOverlay.classList.add("active");
   directoryOverlay.setAttribute("aria-hidden", "false");
@@ -864,7 +862,9 @@ briefBtn.addEventListener("click", async ()=>{
   if (caseClosed) return;
   await unlockAudioOnce();
   playClick();
+  closeMoreMenu();
 
+  // Brief is pure text; keep current viewMode as suspect so portrait remains stable
   viewMode = "suspect";
   speakerLabel.textContent = "CASE BRIEF";
 
@@ -882,6 +882,7 @@ copBtn.addEventListener("click", async ()=>{
   if (caseClosed) return;
   await unlockAudioOnce();
   playClick();
+  closeMoreMenu();
 
   viewMode = "wren";
   speakerLabel.textContent = "DETECTIVE WREN";
@@ -902,6 +903,7 @@ accuseBtn.addEventListener("click", async ()=>{
   if (!anyQuestionAsked) return;
   await unlockAudioOnce();
   playClick();
+  closeMoreMenu();
   openAccuseOverlay();
 });
 
@@ -966,6 +968,7 @@ function resolveAccusation(key){
 nextCaseBtn.addEventListener("click", async ()=>{
   await unlockAudioOnce();
   playClick();
+  closeMoreMenu();
 
   currentCaseIndex++;
   if (currentCaseIndex > MAX_CASES) currentCaseIndex = 1;
@@ -1022,7 +1025,10 @@ async function loadCase(index){
   anyQuestionAsked = false;
   accuseBtn.disabled = true;
   nextCaseBtn.style.display = "none";
+
+  // On new case: never show detective on mobile; keep it reset on desktop too
   detCanvas.classList.remove("visible");
+
   resetQuestions();
 
   const path = `cases/case${index}.json`;
@@ -1111,4 +1117,12 @@ async function loadCase(index){
   setCurrentSuspect("lawson");
 
   loadCase(currentCaseIndex);
+
+  // If layout changes (rotate / resize), enforce the rule:
+  // detective slide-in is desktop-only.
+  window.addEventListener("resize", ()=>{
+    if (isMobileLayout()){
+      detCanvas.classList.remove("visible");
+    }
+  }, { passive:true });
 })();
