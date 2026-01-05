@@ -1,6 +1,5 @@
 /* Dime Store Detective — SAFE Service Worker */
-
-const CACHE_NAME = "dime-store-detective-v3";
+const CACHE_NAME = "dime-store-detective-v4";
 
 const CORE_ASSETS = [
   "./",
@@ -49,7 +48,6 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(req.url);
 
-  // HTML navigation → network first, fallback to cached HTML
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match("./index.html"))
@@ -57,7 +55,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Static assets → cache first
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(req).then(cached => {
