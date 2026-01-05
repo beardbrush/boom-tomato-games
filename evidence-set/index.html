@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Evidence Set — Boom Tomato</title>
-  <meta name="description" content="Find the correct set of evidence clues with Detective Lawson. A mobile-friendly Mastermind puzzle by Boom Tomato Games." />
+  <meta name="description" content="Find the correct set of evidence clues with Detective Wren. A mobile-friendly Mastermind puzzle by Boom Tomato Games." />
 
   <link rel="stylesheet" href="style.css" />
 
@@ -12,10 +12,8 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#0b1120" />
 
-  <!-- Modern replacement for deprecated apple tag -->
+  <!-- Install / A2HS hints -->
   <meta name="mobile-web-app-capable" content="yes" />
-
-  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -32,12 +30,10 @@
         </div>
       </div>
 
-      <div class="topActions" role="toolbar" aria-label="Top actions">
+      <div class="topActions">
         <button class="btn ghost" id="btnHelp" type="button" aria-expanded="false" aria-controls="howToPanel">How to play</button>
-
-        <!-- ✅ Download/Install button (always visible) -->
+        <!-- Always visible "Download" button (JS will handle install / iOS instructions) -->
         <button class="btn ghost" id="btnInstall" type="button">Download</button>
-
         <button class="btn" id="btnNewCase" type="button">New case</button>
       </div>
     </header>
@@ -184,6 +180,7 @@
     </footer>
   </div>
 
+  <!-- IMPORTANT: defer so DOM exists before app.js runs -->
   <script src="app.js" defer></script>
 </body>
 </html>
