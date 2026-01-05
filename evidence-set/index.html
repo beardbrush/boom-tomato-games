@@ -11,6 +11,11 @@
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#0b1120" />
+
+  <!-- Modern replacement for deprecated apple tag -->
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -27,7 +32,7 @@
         </div>
       </div>
 
-      <div class="topActions">
+      <div class="topActions" role="toolbar" aria-label="Top actions">
         <button class="btn ghost" id="btnHelp" type="button" aria-expanded="false" aria-controls="howToPanel">How to play</button>
         <button class="btn ghost" id="btnInstall" type="button" hidden>Install</button>
         <button class="btn" id="btnNewCase" type="button">New case</button>
@@ -176,7 +181,7 @@
     </footer>
   </div>
 
-  <script src="app.js"></script>
+  <!-- ✅ defer prevents DOM timing issues and helps mobile reliability -->
+  <script src="app.js" defer></script>
 </body>
 </html>
-
