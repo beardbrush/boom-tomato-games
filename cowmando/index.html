@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
 <title>Red Baron vs Cowmandos</title>
 <style>
   html,body{
@@ -12,7 +13,7 @@
     background:#5bd3ff;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     color:#fff;
-    touch-action:none; /* prevent browser gestures */
+    touch-action:none;
   }
   canvas{ display:block; touch-action:none; }
 
@@ -25,13 +26,36 @@
     pointer-events:none;
     z-index:5;
   }
+
   .center-msg{
     position:fixed; inset:0;
     display:flex; align-items:center; justify-content:center;
-    font-size:18px; text-align:center; pointer-events:none;
+    font-size:18px; text-align:center;
     white-space:pre-line;
-    z-index:5;
+    z-index:6;
     padding:16px;
+    pointer-events:none; /* enabled only on game-over */
+  }
+  .center-msg.on{
+    pointer-events:auto;
+  }
+
+  /* Portrait hint */
+  .rotateHint{
+    position:fixed; inset:0;
+    display:none;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding:24px;
+    z-index:20;
+    background:rgba(0,0,0,.45);
+    backdrop-filter: blur(3px);
+    pointer-events:none;
+    font-weight:800;
+    letter-spacing:.02em;
+  }
+  @media (orientation: portrait) and (pointer: coarse){
+    .rotateHint{ display:flex; }
   }
 
   /* ===== Mobile Controls ===== */
@@ -40,7 +64,7 @@
     left:0; right:0; bottom:0;
     height:42vh;
     max-height:320px;
-    pointer-events:none; /* only children should capture */
+    pointer-events:none;
     z-index:10;
   }
   .joystick{
@@ -65,7 +89,6 @@
     background:rgba(255,255,255,.18);
     border:2px solid rgba(255,255,255,.25);
   }
-
   .btns{
     position:absolute;
     right:16px;
@@ -82,7 +105,7 @@
     border:2px solid rgba(255,255,255,.22);
     background:rgba(0,0,0,.22);
     color:#fff;
-    font-weight:800;
+    font-weight:900;
     letter-spacing:.08em;
     text-transform:uppercase;
     font-size:16px;
@@ -93,10 +116,7 @@
     -webkit-user-select:none;
     touch-action:none;
   }
-  .btn:active{
-    transform: translateY(1px);
-    background:rgba(0,0,0,.30);
-  }
+  .btn:active{ transform: translateY(1px); background:rgba(0,0,0,.30); }
   .btn small{
     display:block;
     font-weight:600;
@@ -107,9 +127,39 @@
     margin-left:8px;
   }
 
-  /* Hide mobile controls on non-touch wide layouts */
+  /* Restart button (appears on game over) */
+  .restartWrap{
+    position:fixed;
+    left:0; right:0;
+    bottom: calc(42vh + 12px);
+    display:none;
+    justify-content:center;
+    z-index:15;
+    pointer-events:none;
+  }
+  .restartWrap.show{
+    display:flex;
+  }
+  .restartBtn{
+    pointer-events:auto;
+    width:min(320px, 82vw);
+    height:56px;
+    border-radius:18px;
+    border:2px solid rgba(255,255,255,.30);
+    background:rgba(0,0,0,.28);
+    color:#fff;
+    font-weight:1000;
+    letter-spacing:.10em;
+    text-transform:uppercase;
+    font-size:16px;
+    backdrop-filter: blur(4px);
+  }
+  .restartBtn:active{ transform: translateY(1px); background:rgba(0,0,0,.36); }
+
+  /* Hide mobile controls on wide desktop */
   @media (pointer:fine) and (min-width: 900px){
-    .controls{ display:none; }
+    .controls, .restartWrap{ display:none !important; }
+    .rotateHint{ display:none !important; }
   }
 </style>
 </head>
@@ -117,6 +167,12 @@
 <canvas id="game"></canvas>
 <div class="hud" id="hud"></div>
 <div class="center-msg" id="centerMsg"></div>
+
+<div class="rotateHint">Rotate your phone to <b>LANDSCAPE</b> ✈️</div>
+
+<div class="restartWrap" id="restartWrap">
+  <button class="restartBtn" id="btnRestart">Restart</button>
+</div>
 
 <div class="controls" id="controls">
   <div class="joystick" id="joy">
@@ -169,7 +225,7 @@
       img:planeImg, frames:4,
       get fw(){ return this.img.width/4; },
       get fh(){ return this.img.height; },
-      scale:0.13
+      scale:0.065  // ✅ half-size plane (was 0.13)
     },
     cow:{
       img:cowImg, frames:4,
@@ -203,6 +259,15 @@
     }
   };
 
+  // ===== Helpers: orientation lock (best-effort) =====
+  async function tryLockLandscape(){
+    try{
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock("landscape");
+      }
+    }catch(e){}
+  }
+
   // ===== INPUT (desktop) =====
   const keys = {};
   addEventListener("keydown", e=>{
@@ -225,11 +290,14 @@
   const stickEl = document.getElementById("stick");
   const btnGun = document.getElementById("btnGun");
   const btnBomb = document.getElementById("btnBomb");
+  const btnRestart = document.getElementById("btnRestart");
+  const restartWrap = document.getElementById("restartWrap");
+  const centerMsg = document.getElementById("centerMsg");
 
   let joyActive = false;
   let joyId = null;
   let joyCenter = {x:0,y:0};
-  let joyVec = {x:0,y:0};      // -1..1
+  let joyVec = {x:0,y:0};
   const joyRadius = 60;
 
   let gunHeld = false;
@@ -251,8 +319,25 @@
     engineStarted = true;
   }
 
+  // Tap anywhere to restart when game over
+  canvas.addEventListener("pointerdown", (e)=>{
+    if(gameOver){
+      reset();
+      return;
+    }
+    // also counts as user gesture for audio + orientation lock
+    startAudioOnFirstTouch();
+    tryLockLandscape();
+  }, {passive:false});
+
+  btnRestart.addEventListener("pointerdown", (e)=>{
+    e.preventDefault();
+    reset();
+  }, {passive:false});
+
   joyEl.addEventListener("pointerdown", (e)=>{
     startAudioOnFirstTouch();
+    tryLockLandscape();
     joyActive = true;
     joyId = e.pointerId;
     joyEl.setPointerCapture(joyId);
@@ -298,6 +383,7 @@
 
   btnGun.addEventListener("pointerdown", ()=>{
     startAudioOnFirstTouch();
+    tryLockLandscape();
     gunHeld = true;
   });
   btnGun.addEventListener("pointerup", ()=>{ gunHeld = false; });
@@ -306,6 +392,7 @@
 
   btnBomb.addEventListener("pointerdown", ()=>{
     startAudioOnFirstTouch();
+    tryLockLandscape();
     bombTap = true;
   });
 
@@ -342,7 +429,6 @@
   let boss = null;
   let bossAppeared = false;
 
-  // clouds
   const clouds = [];
   function makeCloud(){
     return {
@@ -385,21 +471,20 @@
     plane.clip = plane.clipSize;
     plane.reload = 0;
 
-    snd.engine.pause();
-    snd.engine.currentTime = 0;
-    engineStarted = false;
+    // hide restart UI
+    restartWrap.classList.remove("show");
+    centerMsg.classList.remove("on");
 
     document.getElementById("centerMsg").textContent =
       isTouchLayout()
-      ? "Drag the left stick to fly\nHold GUN to shoot\nTap BOMB (3-shot clip)\nAvoid rockets + homing missiles!"
-      : "WASD/Arrows = fly (stay above grass)\nSPACE = drop blue bombs (3-shot clip)\nJ/F/K or TAP = gun (forward)\nAvoid rockets + homing missiles!";
+        ? "Drag stick to fly (LANDSCAPE recommended)\nHold GUN / Tap BOMB\nAvoid rockets + homing missiles!"
+        : "WASD/Arrows = fly\nSPACE = bombs (3-shot clip)\nJ/F/K = gun\nAvoid rockets + homing missiles!";
   }
 
   function spawnCow(){
     const c = sprites.cow;
     const w = c.fw*c.scale;
     const h = c.fh*c.scale;
-
     const fromLeft = Math.random() < 0.5;
     const dir = fromLeft ? 1 : -1;
     const x = fromLeft ? -w : canvas.width + w;
@@ -442,7 +527,6 @@
     const h = p.fh*p.scale;
     const b = sprites.blueBomb;
     const bw = b.fw*b.scale;
-
     const front = (plane.facing===1?0.7:0.3);
     bombs.push({
       x:plane.x + w*front - bw/2,
@@ -456,21 +540,14 @@
     const p = sprites.plane;
     const w = p.fw*p.scale;
     const h = p.fh*p.scale;
-
     const noseX = plane.facing === 1 ? plane.x + w * 0.9 : plane.x + w * 0.1;
     const noseY = plane.y + h * 0.45;
-
     bullets.push({ x:noseX, y:noseY, vx: plane.facing * 550, radius: 4 });
-
     muzzleFlashes.push({ x:noseX, y:noseY, t:0, ttl:0.08 });
   }
 
-  function fireRocketFrom(x,y){
-    rockets.push({ x, y, vy:-260, ft:0, f:0 });
-  }
-  function fireBossMissileFrom(x,y){
-    bossMissiles.push({ x, y, vy:-260, ft:0, f:0 });
-  }
+  function fireRocketFrom(x,y){ rockets.push({ x, y, vy:-260, ft:0, f:0 }); }
+  function fireBossMissileFrom(x,y){ bossMissiles.push({ x, y, vy:-260, ft:0, f:0 }); }
 
   function overlap(ax,ay,aw,ah,bx,by,bw,bh){
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
@@ -480,8 +557,13 @@
     gameOver = true;
     snd.engine.pause();
     engineStarted = false;
+
+    // show restart UI on mobile
+    restartWrap.classList.add("show");
+    centerMsg.classList.add("on");
+
     document.getElementById("centerMsg").textContent =
-      "YOU WERE MILKED BY THE COWMANDOS 💥\nScore: "+score+"\nPress SPACE (or refresh on mobile) to play again";
+      `YOU WERE MILKED BY THE COWMANDOS 💥\nScore: ${score}\nTap RESTART (or tap screen)`;
   }
 
   // ===== UPDATE =====
@@ -493,9 +575,7 @@
       spawnBossCow();
     }
 
-    // Plane movement: desktop OR joystick
     const usingTouch = isTouchLayout();
-
     let inputX = 0, inputY = 0;
 
     if(usingTouch){
@@ -504,7 +584,6 @@
     }else{
       inputX = (keys["a"]||keys["arrowleft"]?-1:0) + (keys["d"]||keys["arrowright"]?1:0);
       inputY = (keys["w"]||keys["arrowup"]?-1:0) + (keys["s"]||keys["arrowdown"]?1:0);
-      // normalize diagonal
       const mag = Math.hypot(inputX,inputY);
       if(mag>1){ inputX/=mag; inputY/=mag; }
     }
@@ -523,16 +602,10 @@
     const ph = p.fh*p.scale;
 
     const groundY = canvas.height * 0.88;
-    const maxY = groundY - ph;  // stop plane entering green
+    const maxY = groundY - ph; // cannot dip into grass
     plane.x = Math.max(0, Math.min(canvas.width-pw, plane.x));
     plane.y = Math.max(0, Math.min(maxY, plane.y));
 
-    if(engineStarted){
-      const speedMag = Math.abs(plane.vx) + Math.abs(plane.vy);
-      snd.engine.volume = 0.2 + Math.min(speedMag/900, 0.4);
-    }
-
-    // plane anim
     plane.ft += dt;
     if(plane.ft > 0.10){
       plane.ft = 0;
@@ -545,13 +618,10 @@
       if(plane.reload <= 0 && plane.clip === 0) plane.clip = plane.clipSize;
     }
 
-    // bombs: desktop SPACE or mobile bombTap
+    // bombs: SPACE or tap
     plane.bt -= dt;
     const bombPressed = (keys[" "]||keys["space"]) || bombTap;
-    if(bombPressed &&
-       plane.bt <= 0 &&
-       plane.clip > 0 &&
-       plane.reload <= 0){
+    if(bombPressed && plane.bt<=0 && plane.clip>0 && plane.reload<=0){
       dropBomb();
       plane.bt = plane.bombCD;
       plane.clip--;
@@ -559,7 +629,7 @@
     }
     bombTap = false;
 
-    // gun: desktop J/F/K or mobile gunHeld
+    // gun: J/F/K or hold
     plane.gunTimer -= dt;
     const gunPressed = keys["j"] || keys["f"] || keys["k"] || gunHeld;
     if(gunPressed && plane.gunTimer <= 0){
@@ -602,7 +672,6 @@
     for(let i=cows.length-1;i>=0;i--){
       const c = cows[i];
       const cw = sprites.cow.fw*sprites.cow.scale;
-
       c.x += c.speed * dt * c.dir;
 
       c.ft += dt;
@@ -639,8 +708,8 @@
     if(boss){
       const s = sprites.bossCow;
       const bw = s.fw*s.scale;
-
       boss.x += boss.speed * dt * boss.dir;
+
       boss.ft += dt;
       if(boss.ft>0.12){ boss.ft=0; boss.frame=(boss.frame+1)%s.frames; }
 
@@ -649,26 +718,6 @@
         fireBossMissileFrom(boss.x + bw*0.3, boss.y + 10);
         fireBossMissileFrom(boss.x + bw*0.7, boss.y + 10);
         boss.fire = 0.9;
-      }
-
-      const bwCurrent = s.fw*s.scale;
-      if(!boss.upgraded){
-        if(boss.dir < 0 && boss.x < -bwCurrent){
-          boss.upgraded = true;
-          sprites.bossCow.scale *= 2;
-          boss.hp *= 2;
-          boss.dir = 1;
-          boss.x = -bwCurrent + 10;
-        }else if(boss.dir > 0 && boss.x > canvas.width + bwCurrent){
-          boss.upgraded = true;
-          sprites.bossCow.scale *= 2;
-          boss.hp *= 2;
-          boss.dir = -1;
-          boss.x = canvas.width + bwCurrent - 10;
-        }
-      }else{
-        if(boss.dir < 0 && boss.x < -bwCurrent){ boss.dir = 1; boss.x = -bwCurrent + 10; }
-        else if(boss.dir > 0 && boss.x > canvas.width + bwCurrent){ boss.dir = -1; boss.x = canvas.width + bwCurrent - 10; }
       }
     }
 
@@ -699,11 +748,12 @@
       if(m.y < -80) bossMissiles.splice(i,1);
     }
 
-    // collisions: bombs vs cows/boss
+    // collisions: (kept same as your current version)
+    // -- bombs vs cows/boss
     for(let i=bombs.length-1;i>=0;i--){
       const b = bombs[i];
-      const bw = sprites.blueBomb.fw*sprites.blueBomb.scale;
-      const bh = sprites.blueBomb.fh*sprites.blueBomb.scale;
+      const bw2 = sprites.blueBomb.fw*sprites.blueBomb.scale;
+      const bh2 = sprites.blueBomb.fh*sprites.blueBomb.scale;
       const bx = b.x, by = b.y;
       let hit = false;
 
@@ -711,7 +761,7 @@
         const c = cows[j];
         const cw = sprites.cow.fw*sprites.cow.scale;
         const ch = sprites.cow.fh*sprites.cow.scale;
-        if(overlap(bx,by,bw,bh,c.x,c.y,cw,ch)){
+        if(overlap(bx,by,bw2,bh2,c.x,c.y,cw,ch)){
           addExplosion(c.x+cw/2, c.y+ch/2, 0.9);
           playSound(snd.moo); playSound(snd.explosion);
           c.hp -= 2;
@@ -725,7 +775,7 @@
         const s = sprites.bossCow;
         const cw = s.fw*s.scale;
         const ch = s.fh*s.scale;
-        if(overlap(bx,by,bw,bh,boss.x,boss.y,cw,ch)){
+        if(overlap(bx,by,bw2,bh2,boss.x,boss.y,cw,ch)){
           addExplosion(boss.x+cw/2, boss.y+ch/2, 1.2);
           playSound(snd.moo);
           boss.hp -= 2;
@@ -743,21 +793,21 @@
       if(hit) bombs.splice(i,1);
     }
 
-    // collisions: bullets vs cows/boss
+    // bullets vs cows/boss
     for(let i=bullets.length-1;i>=0;i--){
       const bl = bullets[i];
       const br = bl.radius;
       const bx = bl.x - br;
       const by = bl.y - br;
-      const bw = br*2;
-      const bh = br*2;
+      const bw2 = br*2;
+      const bh2 = br*2;
       let hit = false;
 
       for(let j=cows.length-1;j>=0;j--){
         const c = cows[j];
         const cw = sprites.cow.fw*sprites.cow.scale;
         const ch = sprites.cow.fh*sprites.cow.scale;
-        if(overlap(bx,by,bw,bh,c.x,c.y,cw,ch)){
+        if(overlap(bx,by,bw2,bh2,c.x,c.y,cw,ch)){
           addExplosion(bl.x, bl.y, 0.4);
           c.hp -= 1;
           score += 40;
@@ -770,7 +820,7 @@
         const s = sprites.bossCow;
         const cw = s.fw*s.scale;
         const ch = s.fh*s.scale;
-        if(overlap(bx,by,bw,bh,boss.x,boss.y,cw,ch)){
+        if(overlap(bx,by,bw2,bh2,boss.x,boss.y,cw,ch)){
           addExplosion(bl.x, bl.y, 0.6);
           boss.hp -= 1;
           score += 60;
@@ -787,8 +837,9 @@
       if(hit) bullets.splice(i,1);
     }
 
-    // rockets vs plane
     const pRect = { x:plane.x, y:plane.y, w:pw*0.7, h:ph*0.5 };
+
+    // rockets vs plane
     for(let i=rockets.length-1;i>=0;i--){
       const r = rockets[i];
       const rw = sprites.greenRocket.fw*sprites.greenRocket.scale;
@@ -826,7 +877,6 @@
     if(!gameOver) document.getElementById("centerMsg").textContent = "";
   }
 
-  // ===== DRAW =====
   function drawSprite(sprite, frame, x, y, flipX=false, rotate180=false){
     const fw = sprite.fw, fh = sprite.fh, scale = sprite.scale;
     const dw = fw*scale, dh = fh*scale;
@@ -853,7 +903,6 @@
     ctx.fillStyle = "#5bd3ff";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // clouds
     clouds.forEach(c=>{
       c.x -= c.speed*c.depth*0.016;
       if(c.x < -c.w){ Object.assign(c, makeCloud(), { x:canvas.width }); }
@@ -861,7 +910,6 @@
       ctx.fillRect(c.x,c.y,c.w,c.h);
     });
 
-    // ground strip
     const groundY = canvas.height*0.88;
     ctx.fillStyle = "#62d255";
     ctx.fillRect(0, groundY, canvas.width, canvas.height-groundY);
@@ -872,7 +920,7 @@
     const ph = p.fh*p.scale;
     drawSprite(sprites.plane, plane.frame, plane.x, plane.y, plane.facing===-1, false);
 
-    // lock-on reticle if boss missiles exist
+    // lock-on reticle
     if(bossMissiles.length > 0){
       const cx = plane.x + pw/2;
       const cy = plane.y + ph*0.4;
@@ -881,19 +929,6 @@
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(cx, cy, 30, 0, Math.PI*2);
-      ctx.stroke();
-
-      const r = 30, s = 10;
-      ctx.beginPath();
-      ctx.moveTo(cx - s, cy - r); ctx.lineTo(cx - s*2, cy - r);
-      ctx.moveTo(cx + s, cy - r); ctx.lineTo(cx + s*2, cy - r);
-      ctx.moveTo(cx - s, cy + r); ctx.lineTo(cx - s*2, cy + r);
-      ctx.moveTo(cx + s, cy + r); ctx.lineTo(cx + s*2, cy + r);
-
-      ctx.moveTo(cx - r, cy - s); ctx.lineTo(cx - r, cy - s*2);
-      ctx.moveTo(cx - r, cy + s); ctx.lineTo(cx - r, cy + s*2);
-      ctx.moveTo(cx + r, cy - s); ctx.lineTo(cx + r, cy - s*2);
-      ctx.moveTo(cx + r, cy + s); ctx.lineTo(cx + r, cy + s*2);
       ctx.stroke();
       ctx.restore();
     }
@@ -910,7 +945,6 @@
       drawSprite(sprites.bossCow, boss.frame, boss.x, boss.y, bossFlip, false);
     }
 
-    // bombs / rockets / missiles
     bombs.forEach(b=> drawSprite(sprites.blueBomb, b.f, b.x, b.y));
     rockets.forEach(r=> drawSprite(sprites.greenRocket, r.f, r.x, r.y, false, true));
     bossMissiles.forEach(m=> drawSprite(sprites.whiteMissile, m.f, m.x, m.y, false, true));
