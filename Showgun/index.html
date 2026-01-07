@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Samurai Card Games — Launcher</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Samurai Card Games</h1>
+        <p class="sub">
+          Same rice-paper deck. Five games. Minimal luck, lots of decisions.
+        </p>
+      </div>
+      <div class="topActions">
+        <button class="btn ghost" id="btnNewSeed">New Seed</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Choose a Game</h2>
+
+      <div class="cards3">
+        <a class="modeCard" href="./iai_duel.html">
+          <div class="modeTitle">1) Iai Duel (Secret Pick)</div>
+          <div class="modeDesc">Hand tactics + timing. Pick a card secretly; reveal; score points. Low luck, high mind-game.</div>
+          <div class="modeMeta"><span class="pill">Fast</span><span class="pill amber">Skill: ★★★</span></div>
+        </a>
+
+        <a class="modeCard" href="./ronin_tricks.html">
+          <div class="modeTitle">2) Ronin Tricks (Trick-Taking Lite)</div>
+          <div class="modeDesc">Follow clan if you can. Trump clan rotates each match. Count what’s been played.</div>
+          <div class="modeMeta"><span class="pill">Classic</span><span class="pill amber">Skill: ★★★</span></div>
+        </a>
+
+        <a class="modeCard" href="./dojo_relics.html">
+          <div class="modeTitle">3) Dojo Relics (Market + Sets)</div>
+          <div class="modeDesc">Draft from a market, build sets, claim points. Planning + denial; looks gorgeous.</div>
+          <div class="modeMeta"><span class="pill">Chill</span><span class="pill amber">Skill: ★★☆</span></div>
+        </a>
+
+        <a class="modeCard" href="./shogun_showdown.html">
+          <div class="modeTitle">4) Shogun Showdown (Poker-lite)</div>
+          <div class="modeDesc">Draw 5, keep 3. Score 3-card hands (pair/straight/flush/trips). Quick dopamine.</div>
+          <div class="modeMeta"><span class="pill">Snappy</span><span class="pill amber">Skill: ★★☆</span></div>
+        </a>
+
+        <a class="modeCard" href="./skirmish_lanes.html">
+          <div class="modeTitle">5) Skirmish Lanes (3 Lanes Battle)</div>
+          <div class="modeDesc">Place cards into 3 lanes. Combos + lane control. First to win 2 lanes wins.</div>
+          <div class="modeMeta"><span class="pill">Tactical</span><span class="pill amber">Skill: ★★★</span></div>
+        </a>
+      </div>
+
+      <div class="hr"></div>
+
+      <p class="muted small">
+        All games are offline and asset-free (cards are generated SVGs). If you want next, we can add: sound, clan techniques,
+        campaign opponents, and “unlockable” card backs.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    const KEY="samurai_seed";
+    const btn=document.getElementById("btnNewSeed");
+    btn.addEventListener("click", ()=>{
+      const seed = String(Math.floor(Math.random()*1e9));
+      localStorage.setItem(KEY, seed);
+      alert("New seed set: " + seed + "\nNow open a game.");
+    });
+    if(!localStorage.getItem(KEY)){
+      localStorage.setItem(KEY, String(Math.floor(Math.random()*1e9)));
+    }
+  </script>
+</body>
+</html>

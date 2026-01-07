@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Skirmish Lanes — Samurai Card Game</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Skirmish Lanes</h1>
+        <p class="sub">3 lanes. Place cards. Lane combos matter. First to win 2 lanes wins.</p>
+      </div>
+      <div class="topActions">
+        <a class="btn ghost" href="./index.html">Back</a>
+        <button class="btn primary" id="btnNew">New Match</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="gameHeader">
+        <div class="gameTitle" id="titleLine">—</div>
+        <div class="gameMeta">
+          <span class="pill" id="scoreLine">—</span>
+          <span class="pill" id="deckLine">—</span>
+          <span class="pill amber">Lane bonus: all same clan (+3) / straight (+2)</span>
+        </div>
+      </div>
+
+      <details class="howto">
+        <summary>
+          <span>How to score</span>
+          <span class="pill howtoTag">Lanes</span>
+        </summary>
+        <div class="howtoBody">
+          <b>How lanes resolve</b>
+          <ul>
+            <li>There are <b>3 lanes</b>. Each side places up to <b>3 cards per lane</b>.</li>
+            <li>A lane resolves only when <b>both sides have 3 cards</b> in it.</li>
+            <li>Lane total = <b>sum of values</b> + bonus:</li>
+            <li><b>All same clan</b>: <b>+3</b></li>
+            <li><b>Straight</b> (3 consecutive values): <b>+2</b></li>
+            <li>Higher total claims the lane.</li>
+          </ul>
+          <b>Win condition</b>
+          <ul>
+            <li>First to claim <b>2 lanes</b> wins the match.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="seat">
+        <h3><span>Battlefield (click a lane after selecting a card)</span><span class="tiny" id="laneMeta">—</span></h3>
+        <div class="lanes" id="lanes"></div>
+      </div>
+
+      <div class="grid2" style="margin-top:12px;">
+        <div class="seat">
+          <h3><span>You</span><span class="tiny" id="youMeta">—</span></h3>
+          <div class="pill">Your hand (select 1 card, then click a lane):</div>
+          <div class="hand" id="youHand"></div>
+          <div class="bar">
+            <div class="left">
+              <button class="btn primary" id="btnEndTurn" disabled>End Turn</button>
+            </div>
+            <div class="right">
+              <span class="pill">Goal: win 2 lanes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat">
+          <h3><span>Rival</span><span class="tiny" id="aiMeta">—</span></h3>
+          <div class="pill">Rival hand:</div>
+          <div class="hand" id="aiHand"></div>
+        </div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>SamuraiGames.mount({ game: "LANES" });</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Iai Duel — Samurai Card Game</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Iai Duel</h1>
+        <p class="sub">Secret pick from hand → reveal → score. Very low luck, very “read the rival”.</p>
+      </div>
+      <div class="topActions">
+        <a class="btn ghost" href="./index.html">Back</a>
+        <button class="btn primary" id="btnNew">New Match</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="gameHeader">
+        <div class="gameTitle" id="titleLine">—</div>
+        <div class="gameMeta">
+          <span class="pill" id="scoreLine">—</span>
+          <span class="pill" id="deckLine">—</span>
+          <span class="pill amber" id="hintLine">Pick 1 card. AI picks secretly too.</span>
+        </div>
+      </div>
+
+      <details class="howto">
+        <summary>
+          <span>How to score</span>
+          <span class="pill howtoTag">Points</span>
+        </summary>
+        <div class="howtoBody">
+          <b>How points work</b>
+          <ul>
+            <li>Each round, you and the rival secretly pick 1 card, then reveal.</li>
+            <li>Higher card wins the round and scores <b>+1 point</b>.</li>
+            <li>Tie: <b>both score +1</b>.</li>
+          </ul>
+          <b>Win condition</b>
+          <ul>
+            <li>First to <b>7 points</b> wins (or highest score if cards run out).</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="grid2">
+        <div class="seat">
+          <h3><span>You</span><span class="tiny" id="youMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="youUp" alt="Your reveal"/>
+            <div>
+              <div class="pill">Your hand:</div>
+              <div class="hand" id="youHand"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat">
+          <h3><span>Rival</span><span class="tiny" id="aiMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="aiUp" alt="AI reveal"/>
+            <div>
+              <div class="pill">Rival hand:</div>
+              <div class="hand" id="aiHand"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar">
+        <div class="left">
+          <button class="btn primary" id="btnPlay" disabled>Reveal Duel</button>
+        </div>
+        <div class="right">
+          <span class="pill">Goal: 7 points</span>
+          <span class="pill">Tip: don’t waste Legends early</span>
+        </div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>SamuraiGames.mount({ game: "IAI" });</script>
+</body>
+</html>

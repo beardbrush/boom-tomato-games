@@ -1,0 +1,386 @@
+:root{
+  --bg0:#050813;
+  --bg1:#070b16;
+  --panel: rgba(255,255,255,.06);
+  --ink:#e5e7eb;
+  --muted:#9ca3af;
+  --line: rgba(255,255,255,.12);
+  --amber:#f59e0b;
+  --good:#22c55e;
+  --bad:#ef4444;
+  --shadow: 0 14px 34px rgba(0,0,0,.55);
+  --radius: 16px;
+
+  /* Mobile ergonomics */
+  --tap: 44px;
+
+  /* Responsive card sizing (used by hand + lane cards) */
+  --cardW: clamp(72px, 18vw, 110px);
+  --cardH: calc(var(--cardW) * 1.40);
+
+  --miniW: clamp(56px, 14vw, 78px);
+  --miniH: calc(var(--miniW) * 1.40);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+/* Better mobile viewport + reduce “rubber band” weirdness */
+html{
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 20% 10%, rgba(120,20,20,.28) 0%, rgba(120,20,20,0) 55%),
+    radial-gradient(900px 500px at 80% 20%, rgba(15,25,65,.55) 0%, rgba(15,25,65,0) 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  min-height: 100dvh;
+}
+
+/* Make taps feel snappy on mobile */
+a,button,.btn,.handCard,.modeCard{
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+a{color:inherit;text-decoration:none}
+
+/* Safe area padding for notched phones */
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:
+    calc(16px + env(safe-area-inset-top))
+    calc(14px + env(safe-area-inset-right))
+    calc(28px + env(safe-area-inset-bottom))
+    calc(14px + env(safe-area-inset-left));
+}
+
+.top{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+}
+h1{margin:0;font-size:18px;letter-spacing:.4px;}
+.sub{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.35;}
+.topActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+@media (max-width: 560px){
+  .top{flex-direction:column;align-items:stretch}
+  .topActions{justify-content:flex-start}
+  h1{font-size:20px}
+  .sub{font-size:13px}
+}
+
+.panel{
+  margin-top:14px;
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border-radius:var(--radius);
+  padding:14px;
+  overflow:hidden;
+}
+.panel h2{
+  margin:0 0 10px 0;font-size:13px;color:var(--muted);
+  font-weight:900;letter-spacing:.2px;text-transform:uppercase;
+}
+
+.hr{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+.muted{color:var(--muted)}
+.small{font-size:12px;line-height:1.35}
+
+/* Buttons: bigger + safer on touch */
+.btn{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color:var(--ink);
+  min-height: var(--tap);
+  padding: 10px 12px;
+  border-radius:12px;
+  font-weight:900;
+  cursor:pointer;
+  transition: transform .06s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover{background: rgba(255,255,255,.09)}
+.btn:active{transform: translateY(1px)}
+.btn.primary{border-color: rgba(245,158,11,.35);background: rgba(245,158,11,.12);}
+.btn.good{border-color: rgba(34,197,94,.35);background: rgba(34,197,94,.12);}
+.btn.bad{border-color: rgba(239,68,68,.35);background: rgba(239,68,68,.12);}
+.btn.ghost{background: rgba(0,0,0,.12)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:saturate(.8);}
+
+@media (max-width: 560px){
+  .btn{width:100%}
+}
+
+.pill{
+  display:inline-block;
+  font-size:12px;color:var(--muted);
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding:6px 10px;border-radius:999px;
+  font-weight:900;
+}
+.pill.amber{color:#fcd34d;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);}
+.pill.good{color:#bbf7d0;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10);}
+.pill.bad{color:#fecaca;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.10);}
+
+.cards3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:10px;
+}
+@media (max-width: 900px){
+  .cards3{grid-template-columns: 1fr}
+}
+
+.modeCard{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  border-radius:14px;
+  padding:12px;
+  display:block;
+  transition: background .15s ease, transform .08s ease, border-color .15s ease;
+}
+.modeCard:hover{background: rgba(255,255,255,.06)}
+.modeCard:active{transform: translateY(1px)}
+.modeTitle{font-weight:1000}
+.modeDesc{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+.modeMeta{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+
+.gameHeader{
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;
+  margin-bottom:10px;
+}
+.gameTitle{font-weight:1000}
+.gameMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+@media (max-width: 860px){
+  .grid2{grid-template-columns: 1fr;}
+}
+
+.seat{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  border-radius:var(--radius);
+  padding:12px;
+  overflow:hidden;
+}
+
+/* Score dropdown (How to score) */
+.howto{
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  border-radius: var(--radius);
+  padding:10px 12px;
+}
+.howto summary{
+  cursor:pointer;
+  user-select:none;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:1000;
+  color: var(--ink);
+  min-height: var(--tap);
+}
+.howto summary::-webkit-details-marker{display:none;}
+.howto summary::after{
+  content:"▾";
+  opacity:.7;
+  transform: translateY(-1px);
+  transition: transform .15s ease;
+}
+.howto[open] summary::after{
+  transform: rotate(180deg);
+}
+.howto .howtoBody{
+  margin-top:10px;
+  border-top:1px solid rgba(255,255,255,.10);
+  padding-top:10px;
+  color: var(--muted);
+  font-size:12px;
+  line-height:1.4;
+}
+.howto .howtoBody b{ color: #e5e7eb; }
+.howto .howtoBody ul{ margin:8px 0 8px 18px; padding:0; }
+.howto .howtoBody li{ margin:6px 0; }
+.howto .howtoTag{ margin-left:8px; }
+
+.seat h3{
+  margin:0 0 10px 0;
+  font-size:13px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.2px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.tiny{font-size:11px;color:var(--muted);font-weight:900;}
+
+/* On mobile: stack “up cards” above hands more naturally */
+.cardRow{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  min-height: calc(var(--cardH) + 16px);
+}
+@media (max-width: 560px){
+  .cardRow{flex-direction:column;align-items:flex-start}
+}
+
+/* Big “up” card (responsive) */
+.cardImg{
+  width: var(--cardW);
+  height: var(--cardH);
+  border-radius:14px;
+  box-shadow: var(--shadow);
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  flex:0 0 auto;
+  transform: translateY(0) scale(1);
+  transition: transform .18s ease, filter .18s ease;
+}
+.cardImg.pop{transform: translateY(-2px) scale(1.03);}
+
+/* Small cards (lanes etc.) */
+.cardImg.small{
+  width: var(--miniW);
+  height: var(--miniH);
+  border-radius:12px;opacity:.95;
+  box-shadow: 0 10px 22px rgba(0,0,0,.45);
+}
+
+/* Hands: on phones, make it swipe-scroll horizontally instead of wrapping tiny */
+.hand{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  padding-top:6px;
+}
+@media (max-width: 560px){
+  .hand{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+    padding-bottom:6px;
+  }
+  .hand::after{
+    content:"";
+    flex:0 0 10px; /* end padding so last card isn’t glued to edge */
+  }
+}
+
+.handCard{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  background: rgba(0,0,0,.12);
+  padding:6px;
+  cursor:pointer;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
+  user-select:none;
+}
+@media (max-width: 560px){
+  .handCard{scroll-snap-align:start}
+}
+.handCard:hover{background: rgba(255,255,255,.06)}
+.handCard:active{transform: translateY(1px)}
+.handCard.selected{border-color: rgba(245,158,11,.40);background: rgba(245,158,11,.10);}
+.handCard.dim{opacity:.6;filter:saturate(.8);}
+
+.handCard img{
+  width: calc(var(--cardW) * 0.78);
+  height: calc(var(--cardH) * 0.78);
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  display:block;
+}
+
+@media (max-width: 560px){
+  .handCard img{
+    width: calc(var(--cardW) * 0.82);
+    height: calc(var(--cardH) * 0.82);
+  }
+}
+
+/* Log: responsive height on mobile so it doesn’t dominate the screen */
+.log{
+  margin-top:10px;
+  height: clamp(170px, 22vh, 260px);
+  overflow:auto;
+  padding:10px;
+  border-radius:14px;
+  background: rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.10);
+  font-size:12px;line-height:1.35;color:#d1d5db;
+}
+.log .line{margin:0 0 8px 0;}
+.log .muted{color:var(--muted);}
+.log .win{color:#bbf7d0;}
+.log .tie{color:#fde68a;}
+.log .lose{color:#fecaca;}
+
+.bar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  margin-top:12px;
+}
+.left,.right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+@media (max-width: 560px){
+  .bar{flex-direction:column;align-items:stretch}
+  .left,.right{width:100%}
+  .left .btn,.right .btn{flex:1}
+}
+
+/* Market grid: keep 3 columns but shrink slot height nicely */
+.marketGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:10px;
+  margin-top:8px;
+}
+.slot{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.14);
+  border-radius:14px;
+  padding:8px;
+  display:flex;justify-content:center;align-items:center;
+  min-height: clamp(110px, 16vh, 140px);
+}
+
+/* Lanes */
+.lanes{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:10px;
+  margin-top:8px;
+}
+@media (max-width: 560px){
+  .lanes{grid-template-columns: 1fr;}
+}
+.lane{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.14);
+  border-radius:14px;
+  padding:10px;
+}
+.laneTitle{
+  display:flex;justify-content:space-between;align-items:center;
+  color:var(--muted);
+  font-weight:1000;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.2px;
+  margin-bottom:8px;
+}
+.laneRow{display:flex;gap:6px;flex-wrap:wrap;min-height: 118px;}

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Ronin Tricks — Samurai Card Game</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Ronin Tricks</h1>
+        <p class="sub">Trick-taking lite: follow clan if you can. Trump clan rotates each match. Count what’s been played.</p>
+      </div>
+      <div class="topActions">
+        <a class="btn ghost" href="./index.html">Back</a>
+        <button class="btn primary" id="btnNew">New Match</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="gameHeader">
+        <div class="gameTitle" id="titleLine">—</div>
+        <div class="gameMeta">
+          <span class="pill" id="scoreLine">—</span>
+          <span class="pill amber" id="trumpLine">—</span>
+          <span class="pill" id="trickLine">—</span>
+          <span class="pill" id="countLine">—</span>
+        </div>
+      </div>
+
+      <details class="howto">
+        <summary>
+          <span>How to score</span>
+          <span class="pill howtoTag">Tricks</span>
+        </summary>
+        <div class="howtoBody">
+          <b>How points work</b>
+          <ul>
+            <li>Each trick: both play 1 card. Winner scores <b>+1</b>.</li>
+            <li><b>Mask bonus:</b> each Mask played in the trick adds <b>+1 extra</b> to the trick winner (0–2 bonus).</li>
+            <li>Trump matters, and you must follow the lead clan if you can.</li>
+          </ul>
+          <b>Win condition</b>
+          <ul>
+            <li>After <b>13 tricks</b>, highest total points wins.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="grid2">
+        <div class="seat">
+          <h3><span>You</span><span class="tiny" id="youMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="youUp" alt="Your played"/>
+            <div>
+              <div class="pill">Your hand (play 1):</div>
+              <div class="hand" id="youHand"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat">
+          <h3><span>Rival</span><span class="tiny" id="aiMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="aiUp" alt="AI played"/>
+            <div>
+              <div class="pill">Rival hand:</div>
+              <div class="hand" id="aiHand"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar">
+        <div class="left">
+          <button class="btn primary" id="btnPlay" disabled>Play Selected</button>
+          <button class="btn ghost" id="btnNext" disabled>Next Trick</button>
+        </div>
+        <div class="right">
+          <span class="pill">13 tricks</span>
+          <span class="pill">Mask cards = +1 bonus when captured</span>
+        </div>
+      </div>
+
+      <div class="seat" style="margin-top:12px;">
+        <h3><span>Unseen Tracker (what you can still “reasonably expect”)</span><span class="tiny" id="unseenMeta">—</span></h3>
+        <div class="log" id="unseenBox" style="height:160px;"></div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>SamuraiGames.mount({ game: "TRICKS" });</script>
+</body>
+</html>

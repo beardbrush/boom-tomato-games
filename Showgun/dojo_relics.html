@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Dojo Relics — Samurai Card Game</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Dojo Relics</h1>
+        <p class="sub">Pick from a market, build sets, claim points. Strategy + denial, low luck.</p>
+      </div>
+      <div class="topActions">
+        <a class="btn ghost" href="./index.html">Back</a>
+        <button class="btn primary" id="btnNew">New Match</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="gameHeader">
+        <div class="gameTitle" id="titleLine">—</div>
+        <div class="gameMeta">
+          <span class="pill" id="scoreLine">—</span>
+          <span class="pill" id="deckLine">—</span>
+          <span class="pill amber" id="setsLine">Sets: Triplet Clan / Straight / Pair+Mask</span>
+        </div>
+      </div>
+
+      <details class="howto">
+        <summary>
+          <span>How to score</span>
+          <span class="pill howtoTag">Sets</span>
+        </summary>
+        <div class="howtoBody">
+          <b>How points work</b>
+          <ul>
+            <li>On your turn, take <b>1 card</b> from the market.</li>
+            <li>Claim a valid 3-card set from your collection:</li>
+            <li><b>Clan Triplet</b> (all same clan, Masks can help): <b>+5</b></li>
+            <li><b>Straight</b> (3 consecutive values, max 1 Mask): <b>+4</b></li>
+            <li><b>Pair + Mask</b> (two same-value + exactly one Mask): <b>+3</b></li>
+            <li>End bonus: leftover Masks score <b>+1 each</b>.</li>
+          </ul>
+          <b>Win condition</b>
+          <ul>
+            <li>When deck + market are empty, highest score wins.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="seat">
+        <h3><span>Market (click a card to take)</span><span class="tiny" id="marketMeta">—</span></h3>
+        <div class="marketGrid" id="marketGrid"></div>
+      </div>
+
+      <div class="grid2" style="margin-top:12px;">
+        <div class="seat">
+          <h3><span>Your Collection</span><span class="tiny" id="youMeta">—</span></h3>
+          <div class="hand" id="youCollection"></div>
+          <div class="bar">
+            <div class="left">
+              <button class="btn primary" id="btnClaim" disabled>Claim Set (select 3)</button>
+              <button class="btn ghost" id="btnEndTurn" disabled>End Turn</button>
+            </div>
+            <div class="right">
+              <span class="pill">Claim removes cards</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat">
+          <h3><span>Rival Collection</span><span class="tiny" id="aiMeta">—</span></h3>
+          <div class="hand" id="aiCollection"></div>
+          <div class="bar">
+            <div class="left">
+              <span class="pill">AI plays after your turn</span>
+            </div>
+            <div class="right">
+              <button class="btn bad" id="btnScore">Score Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>SamuraiGames.mount({ game: "RELICS" });</script>
+</body>
+</html>

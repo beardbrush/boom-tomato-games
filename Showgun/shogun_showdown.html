@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Shogun Showdown — Samurai Card Game</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Shogun Showdown</h1>
+        <p class="sub">Poker-lite: draw 5, keep 3. Score 3-card hands. Fast and satisfying.</p>
+      </div>
+      <div class="topActions">
+        <a class="btn ghost" href="./index.html">Back</a>
+        <button class="btn primary" id="btnNew">New Match</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="gameHeader">
+        <div class="gameTitle" id="titleLine">—</div>
+        <div class="gameMeta">
+          <span class="pill" id="scoreLine">—</span>
+          <span class="pill" id="roundLine">—</span>
+          <span class="pill amber">Hands: High / Pair / Straight / Flush / Trips</span>
+        </div>
+      </div>
+
+      <details class="howto">
+        <summary>
+          <span>How to score</span>
+          <span class="pill howtoTag">Rounds</span>
+        </summary>
+        <div class="howtoBody">
+          <b>How points work</b>
+          <ul>
+            <li>Each round: draw 5 cards, keep 3.</li>
+            <li>Hand ranks: <b>Trips</b> &gt; <b>Straight</b> &gt; <b>Flush</b> &gt; <b>Pair</b> &gt; <b>High</b>.</li>
+            <li>Best hand wins the round and scores <b>+1 point</b> (ties score nothing).</li>
+          </ul>
+          <b>Win condition</b>
+          <ul>
+            <li>First to <b>5 points</b> wins.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="grid2">
+        <div class="seat">
+          <h3><span>You</span><span class="tiny" id="youMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="youUp" alt="Your result"/>
+            <div>
+              <div class="pill">Pick 3 to keep (from 5):</div>
+              <div class="hand" id="youHand"></div>
+              <div class="bar">
+                <div class="left">
+                  <button class="btn primary" id="btnPlay" disabled>Reveal Hand</button>
+                </div>
+                <div class="right">
+                  <span class="pill" id="youHandName">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat">
+          <h3><span>Rival</span><span class="tiny" id="aiMeta">—</span></h3>
+          <div class="cardRow">
+            <img class="cardImg" id="aiUp" alt="AI result"/>
+            <div>
+              <div class="pill">Rival keeps 3:</div>
+              <div class="hand" id="aiHand"></div>
+              <div class="bar">
+                <div class="left">
+                  <span class="pill" id="aiHandName">—</span>
+                </div>
+                <div class="right">
+                  <span class="pill">Goal: 5 points</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>SamuraiGames.mount({ game: "SHOWDOWN" });</script>
+</body>
+</html>
